@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "NEXT Football"
+version = "1.0.0"
+id = "artifacts/next-football"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22184
+
+[services.development]
+run = "pnpm --filter @workspace/next-football run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/next-football", "run", "build" ]
+publicDir = "artifacts/next-football/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22184"
+BASE_PATH = "/"

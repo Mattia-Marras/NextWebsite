@@ -1,0 +1,624 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: NEXT Football API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: teams
+    description: Team operations
+  - name: matches
+    description: Match operations
+  - name: standings
+    description: Standings operations
+  - name: settings
+    description: Site settings operations
+paths:
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get all site settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update site settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /teams:
+    get:
+      operationId: listTeams
+      tags: [teams]
+      summary: List all teams
+      parameters:
+        - name: server
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [football, blockball]
+        - name: league
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [main, lower]
+      responses:
+        "200":
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Team"
+    post:
+      operationId: createTeam
+      tags: [teams]
+      summary: Create a team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+
+  /teams/{id}:
+    get:
+      operationId: getTeam
+      tags: [teams]
+      summary: Get a team by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Team
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateTeam
+      tags: [teams]
+      summary: Update a team
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteTeam
+      tags: [teams]
+      summary: Delete a team
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /matches:
+    get:
+      operationId: listMatches
+      tags: [matches]
+      summary: List all matches
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scheduled, live, finished]
+        - name: server
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [football, blockball]
+        - name: league
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [main, lower]
+      responses:
+        "200":
+          description: List of matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+    post:
+      operationId: createMatch
+      tags: [matches]
+      summary: Create a match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+
+  /matches/recent:
+    get:
+      operationId: listRecentMatches
+      tags: [matches]
+      summary: List recent finished matches
+      parameters:
+        - name: server
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [football, blockball]
+        - name: league
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [main, lower]
+      responses:
+        "200":
+          description: Recent results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+
+  /matches/upcoming:
+    get:
+      operationId: listUpcomingMatches
+      tags: [matches]
+      summary: List upcoming scheduled matches
+      parameters:
+        - name: server
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [football, blockball]
+        - name: league
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [main, lower]
+      responses:
+        "200":
+          description: Upcoming fixtures
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+
+  /matches/{id}:
+    get:
+      operationId: getMatch
+      tags: [matches]
+      summary: Get a match by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMatch
+      tags: [matches]
+      summary: Update a match (score, status)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteMatch
+      tags: [matches]
+      summary: Delete a match
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /standings:
+    get:
+      operationId: getStandings
+      tags: [standings]
+      summary: Get league standings table
+      parameters:
+        - name: server
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [football, blockball]
+        - name: league
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [main, lower]
+      responses:
+        "200":
+          description: Standings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StandingRow"
+
+  /stats/summary:
+    get:
+      operationId: getStatsSummary
+      tags: [standings]
+      summary: Get league stats summary
+      parameters:
+        - name: server
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [football, blockball]
+        - name: league
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [main, lower]
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsSummary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    SiteSettings:
+      type: object
+      required: [minecraftIp, discordUrl]
+      properties:
+        minecraftIp:
+          type: ["string", "null"]
+        discordUrl:
+          type: ["string", "null"]
+
+    SiteSettingsUpdate:
+      type: object
+      properties:
+        minecraftIp:
+          type: ["string", "null"]
+        discordUrl:
+          type: ["string", "null"]
+
+    Team:
+      type: object
+      required: [id, name, shortName, server, league, primaryColor, secondaryColor, logoInitials, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        shortName:
+          type: string
+        server:
+          type: string
+          enum: [football, blockball]
+        league:
+          type: string
+          enum: [main, lower]
+        primaryColor:
+          type: string
+        secondaryColor:
+          type: string
+        logoInitials:
+          type: string
+        logoUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    TeamInput:
+      type: object
+      required: [name, shortName, server, league, primaryColor, secondaryColor, logoInitials]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        shortName:
+          type: string
+          minLength: 1
+        server:
+          type: string
+          enum: [football, blockball]
+        league:
+          type: string
+          enum: [main, lower]
+        primaryColor:
+          type: string
+        secondaryColor:
+          type: string
+        logoInitials:
+          type: string
+        logoUrl:
+          type: ["string", "null"]
+
+    TeamUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        shortName:
+          type: string
+          minLength: 1
+        server:
+          type: string
+          enum: [football, blockball]
+        league:
+          type: string
+          enum: [main, lower]
+        primaryColor:
+          type: string
+        secondaryColor:
+          type: string
+        logoInitials:
+          type: string
+        logoUrl:
+          type: ["string", "null"]
+
+    Match:
+      type: object
+      required: [id, homeTeamId, awayTeamId, homeTeam, awayTeam, server, league, matchDate, status, round, createdAt]
+      properties:
+        id:
+          type: integer
+        homeTeamId:
+          type: integer
+        awayTeamId:
+          type: integer
+        homeTeam:
+          $ref: "#/components/schemas/Team"
+        awayTeam:
+          $ref: "#/components/schemas/Team"
+        server:
+          type: string
+          enum: [football, blockball]
+        league:
+          type: string
+          enum: [main, lower]
+        homeScore:
+          type: ["integer", "null"]
+        awayScore:
+          type: ["integer", "null"]
+        matchDate:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, live, finished]
+        round:
+          type: string
+        venue:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    MatchInput:
+      type: object
+      required: [homeTeamId, awayTeamId, server, league, matchDate, round]
+      properties:
+        homeTeamId:
+          type: integer
+        awayTeamId:
+          type: integer
+        server:
+          type: string
+          enum: [football, blockball]
+        league:
+          type: string
+          enum: [main, lower]
+        homeScore:
+          type: ["integer", "null"]
+        awayScore:
+          type: ["integer", "null"]
+        matchDate:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, live, finished]
+        round:
+          type: string
+        venue:
+          type: ["string", "null"]
+
+    MatchUpdate:
+      type: object
+      properties:
+        server:
+          type: string
+          enum: [football, blockball]
+        league:
+          type: string
+          enum: [main, lower]
+        homeScore:
+          type: ["integer", "null"]
+        awayScore:
+          type: ["integer", "null"]
+        matchDate:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, live, finished]
+        round:
+          type: string
+        venue:
+          type: ["string", "null"]
+
+    StandingRow:
+      type: object
+      required: [teamId, team, played, won, drawn, lost, goalsFor, goalsAgainst, goalDifference, points]
+      properties:
+        teamId:
+          type: integer
+        team:
+          $ref: "#/components/schemas/Team"
+        played:
+          type: integer
+        won:
+          type: integer
+        drawn:
+          type: integer
+        lost:
+          type: integer
+        goalsFor:
+          type: integer
+        goalsAgainst:
+          type: integer
+        goalDifference:
+          type: integer
+        points:
+          type: integer
+        form:
+          type: string
+
+    StatsSummary:
+      type: object
+      required: [totalMatches, totalGoals, matchesPlayed, upcomingCount, teamsCount, topScorer]
+      properties:
+        totalMatches:
+          type: integer
+        totalGoals:
+          type: integer
+        matchesPlayed:
+          type: integer
+        upcomingCount:
+          type: integer
+        teamsCount:
+          type: integer
+        topScorer:
+          type: ["string", "null"]

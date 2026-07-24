@@ -36,20 +36,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API
+// Test semplice per verificare Railway, dominio e porta.
+app.get("/health", (_req, res) => {
+  res.status(200).send("NextFootball API online");
+});
+
+// API backend.
 app.use("/api", router);
 
-// Frontend React compilato.
-// Da dist/index.mjs risale fino alla root del progetto.
+// Cartella del frontend React compilato.
 const frontendDirectory = path.resolve(
   currentDirectory,
   "../../next-football/dist/public",
 );
 
+// Serve file statici: index.html, JavaScript, CSS, immagini, ecc.
 app.use(express.static(frontendDirectory));
 
-// Fallback per le rotte React, ad esempio /teams o /matches.
-app.get("*", (_req, res) => {
+// Fallback per le route gestite da React.
+// Con Express 5 non usare app.get("*", ...).
+app.get("/*splat", (_req, res) => {
   res.sendFile(path.join(frontendDirectory, "index.html"));
 });
 

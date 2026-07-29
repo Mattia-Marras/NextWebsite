@@ -1,4 +1,4 @@
-import { useGetSettings } from "@workspace/api-client-react";
+
 import { Link } from "wouter";
 import logoPath from "@assets/NEXTLogo2_2_1782769726637.png";
 import { Copy, Check, ExternalLink, ChevronRight } from "lucide-react";
@@ -37,7 +37,12 @@ function CopyIpButton({ ip }: { ip: string }) {
 }
 
 export function Landing() {
-  const { data: settings, isLoading } = useGetSettings();
+const settings = {
+  minecraftIp: "play.nextfootball.net",
+  discordUrl: "https://discord.gg/5Z4fU8fumt",
+};
+
+const isLoading = false;
 
   return (
     <div className="flex flex-col gap-0 pb-0 overflow-x-hidden">

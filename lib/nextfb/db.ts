@@ -60,7 +60,7 @@ export async function testNextFootballConnection(): Promise<void> {
   }
 }
 
-export async function queryNextFootball<
+export async function queryFb<
   T extends RowDataPacket[],
 >(
   sql: string,

@@ -59,7 +59,7 @@ export async function testNextBlockballConnection(): Promise<void> {
   }
 }
 
-export async function queryNextBlockball<
+export async function queryBb<
   T extends RowDataPacket[],
 >(
   sql: string,

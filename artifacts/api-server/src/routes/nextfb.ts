@@ -51,184 +51,219 @@ import {
 } from "../lib/nextfb/types";
 
 export const nextFootballRouter = Router();
+
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 
 const CASINO_LEADERBOARD_METRICS = [
-    "dailyPlays",
-    "dailyBet",
-    "dailyWon",
-    "dailyLost",
-    "totalPlays",
-    "totalBet",
-    "totalWon",
-    "totalLost",
-    "dailyNet",
-    "totalNet",
+  "dailyPlays",
+  "dailyBet",
+  "dailyWon",
+  "dailyLost",
+  "totalPlays",
+  "totalBet",
+  "totalWon",
+  "totalLost",
+  "dailyNet",
+  "totalNet",
 ] as const satisfies readonly CasinoLeaderboardMetric[];
 
 const PLAYER_PROFILE_ORDERS = [
-    "level",
-    "xp",
-    "coins",
-    "uuid",
+  "level",
+  "xp",
+  "coins",
+  "uuid",
 ] as const satisfies readonly PlayerProfileOrder[];
 
 class InvalidRequestError extends Error {
-    public constructor(message: string) {
-        super(message);
-        this.name = "InvalidRequestError";
-    }
+  public constructor(message: string) {
+    super(message);
+    this.name = "InvalidRequestError";
+  }
 }
 
 type AsyncRouteHandler = (
-    request: Request,
-    response: Response,
-    next: NextFunction,
+  request: Request,
+  response: Response,
+  next: NextFunction,
 ) => Promise<unknown>;
 
 function asyncRoute(
-    handler: AsyncRouteHandler,
+  handler: AsyncRouteHandler,
 ): (
-    request: Request,
-    response: Response,
-    next: NextFunction,
+  request: Request,
+  response: Response,
+  next: NextFunction,
 ) => void {
-    return (request, response, next) => {
-        void handler(request, response, next).catch(next);
-    };
+  return (request, response, next) => {
+    void handler(request, response, next).catch(next);
+  };
 }
 
 function getSingleValue(value: unknown): string | undefined {
-    if (typeof value === "string") {
-        return value;
-    }
+  if (typeof value === "string") {
+    return value;
+  }
 
-    if (Array.isArray(value) && typeof value[0] === "string") {
-        return value[0];
-    }
+  if (
+    Array.isArray(value) &&
+    typeof value[0] === "string"
+  ) {
+    return value[0];
+  }
 
-    return undefined;
+  return undefined;
+}
+
+function getRouteParameter(
+  value: string | string[] | undefined,
+  name: string,
+): string {
+  const parameter = Array.isArray(value)
+    ? value[0]
+    : value;
+
+  if (!parameter || parameter.trim() === "") {
+    throw new InvalidRequestError(
+      `Missing route parameter: ${name}`,
+    );
+  }
+
+  return parameter.trim();
 }
 
 function parseInteger(
-    value: unknown,
-    fallback: number,
-    minimum: number,
-    maximum: number,
+  value: unknown,
+  fallback: number,
+  minimum: number,
+  maximum: number,
 ): number {
-    const rawValue = getSingleValue(value);
+  const rawValue = getSingleValue(value);
 
-    if (rawValue === undefined || rawValue.trim() === "") {
-        return fallback;
-    }
+  if (
+    rawValue === undefined ||
+    rawValue.trim() === ""
+  ) {
+    return fallback;
+  }
 
-    const parsed = Number(rawValue);
+  const parsed = Number(rawValue);
 
-    if (!Number.isInteger(parsed)) {
-        throw new InvalidRequestError(
-            `Expected an integer, received: ${rawValue}`,
-        );
-    }
+  if (!Number.isInteger(parsed)) {
+    throw new InvalidRequestError(
+      `Expected an integer, received: ${rawValue}`,
+    );
+  }
 
-    if (parsed < minimum || parsed > maximum) {
-        throw new InvalidRequestError(
-            `Value must be between ${minimum} and ${maximum}`,
-        );
-    }
+  if (parsed < minimum || parsed > maximum) {
+    throw new InvalidRequestError(
+      `Value must be between ${minimum} and ${maximum}`,
+    );
+  }
 
-    return parsed;
+  return parsed;
 }
 
 function parseBoolean(
-    value: unknown,
-    fallback = false,
+  value: unknown,
+  fallback = false,
 ): boolean {
-    const rawValue = getSingleValue(value);
+  const rawValue = getSingleValue(value);
 
-    if (rawValue === undefined) {
-        return fallback;
-    }
+  if (rawValue === undefined) {
+    return fallback;
+  }
 
-    const normalized = rawValue.trim().toLowerCase();
+  const normalized = rawValue.trim().toLowerCase();
 
-    if (normalized === "true" || normalized === "1") {
-        return true;
-    }
+  if (
+    normalized === "true" ||
+    normalized === "1"
+  ) {
+    return true;
+  }
 
-    if (normalized === "false" || normalized === "0") {
-        return false;
-    }
+  if (
+    normalized === "false" ||
+    normalized === "0"
+  ) {
+    return false;
+  }
 
-    throw new InvalidRequestError(
-        `Invalid boolean value: ${rawValue}`,
-    );
+  throw new InvalidRequestError(
+    `Invalid boolean value: ${rawValue}`,
+  );
 }
 
-function parsePagination(request: Request): PaginationOptions {
-    return {
-        limit: parseInteger(
-            request.query.limit,
-            DEFAULT_LIMIT,
-            1,
-            MAX_LIMIT,
-        ),
-        offset: parseInteger(
-            request.query.offset,
-            0,
-            0,
-            Number.MAX_SAFE_INTEGER,
-        ),
-    };
+function parsePagination(
+  request: Request,
+): PaginationOptions {
+  return {
+    limit: parseInteger(
+      request.query.limit,
+      DEFAULT_LIMIT,
+      1,
+      MAX_LIMIT,
+    ),
+    offset: parseInteger(
+      request.query.offset,
+      0,
+      0,
+      Number.MAX_SAFE_INTEGER,
+    ),
+  };
 }
 
 function normalizeUuid(rawUuid: string): string {
-    const compact = rawUuid
-        .trim()
-        .toLowerCase()
-        .replaceAll("-", "");
+  const compact = rawUuid
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "");
 
-    if (!/^[0-9a-f]{32}$/.test(compact)) {
-        throw new InvalidRequestError(
-            `Invalid player UUID: ${rawUuid}`,
-        );
-    }
+  if (!/^[0-9a-f]{32}$/.test(compact)) {
+    throw new InvalidRequestError(
+      `Invalid player UUID: ${rawUuid}`,
+    );
+  }
 
-    return [
-        compact.slice(0, 8),
-        compact.slice(8, 12),
-        compact.slice(12, 16),
-        compact.slice(16, 20),
-        compact.slice(20),
-    ].join("-");
+  return [
+    compact.slice(0, 8),
+    compact.slice(8, 12),
+    compact.slice(12, 16),
+    compact.slice(16, 20),
+    compact.slice(20),
+  ].join("-");
 }
 
 function parsePositiveId(value: string): number {
-    const parsed = Number(value);
+  const parsed = Number(value);
 
-    if (!Number.isInteger(parsed) || parsed <= 0) {
-        throw new InvalidRequestError(
-            `Invalid positive ID: ${value}`,
-        );
-    }
+  if (
+    !Number.isInteger(parsed) ||
+    parsed <= 0
+  ) {
+    throw new InvalidRequestError(
+      `Invalid positive ID: ${value}`,
+    );
+  }
 
-    return parsed;
+  return parsed;
 }
 
 function isCasinoLeaderboardMetric(
-    value: string,
+  value: string,
 ): value is CasinoLeaderboardMetric {
-    return (
-        CASINO_LEADERBOARD_METRICS as readonly string[]
-    ).includes(value);
+  return (
+    CASINO_LEADERBOARD_METRICS as readonly string[]
+  ).includes(value);
 }
 
 function isPlayerProfileOrder(
-    value: string,
+  value: string,
 ): value is PlayerProfileOrder {
-    return (
-        PLAYER_PROFILE_ORDERS as readonly string[]
-    ).includes(value);
+  return (
+    PLAYER_PROFILE_ORDERS as readonly string[]
+  ).includes(value);
 }
 
 /*
@@ -238,100 +273,109 @@ function isPlayerProfileOrder(
  */
 
 nextFootballRouter.get(
-    "/players/:uuid",
-    asyncRoute(async (request, response) => {
-        const uuid = normalizeUuid(request.params.uuid);
-        const player = await getPlayerPage(uuid);
+  "/players/:uuid",
+  asyncRoute(async (request, response) => {
+    const uuid = normalizeUuid(
+      getRouteParameter(
+        request.params.uuid,
+        "uuid",
+      ),
+    );
 
-        if (!player) {
-            return response.status(404).json({
-                error: "PLAYER_NOT_FOUND",
-                message: "NextFootball player not found",
-            });
-        }
+    const player = await getPlayerPage(uuid);
 
-        return response.status(200).json(player);
-    }),
+    if (!player) {
+      return response.status(404).json({
+        error: "PLAYER_NOT_FOUND",
+        message: "NextFootball player not found",
+      });
+    }
+
+    return response.status(200).json(player);
+  }),
 );
 
 /*
- * Storico MMR del giocatore, utilizzabile per grafici ranked.
+ * Storico MMR del giocatore.
  *
  * GET /api/nextfb/players/:uuid/mmr-history
  */
 
 nextFootballRouter.get(
-    "/players/:uuid/mmr-history",
-    asyncRoute(async (request, response) => {
-        const uuid = normalizeUuid(request.params.uuid);
-        const pagination = parsePagination(request);
+  "/players/:uuid/mmr-history",
+  asyncRoute(async (request, response) => {
+    const uuid = normalizeUuid(
+      getRouteParameter(
+        request.params.uuid,
+        "uuid",
+      ),
+    );
 
-        const history = await getPlayerMmrHistory(
-            uuid,
-            pagination,
-        );
+    const pagination = parsePagination(request);
 
-        return response.status(200).json(history);
-    }),
+    const history = await getPlayerMmrHistory(
+      uuid,
+      pagination,
+    );
+
+    return response.status(200).json(history);
+  }),
 );
 
 /*
  * Lista generale dei profili.
  *
  * GET /api/nextfb/players
- *
- * Query:
- * - limit
- * - offset
- * - minimumLevel
- * - orderBy: level | xp | coins | uuid
- * - orderDirection: asc | desc
  */
 
 nextFootballRouter.get(
-    "/players",
-    asyncRoute(async (request, response) => {
-        const pagination = parsePagination(request);
+  "/players",
+  asyncRoute(async (request, response) => {
+    const pagination = parsePagination(request);
 
-        const minimumLevel = parseInteger(
-            request.query.minimumLevel,
-            1,
-            1,
-            Number.MAX_SAFE_INTEGER,
-        );
+    const minimumLevel = parseInteger(
+      request.query.minimumLevel,
+      1,
+      1,
+      Number.MAX_SAFE_INTEGER,
+    );
 
-        const rawOrderBy =
-            getSingleValue(request.query.orderBy) ?? "level";
+    const rawOrderBy =
+      getSingleValue(request.query.orderBy) ??
+      "level";
 
-        if (!isPlayerProfileOrder(rawOrderBy)) {
-            throw new InvalidRequestError(
-                `Invalid player order: ${rawOrderBy}`,
-            );
-        }
+    if (!isPlayerProfileOrder(rawOrderBy)) {
+      throw new InvalidRequestError(
+        `Invalid player order: ${rawOrderBy}`,
+      );
+    }
 
-        const rawDirection =
-            getSingleValue(request.query.orderDirection) ?? "desc";
+    const rawDirection =
+      getSingleValue(
+        request.query.orderDirection,
+      ) ?? "desc";
 
-        if (
-            rawDirection !== "asc" &&
-            rawDirection !== "desc"
-        ) {
-            throw new InvalidRequestError(
-                `Invalid order direction: ${rawDirection}`,
-            );
-        }
+    if (
+      rawDirection !== "asc" &&
+      rawDirection !== "desc"
+    ) {
+      throw new InvalidRequestError(
+        `Invalid order direction: ${rawDirection}`,
+      );
+    }
 
-        const orderDirection: SortDirection = rawDirection;
+    const orderDirection: SortDirection =
+      rawDirection;
 
-        const players = await getPlayers({
-            ...pagination,
-            minimumLevel,
-            orderBy: rawOrderBy,
-            orderDirection,
-        });
+    const players = await getPlayers({
+      ...pagination,
+      minimumLevel,
+      orderBy: rawOrderBy,
+      orderDirection,
+    });
 
-        return response.status(200).json(players);
-    }),
+    return response.status(200).json(players);
+  }),
 );
 
 /*
@@ -341,14 +385,14 @@ nextFootballRouter.get(
  */
 
 nextFootballRouter.get(
-    "/leaderboards/players/level",
-    asyncRoute(async (request, response) => {
-        const result = await getTopPlayersByLevel(
-            parsePagination(request),
-        );
+  "/leaderboards/players/level",
+  asyncRoute(async (request, response) => {
+    const result = await getTopPlayersByLevel(
+      parsePagination(request),
+    );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
@@ -358,136 +402,137 @@ nextFootballRouter.get(
  */
 
 nextFootballRouter.get(
-    "/leaderboards/players/coins",
-    asyncRoute(async (request, response) => {
-        const result = await getTopPlayersByCoins(
-            parsePagination(request),
-        );
+  "/leaderboards/players/coins",
+  asyncRoute(async (request, response) => {
+    const result = await getTopPlayersByCoins(
+      parsePagination(request),
+    );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
  * Leaderboard statistiche generali per modalità.
  *
- * Esempio:
- * GET /api/nextfb/leaderboards/players/RANKED/GOALS
+ * GET /api/nextfb/leaderboards/players/:mode/:stat
  */
 
 nextFootballRouter.get(
-    "/leaderboards/players/:mode/:stat",
-    asyncRoute(async (request, response) => {
-        const mode = request.params.mode
-            .trim()
-            .toUpperCase();
+  "/leaderboards/players/:mode/:stat",
+  asyncRoute(async (request, response) => {
+    const mode = getRouteParameter(
+      request.params.mode,
+      "mode",
+    ).toUpperCase();
 
-        const stat = request.params.stat
-            .trim()
-            .toUpperCase();
+    const stat = getRouteParameter(
+      request.params.stat,
+      "stat",
+    ).toUpperCase();
 
-        if (!isGameMode(mode)) {
-            throw new InvalidRequestError(
-                `Invalid game mode: ${mode}`,
-            );
-        }
+    if (!isGameMode(mode)) {
+      throw new InvalidRequestError(
+        `Invalid game mode: ${mode}`,
+      );
+    }
 
-        if (!isPlayerStat(stat)) {
-            throw new InvalidRequestError(
-                `Invalid player stat: ${stat}`,
-            );
-        }
+    if (!isPlayerStat(stat)) {
+      throw new InvalidRequestError(
+        `Invalid player stat: ${stat}`,
+      );
+    }
 
-        const result = await getTopPlayersByStat(
-            stat,
-            mode,
-            parsePagination(request),
-        );
+    const result = await getTopPlayersByStat(
+      stat,
+      mode,
+      parsePagination(request),
+    );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
  * Leaderboard ranked ordinata per MMR.
  *
  * GET /api/nextfb/leaderboards/ranked
- *
- * Query opzionale:
- * - includeBanned=true
  */
 
 nextFootballRouter.get(
-    "/leaderboards/ranked",
-    asyncRoute(async (request, response) => {
-        const includeBanned = parseBoolean(
-            request.query.includeBanned,
-            false,
-        );
+  "/leaderboards/ranked",
+  asyncRoute(async (request, response) => {
+    const includeBanned = parseBoolean(
+      request.query.includeBanned,
+      false,
+    );
 
-        const result = await getRankedLeaderboard(
-            parsePagination(request),
-            includeBanned,
-        );
+    const result = await getRankedLeaderboard(
+      parsePagination(request),
+      includeBanned,
+    );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
  * Leaderboard ranked per statistica.
  *
- * Esempio:
- * GET /api/nextfb/leaderboards/ranked/stats/GOALS
+ * GET /api/nextfb/leaderboards/ranked/stats/:stat
  */
 
 nextFootballRouter.get(
-    "/leaderboards/ranked/stats/:stat",
-    asyncRoute(async (request, response) => {
-        const stat = request.params.stat
-            .trim()
-            .toUpperCase();
+  "/leaderboards/ranked/stats/:stat",
+  asyncRoute(async (request, response) => {
+    const stat = getRouteParameter(
+      request.params.stat,
+      "stat",
+    ).toUpperCase();
 
-        if (!isRankedStat(stat)) {
-            throw new InvalidRequestError(
-                `Invalid ranked stat: ${stat}`,
-            );
-        }
+    if (!isRankedStat(stat)) {
+      throw new InvalidRequestError(
+        `Invalid ranked stat: ${stat}`,
+      );
+    }
 
-        const result = await getRankedStatLeaderboard(
-            stat,
-            parsePagination(request),
-        );
+    const result =
+      await getRankedStatLeaderboard(
+        stat,
+        parsePagination(request),
+      );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
  * Leaderboard casino.
  *
- * Esempio:
- * GET /api/nextfb/leaderboards/casino/totalWon
+ * GET /api/nextfb/leaderboards/casino/:metric
  */
 
 nextFootballRouter.get(
-    "/leaderboards/casino/:metric",
-    asyncRoute(async (request, response) => {
-        const metric = request.params.metric.trim();
+  "/leaderboards/casino/:metric",
+  asyncRoute(async (request, response) => {
+    const metric = getRouteParameter(
+      request.params.metric,
+      "metric",
+    );
 
-        if (!isCasinoLeaderboardMetric(metric)) {
-            throw new InvalidRequestError(
-                `Invalid casino metric: ${metric}`,
-            );
-        }
+    if (!isCasinoLeaderboardMetric(metric)) {
+      throw new InvalidRequestError(
+        `Invalid casino metric: ${metric}`,
+      );
+    }
 
-        const result = await getCasinoLeaderboard(
-            metric,
-            parsePagination(request),
-        );
+    const result = await getCasinoLeaderboard(
+      metric,
+      parsePagination(request),
+    );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
@@ -497,12 +542,12 @@ nextFootballRouter.get(
  */
 
 nextFootballRouter.get(
-    "/casino/house",
-    asyncRoute(async (_request, response) => {
-        const result = await getCasinoHouseStats();
+  "/casino/house",
+  asyncRoute(async (_request, response) => {
+    const result = await getCasinoHouseStats();
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
@@ -512,12 +557,12 @@ nextFootballRouter.get(
  */
 
 nextFootballRouter.get(
-    "/leagues",
-    asyncRoute(async (_request, response) => {
-        const leagues = await getLeagues();
+  "/leagues",
+  asyncRoute(async (_request, response) => {
+    const leagues = await getLeagues();
 
-        return response.status(200).json(leagues);
-    }),
+    return response.status(200).json(leagues);
+  }),
 );
 
 /*
@@ -527,109 +572,121 @@ nextFootballRouter.get(
  */
 
 nextFootballRouter.get(
-    "/leagues/:leagueId",
-    asyncRoute(async (request, response) => {
-        const leagueId = parsePositiveId(
-            request.params.leagueId,
-        );
+  "/leagues/:leagueId",
+  asyncRoute(async (request, response) => {
+    const leagueId = parsePositiveId(
+      getRouteParameter(
+        request.params.leagueId,
+        "leagueId",
+      ),
+    );
 
-        const league = await getLeagueById(leagueId);
+    const league = await getLeagueById(leagueId);
 
-        if (!league) {
-            return response.status(404).json({
-                error: "LEAGUE_NOT_FOUND",
-                message: "NextFootball league not found",
-            });
-        }
+    if (!league) {
+      return response.status(404).json({
+        error: "LEAGUE_NOT_FOUND",
+        message: "NextFootball league not found",
+      });
+    }
 
-        return response.status(200).json(league);
-    }),
+    return response.status(200).json(league);
+  }),
 );
 
 /*
  * Leaderboard giocatori di una lega.
  *
- * Esempio:
- * GET /api/nextfb/leagues/1/leaderboards/goals
+ * GET /api/nextfb/leagues/:leagueId/leaderboards/:stat
  */
 
 nextFootballRouter.get(
-    "/leagues/:leagueId/leaderboards/:stat",
-    asyncRoute(async (request, response) => {
-        const leagueId = parsePositiveId(
-            request.params.leagueId,
-        );
+  "/leagues/:leagueId/leaderboards/:stat",
+  asyncRoute(async (request, response) => {
+    const leagueId = parsePositiveId(
+      getRouteParameter(
+        request.params.leagueId,
+        "leagueId",
+      ),
+    );
 
-        const stat = request.params.stat.trim();
+    const stat = getRouteParameter(
+      request.params.stat,
+      "stat",
+    );
 
-        if (!isLeaguePlayerStat(stat)) {
-            throw new InvalidRequestError(
-                `Invalid league player stat: ${stat}`,
-            );
-        }
+    if (!isLeaguePlayerStat(stat)) {
+      throw new InvalidRequestError(
+        `Invalid league player stat: ${stat}`,
+      );
+    }
 
-        const result = await getLeaguePlayerLeaderboard(
-            leagueId,
-            stat,
-            parsePagination(request),
-        );
+    const result =
+      await getLeaguePlayerLeaderboard(
+        leagueId,
+        stat,
+        parsePagination(request),
+      );
 
-        return response.status(200).json(result);
-    }),
+    return response.status(200).json(result);
+  }),
 );
 
 /*
  * Classifica dei cosmetici più posseduti.
  *
  * GET /api/nextfb/cosmetics/popular
- *
- * Query opzionale:
- * - type=ball_trail
  */
 
 nextFootballRouter.get(
-    "/cosmetics/popular",
-    asyncRoute(async (request, response) => {
-        const rawType = getSingleValue(request.query.type);
+  "/cosmetics/popular",
+  asyncRoute(async (request, response) => {
+    const rawType = getSingleValue(
+      request.query.type,
+    );
 
-        if (rawType && !isCosmeticType(rawType)) {
-            throw new InvalidRequestError(
-                `Invalid cosmetic type: ${rawType}`,
-            );
-        }
+    let cosmeticType: CosmeticType | undefined;
 
-        const result = await getMostPopularCosmetics(
-            parsePagination(request),
-            rawType,
+    if (rawType !== undefined) {
+      if (!isCosmeticType(rawType)) {
+        throw new InvalidRequestError(
+          `Invalid cosmetic type: ${rawType}`,
         );
+      }
 
-        return response.status(200).json(result);
-    }),
+      cosmeticType = rawType;
+    }
+
+    const result =
+      await getMostPopularCosmetics(
+        parsePagination(request),
+        cosmeticType,
+      );
+
+    return response.status(200).json(result);
+  }),
 );
 
 /*
- * Gestione degli errori di validazione prodotti da questa route.
- *
- * Gli errori MySQL o gli errori imprevisti vengono inoltrati
- * al middleware globale del server.
+ * Gestione degli errori di validazione.
  */
 
 nextFootballRouter.use(
-    (
-        error: unknown,
-        _request: Request,
-        response: Response,
-        next: NextFunction,
-    ) => {
-        if (error instanceof InvalidRequestError) {
-            return response.status(400).json({
-                error: "INVALID_REQUEST",
-                message: error.message,
-            });
-        }
+  (
+    error: unknown,
+    _request: Request,
+    response: Response,
+    next: NextFunction,
+  ) => {
+    if (error instanceof InvalidRequestError) {
+      return response.status(400).json({
+        error: "INVALID_REQUEST",
+        message: error.message,
+      });
+    }
 
-        return next(error);
-    },
+    return next(error);
+  },
 );
 
 export default nextFootballRouter;

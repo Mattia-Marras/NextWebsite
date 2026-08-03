@@ -59,11 +59,19 @@ export async function testNextBlockballConnection(): Promise<void> {
   }
 }
 
+export type SqlParameter =
+  | string
+  | number
+  | boolean
+  | Date
+  | Buffer
+  | null;
+
 export async function queryBb<
   T extends RowDataPacket[],
 >(
   sql: string,
-  parameters: readonly unknown[] = [],
+  parameters: readonly SqlParameter[] = [],
 ): Promise<T> {
   const [rows] = await nextBlockballPool.execute<T>(
     sql,

@@ -1,4 +1,3 @@
-
 import mysql, {
   type Pool,
   type PoolConnection,
@@ -60,11 +59,19 @@ export async function testNextFootballConnection(): Promise<void> {
   }
 }
 
+export type SqlParameter =
+  | string
+  | number
+  | boolean
+  | Date
+  | Buffer
+  | null;
+
 export async function queryFb<
   T extends RowDataPacket[],
 >(
   sql: string,
-  parameters: readonly unknown[] = [],
+  parameters: readonly SqlParameter[] = [],
 ): Promise<T> {
   const [rows] = await nextFootballPool.execute<T>(
     sql,

@@ -1,9 +1,11 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
+
+import NotFound from "@/pages/not-found";
 
 // Pages
 import { Landing } from "@/pages/landing";
@@ -12,6 +14,8 @@ import { Results } from "@/pages/results";
 import { Fixtures } from "@/pages/fixtures";
 import { Standings } from "@/pages/standings";
 import { Admin } from "@/pages/admin";
+import { ProfileSearch } from "@/pages/profile-search";
+import { Profile } from "@/pages/profile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,15 +30,30 @@ function Router() {
   return (
     <Layout>
       <Switch>
+        {/* Static routes */}
         <Route path="/" component={Landing} />
         <Route path="/admin" component={Admin} />
 
-        {/* Dynamic Routes */}
-        <Route path="/:server/:league" component={Home} />
-        <Route path="/:server/:league/results" component={Results} />
-        <Route path="/:server/:league/fixtures" component={Fixtures} />
-        <Route path="/:server/:league/standings" component={Standings} />
+        {/* Player profile routes */}
+        <Route path="/profile" component={ProfileSearch} />
+        <Route path="/profile/:uuid" component={Profile} />
 
+        {/* Dynamic league routes */}
+        <Route
+          path="/:server/:league/results"
+          component={Results}
+        />
+        <Route
+          path="/:server/:league/fixtures"
+          component={Fixtures}
+        />
+        <Route
+          path="/:server/:league/standings"
+          component={Standings}
+        />
+        <Route path="/:server/:league" component={Home} />
+
+        {/* Fallback */}
         <Route component={NotFound} />
       </Switch>
     </Layout>
@@ -42,12 +61,15 @@ function Router() {
 }
 
 function App() {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+        <WouterRouter base={basePath}>
           <Router />
         </WouterRouter>
+
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
@@ -55,3 +77,4 @@ function App() {
 }
 
 export default App;
+

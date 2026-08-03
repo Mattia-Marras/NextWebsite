@@ -1,56 +1,56 @@
 import {
-    Router,
-    type NextFunction,
-    type Request,
-    type Response,
+  Router,
+  type NextFunction,
+  type Request,
+  type Response,
 } from "express";
 
 import {
-    getCasinoHouseStats,
-    getCasinoLeaderboard,
-    type CasinoLeaderboardMetric,
-} from "../../../../lib/nextfb/casino";
+  getCasinoHouseStats,
+  getCasinoLeaderboard,
+  type CasinoLeaderboardMetric,
+} from "../lib/nextfb/casino";
 
 import {
-    getMostPopularCosmetics,
-    isCosmeticType,
-} from "../../../../lib/nextfb/cosmetics";
+  getMostPopularCosmetics,
+  isCosmeticType,
+  type CosmeticType,
+} from "../lib/nextfb/cosmetics";
 
 import {
-    getLeagueById,
-    getLeaguePlayerLeaderboard,
-    getLeagues,
-    isLeaguePlayerStat,
-} from "../../../../lib/nextfb/leagues";
+  getLeagueById,
+  getLeaguePlayerLeaderboard,
+  getLeagues,
+  isLeaguePlayerStat,
+} from "../lib/nextfb/leagues";
 
 import {
-    getPlayerPage,
-} from "../../../../lib/nextfb/player";
+  getPlayerPage,
+} from "../lib/nextfb/player";
 
 import {
-    getPlayers,
-    getTopPlayersByCoins,
-    getTopPlayersByLevel,
-    getTopPlayersByStat,
-} from "../../../../lib/nextfb/profiles";
+  getPlayers,
+  getTopPlayersByCoins,
+  getTopPlayersByLevel,
+  getTopPlayersByStat,
+} from "../lib/nextfb/profiles";
 
 import {
-    getPlayerMmrHistory,
-    getRankedLeaderboard,
-    getRankedStatLeaderboard,
-    isRankedStat,
-} from "../../../../lib/nextfb/ranked";
+  getPlayerMmrHistory,
+  getRankedLeaderboard,
+  getRankedStatLeaderboard,
+  isRankedStat,
+} from "../lib/nextfb/ranked";
 
 import {
-    isGameMode,
-    isPlayerStat,
-    type PaginationOptions,
-    type PlayerProfileOrder,
-    type SortDirection,
-} from "../../../../lib/nextfb/types";
+  isGameMode,
+  isPlayerStat,
+  type PaginationOptions,
+  type PlayerProfileOrder,
+  type SortDirection,
+} from "../lib/nextfb/types";
 
 export const nextFootballRouter = Router();
-
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 

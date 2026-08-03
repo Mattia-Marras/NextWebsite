@@ -25,6 +25,10 @@ import {
 } from "../lib/nextfb/leagues";
 
 import {
+  resolveMinecraftPlayer,
+} from "../lib/nextfb/mojang";
+
+import {
   getPlayerPage,
 } from "../lib/nextfb/player";
 
@@ -265,6 +269,74 @@ function isPlayerProfileOrder(
     PLAYER_PROFILE_ORDERS as readonly string[]
   ).includes(value);
 }
+
+/*
+ * Risolve un giocatore tramite username Minecraft.
+ *
+ * La route:
+ * 1. valida lo username;
+ * 2. interroga Mojang;
+ * 3. ottiene UUID e username ufficiale;
+ * 4. verifica che l'UUID esista nel database NextFootball.
+ *
+ * GET /api/nextfb/players/resolve/:username
+ */
+
+nextFootballRouter.get(
+  "/players/resolve/:username",
+  asyncRoute(async (request, response) => {
+    const username = getRouteParameter(
+      request.params.username,
+      "username",
+    );
+
+    let minecraftPlayer;
+
+    try {
+      minecraftPlayer =
+        await resolveMinecraftPlayer(username);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith(
+          "Invalid Minecraft username:",
+        )
+      ) {
+        throw new InvalidRequestError(
+          error.message,
+        );
+      }
+
+      throw error;
+    }
+
+    if (!minecraftPlayer) {
+      return response.status(404).json({
+        error: "MINECRAFT_PLAYER_NOT_FOUND",
+        message: "Minecraft player not found",
+      });
+    }
+
+    const player = await getPlayerPage(
+      minecraftPlayer.uuid,
+    );
+
+    if (!player) {
+      return response.status(404).json({
+        error: "NEXTFOOTBALL_PLAYER_NOT_FOUND",
+        message:
+          "Minecraft account found, but the player has no NextFootball profile",
+        minecraftPlayer,
+      });
+    }
+
+    return response.status(200).json({
+      uuid: minecraftPlayer.uuid,
+      username: minecraftPlayer.username,
+      registered: true,
+    });
+  }),
+);
 
 /*
  * Profilo completo del singolo giocatore.
@@ -690,3 +762,4 @@ nextFootballRouter.use(
 );
 
 export default nextFootballRouter;
+

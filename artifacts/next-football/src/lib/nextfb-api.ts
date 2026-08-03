@@ -111,6 +111,12 @@ export interface PlayerProfile extends PlayerBaseProfile {
   settings: PlayerSettings;
 }
 
+export interface ResolvedNextFootballPlayer {
+  uuid: string;
+  username: string;
+  registered: true;
+}
+
 export interface PlayerLeaderboardEntry
   extends PlayerBaseProfile {
   stat: PlayerStat;
@@ -207,10 +213,6 @@ export interface MmrHistoryEntry {
   uuid: string;
   mmr: number;
   rank: RankedRank;
-
-  /*
-   * Il backend invia Date come stringa ISO nel JSON.
-   */
   createdAt: string;
 }
 
@@ -454,6 +456,24 @@ async function requestNextFootball<T>(
 /*
  * Player API
  */
+
+export async function resolveNextFootballPlayer(
+  username: string,
+): Promise<ResolvedNextFootballPlayer> {
+  const normalizedUsername = username.trim();
+
+  if (!normalizedUsername) {
+    throw new NextFootballApiError(
+      "Minecraft username is required",
+      400,
+      "INVALID_REQUEST",
+    );
+  }
+
+  return requestNextFootball<ResolvedNextFootballPlayer>(
+    `/players/resolve/${encodeURIComponent(normalizedUsername)}`,
+  );
+}
 
 export async function getNextFootballPlayer(
   uuid: string,

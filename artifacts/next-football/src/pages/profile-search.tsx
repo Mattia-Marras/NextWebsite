@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   ArrowLeft,
   ArrowRight,
+  LoaderCircle,
   Search,
   Trophy,
   UserRound,
@@ -11,8 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-function normalizeUuid(value: string): string {
-  return value.trim().toLowerCase();
+import {
+  NextFootballApiError,
+  resolveNextFootballPlayer,
+} from "@/lib/nextfb-api";
+
+function normalizeSearchValue(value: string): string {
+  return value.trim();
 }
 
 function isValidMinecraftUuid(value: string): boolean {
@@ -21,34 +27,118 @@ function isValidMinecraftUuid(value: string): boolean {
   return /^[0-9a-f]{32}$/i.test(uuidWithoutHyphens);
 }
 
+function isValidMinecraftUsername(value: string): boolean {
+  return /^[A-Za-z0-9_]{3,16}$/.test(value);
+}
+
+function normalizeUuid(value: string): string {
+  const compactUuid = value
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "");
+
+  return [
+    compactUuid.slice(0, 8),
+    compactUuid.slice(8, 12),
+    compactUuid.slice(12, 16),
+    compactUuid.slice(16, 20),
+    compactUuid.slice(20),
+  ].join("-");
+}
+
+function getSearchErrorMessage(error: unknown): string {
+  if (error instanceof NextFootballApiError) {
+    if (error.code === "MINECRAFT_PLAYER_NOT_FOUND") {
+      return "This Minecraft username does not exist.";
+    }
+
+    if (error.code === "NEXTFOOTBALL_PLAYER_NOT_FOUND") {
+      return "This Minecraft account does not have a NextFootball profile.";
+    }
+
+    if (error.code === "INVALID_REQUEST") {
+      return error.message;
+    }
+
+    if (error.status >= 500) {
+      return "The profile service is temporarily unavailable. Please try again.";
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "An unexpected error occurred while searching for the player.";
+}
+
 export function ProfileSearch() {
   const [, navigate] = useLocation();
 
-  const [uuid, setUuid] = useState("");
+  const [searchValue, setSearchValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
-    const normalizedUuid = normalizeUuid(uuid);
-
-    if (!normalizedUuid) {
-      setError("Enter a player UUID.");
+    if (isSearching) {
       return;
     }
 
-    if (!isValidMinecraftUuid(normalizedUuid)) {
-      setError(
-        "Enter a valid Minecraft UUID, with or without hyphens.",
-      );
+    const normalizedValue =
+      normalizeSearchValue(searchValue);
+
+    if (!normalizedValue) {
+      setError("Enter a Minecraft username or UUID.");
       return;
     }
 
     setError(null);
 
-    navigate(
-      `/profile/${encodeURIComponent(normalizedUuid)}`,
-    );
+    /*
+     * Se il valore è già un UUID valido, non serve interrogare Mojang.
+     * Apriamo direttamente la pagina del profilo.
+     */
+    if (isValidMinecraftUuid(normalizedValue)) {
+      const normalizedUuid = normalizeUuid(normalizedValue);
+
+      navigate(
+        `/profile/${encodeURIComponent(normalizedUuid)}`,
+      );
+
+      return;
+    }
+
+    /*
+     * Se non è un UUID deve essere uno username Minecraft valido.
+     */
+    if (!isValidMinecraftUsername(normalizedValue)) {
+      setError(
+        "Enter a valid Minecraft username or UUID. Usernames must contain 3–16 letters, numbers or underscores.",
+      );
+      return;
+    }
+
+    setIsSearching(true);
+
+    try {
+      const player = await resolveNextFootballPlayer(
+        normalizedValue,
+      );
+
+      navigate(
+        `/profile/${encodeURIComponent(player.uuid)}`,
+      );
+    } catch (searchError) {
+      setError(getSearchErrorMessage(searchError));
+    } finally {
+      setIsSearching(false);
+    }
   }
 
   return (
@@ -86,8 +176,8 @@ export function ProfileSearch() {
         </h1>
 
         <p className="mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">
-          Search for a NextFootball player and explore their
-          statistics across every game mode.
+          Search by Minecraft username or UUID and explore
+          the player&apos;s statistics across every game mode.
         </p>
 
         {/* Search form */}
@@ -106,16 +196,16 @@ export function ProfileSearch() {
 
                 <Input
                   type="text"
-                  value={uuid}
+                  value={searchValue}
                   onChange={(event) => {
-                    setUuid(event.target.value);
+                    setSearchValue(event.target.value);
 
                     if (error) {
                       setError(null);
                     }
                   }}
-                  placeholder="Minecraft player UUID"
-                  aria-label="Minecraft player UUID"
+                  placeholder="Minecraft username or UUID"
+                  aria-label="Minecraft username or UUID"
                   aria-invalid={Boolean(error)}
                   aria-describedby={
                     error
@@ -123,7 +213,9 @@ export function ProfileSearch() {
                       : "profile-search-help"
                   }
                   autoComplete="off"
+                  autoCapitalize="none"
                   spellCheck={false}
+                  disabled={isSearching}
                   className="h-12 bg-background pl-12 font-mono"
                 />
               </div>
@@ -131,10 +223,20 @@ export function ProfileSearch() {
               <Button
                 type="submit"
                 size="lg"
-                className="h-12 gap-2 border-[#39ff14] bg-[#39ff14] px-7 font-display uppercase tracking-widest text-black hover:bg-[#39ff14]/90"
+                disabled={isSearching}
+                className="h-12 gap-2 border-[#39ff14] bg-[#39ff14] px-7 font-display uppercase tracking-widest text-black hover:bg-[#39ff14]/90 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                View profile
-                <ArrowRight className="h-4 w-4" />
+                {isSearching ? (
+                  <>
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                    Searching
+                  </>
+                ) : (
+                  <>
+                    View profile
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -153,8 +255,8 @@ export function ProfileSearch() {
                 id="profile-search-help"
                 className="text-sm text-muted-foreground"
               >
-                UUID search is currently supported. Username
-                search can be added later.
+                Enter a Java Edition username or a Minecraft
+                UUID, with or without hyphens.
               </p>
             )}
           </div>
@@ -188,9 +290,8 @@ export function ProfileSearch() {
             </h2>
 
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              The profile system is structured to support
-              global rankings and mode-specific leaderboards
-              in the future.
+              The same profile data is ready to support global
+              and mode-specific leaderboards in the future.
             </p>
           </article>
         </section>
@@ -198,3 +299,4 @@ export function ProfileSearch() {
     </div>
   );
 }
+

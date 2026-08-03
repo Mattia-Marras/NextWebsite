@@ -1,4 +1,4 @@
-/*
+*
  * Client HTTP per le API pubbliche NextFootball.
  *
  * Questo file non accede direttamente a MySQL.

@@ -461,7 +461,7 @@ async function readErrorBody(
   NextFootballApiErrorBody | null
 > {
   try {
-    return await response.json()
+    return (await response.json())
       as NextFootballApiErrorBody;
   } catch {
     return null;
@@ -495,7 +495,7 @@ async function requestNextFootball<T>(
     );
   }
 
-  return await response.json() as T;
+  return (await response.json()) as T;
 }
 
 /*

@@ -545,10 +545,10 @@ export async function getTopPlayersByStat(
                         p.level DESC,
                         p.xp DESC,
                         p.uuid ASC
-                    LIMIT ?
-                    OFFSET ?
+                    LIMIT ${limit}
+                OFFSET ${offset}
                 `,
-                [stat, stat, limit, offset],
+                [stat, stat],
             ),
 
             queryFb<PlayerCountRow[]>(
@@ -615,10 +615,10 @@ export async function getTopPlayersByStat(
                     p.level DESC,
                     p.xp DESC,
                     p.uuid ASC
-                LIMIT ?
-                OFFSET ?
+                LIMIT ${limit}
+                OFFSET ${offset}
             `,
-            [mode, stat, limit, offset],
+            [mode, stat],
         ),
 
         queryFb<PlayerCountRow[]>(

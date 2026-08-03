@@ -22,6 +22,11 @@ interface PlayerDbResponse {
   };
 }
 
+interface CachedMinecraftPlayer {
+  player: MojangPlayer | null;
+  expiresAt: number;
+}
+
 const MOJANG_API =
   "https://api.mojang.com/users/profiles/minecraft";
 
@@ -29,6 +34,33 @@ const PLAYERDB_API =
   "https://playerdb.co/api/player/minecraft";
 
 const REQUEST_TIMEOUT_MS = 7000;
+
+/*
+ * I risultati validi restano in cache per 12 ore.
+ * I risultati nulli restano in cache meno tempo, così un errore
+ * temporaneo non nasconde troppo a lungo un giocatore valido.
+ */
+const PROFILE_CACHE_TTL_MS =
+  12 * 60 * 60 * 1000;
+
+const MISSING_PROFILE_CACHE_TTL_MS =
+  15 * 60 * 1000;
+
+/*
+ * Evita di inviare tutte le richieste della leaderboard
+ * contemporaneamente a PlayerDB.
+ */
+const BATCH_CONCURRENCY = 5;
+
+const playerByUuidCache = new Map<
+  string,
+  CachedMinecraftPlayer
+>();
+
+const playerByUsernameCache = new Map<
+  string,
+  CachedMinecraftPlayer
+>();
 
 class ExternalProfileServiceError extends Error {
   public readonly provider: "mojang" | "playerdb";
@@ -65,7 +97,7 @@ export function normalizeMinecraftUsername(
 }
 
 /**
- * Normalizza un UUID Minecraft in formato con trattini.
+ * Normalizza un UUID Minecraft nel formato con trattini.
  */
 export function formatUuid(rawUuid: string): string {
   const compactUuid = rawUuid
@@ -86,6 +118,27 @@ export function formatUuid(rawUuid: string): string {
     compactUuid.slice(16, 20),
     compactUuid.slice(20),
   ].join("-");
+}
+
+/**
+ * Verifica e normalizza un UUID ricevuto dal sito/database.
+ */
+function normalizeMinecraftUuid(
+  rawUuid: string,
+): string {
+  try {
+    return formatUuid(rawUuid);
+  } catch {
+    throw new Error(
+      `Invalid Minecraft UUID: ${rawUuid}`,
+    );
+  }
+}
+
+function normalizeUsernameCacheKey(
+  username: string,
+): string {
+  return username.trim().toLowerCase();
 }
 
 function isAbortError(error: unknown): boolean {
@@ -124,6 +177,65 @@ function shouldUseFallback(error: unknown): boolean {
   return false;
 }
 
+function getCachedPlayer(
+  cache: Map<string, CachedMinecraftPlayer>,
+  key: string,
+): MojangPlayer | null | undefined {
+  const cached = cache.get(key);
+
+  if (!cached) {
+    return undefined;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+
+  return cached.player;
+}
+
+function cachePlayer(
+  player: MojangPlayer,
+): void {
+  const expiresAt =
+    Date.now() + PROFILE_CACHE_TTL_MS;
+
+  playerByUuidCache.set(player.uuid, {
+    player,
+    expiresAt,
+  });
+
+  playerByUsernameCache.set(
+    normalizeUsernameCacheKey(player.username),
+    {
+      player,
+      expiresAt,
+    },
+  );
+}
+
+function cacheMissingUuid(uuid: string): void {
+  playerByUuidCache.set(uuid, {
+    player: null,
+    expiresAt:
+      Date.now() + MISSING_PROFILE_CACHE_TTL_MS,
+  });
+}
+
+function cacheMissingUsername(
+  username: string,
+): void {
+  playerByUsernameCache.set(
+    normalizeUsernameCacheKey(username),
+    {
+      player: null,
+      expiresAt:
+        Date.now() + MISSING_PROFILE_CACHE_TTL_MS,
+    },
+  );
+}
+
 async function fetchWithTimeout(
   url: string,
 ): Promise<Response> {
@@ -148,8 +260,57 @@ async function fetchWithTimeout(
   }
 }
 
+function parsePlayerDbResponse(
+  json: PlayerDbResponse,
+  responseStatus: number,
+): MojangPlayer | null {
+  /*
+   * PlayerDB può rispondere HTTP 200 con success=false.
+   */
+  if (json.success === false) {
+    const message =
+      json.message?.toLowerCase() ?? "";
+
+    if (
+      message.includes("not found") ||
+      message.includes("invalid player") ||
+      message.includes("unknown player")
+    ) {
+      return null;
+    }
+
+    throw new ExternalProfileServiceError(
+      "playerdb",
+      json.message ?? "PlayerDB request failed",
+      responseStatus,
+    );
+  }
+
+  const player = json.data?.player;
+
+  const returnedUsername = player?.username;
+  const returnedUuid =
+    player?.id ?? player?.raw_id;
+
+  if (
+    typeof returnedUsername !== "string" ||
+    typeof returnedUuid !== "string"
+  ) {
+    throw new ExternalProfileServiceError(
+      "playerdb",
+      "PlayerDB returned an invalid response",
+      responseStatus,
+    );
+  }
+
+  return {
+    uuid: formatUuid(returnedUuid),
+    username: returnedUsername,
+  };
+}
+
 /**
- * Primo provider: API Mojang.
+ * Primo provider per username: API Mojang.
  */
 async function resolveFromMojang(
   username: string,
@@ -213,16 +374,16 @@ async function resolveFromMojang(
 }
 
 /**
- * Provider di fallback: PlayerDB.
+ * PlayerDB può ricevere sia username sia UUID.
  */
 async function resolveFromPlayerDb(
-  username: string,
+  identifier: string,
 ): Promise<MojangPlayer | null> {
   let response: Response;
 
   try {
     response = await fetchWithTimeout(
-      `${PLAYERDB_API}/${encodeURIComponent(username)}`,
+      `${PLAYERDB_API}/${encodeURIComponent(identifier)}`,
     );
   } catch (error) {
     if (isAbortError(error)) {
@@ -251,59 +412,19 @@ async function resolveFromPlayerDb(
   const json =
     (await response.json()) as PlayerDbResponse;
 
-  /*
-   * PlayerDB può restituire HTTP 200 anche con success=false.
-   */
-  if (json.success === false) {
-    const message =
-      json.message?.toLowerCase() ?? "";
-
-    if (
-      message.includes("not found") ||
-      message.includes("invalid player")
-    ) {
-      return null;
-    }
-
-    throw new ExternalProfileServiceError(
-      "playerdb",
-      json.message ?? "PlayerDB request failed",
-      response.status,
-    );
-  }
-
-  const player = json.data?.player;
-
-  const returnedUsername = player?.username;
-  const returnedUuid =
-    player?.id ?? player?.raw_id;
-
-  if (
-    typeof returnedUsername !== "string" ||
-    typeof returnedUuid !== "string"
-  ) {
-    throw new ExternalProfileServiceError(
-      "playerdb",
-      "PlayerDB returned an invalid response",
-      response.status,
-    );
-  }
-
-  return {
-    uuid: formatUuid(returnedUuid),
-    username: returnedUsername,
-  };
+  return parsePlayerDbResponse(
+    json,
+    response.status,
+  );
 }
 
 /**
- * Risolve uno username Minecraft.
+ * Risolve uno username Minecraft in UUID.
  *
  * Ordine:
- * 1. Mojang
- * 2. PlayerDB in caso di blocco, timeout, rate limit
- *    o indisponibilità Mojang
- *
- * Restituisce null soltanto quando il giocatore non esiste.
+ * 1. cache
+ * 2. Mojang
+ * 3. PlayerDB come fallback
  */
 export async function resolveMinecraftPlayer(
   rawUsername: string,
@@ -311,8 +432,29 @@ export async function resolveMinecraftPlayer(
   const username =
     normalizeMinecraftUsername(rawUsername);
 
+  const cacheKey =
+    normalizeUsernameCacheKey(username);
+
+  const cached = getCachedPlayer(
+    playerByUsernameCache,
+    cacheKey,
+  );
+
+  if (cached !== undefined) {
+    return cached;
+  }
+
   try {
-    return await resolveFromMojang(username);
+    const player =
+      await resolveFromMojang(username);
+
+    if (!player) {
+      cacheMissingUsername(username);
+      return null;
+    }
+
+    cachePlayer(player);
+    return player;
   } catch (mojangError) {
     if (!shouldUseFallback(mojangError)) {
       throw mojangError;
@@ -323,6 +465,117 @@ export async function resolveMinecraftPlayer(
       mojangError,
     );
 
-    return resolveFromPlayerDb(username);
+    const player =
+      await resolveFromPlayerDb(username);
+
+    if (!player) {
+      cacheMissingUsername(username);
+      return null;
+    }
+
+    cachePlayer(player);
+    return player;
   }
+}
+
+/**
+ * Risolve un UUID Minecraft in username tramite PlayerDB.
+ *
+ * Usata principalmente dalle leaderboard.
+ */
+export async function resolveMinecraftPlayerByUuid(
+  rawUuid: string,
+): Promise<MojangPlayer | null> {
+  const uuid =
+    normalizeMinecraftUuid(rawUuid);
+
+  const cached = getCachedPlayer(
+    playerByUuidCache,
+    uuid,
+  );
+
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const player =
+    await resolveFromPlayerDb(uuid);
+
+  if (!player) {
+    cacheMissingUuid(uuid);
+    return null;
+  }
+
+  /*
+   * Controllo difensivo: PlayerDB deve aver restituito
+   * lo stesso account richiesto.
+   */
+  if (player.uuid !== uuid) {
+    throw new ExternalProfileServiceError(
+      "playerdb",
+      `PlayerDB returned UUID ${player.uuid} while resolving ${uuid}`,
+    );
+  }
+
+  cachePlayer(player);
+  return player;
+}
+
+/**
+ * Risolve più UUID per le leaderboard.
+ *
+ * Restituisce una Map indicizzata tramite UUID normalizzato.
+ * Un errore relativo a un singolo giocatore non blocca
+ * l'intera leaderboard.
+ */
+export async function resolveMinecraftPlayersByUuids(
+  rawUuids: string[],
+): Promise<Map<string, MojangPlayer | null>> {
+  const uniqueUuids = [
+    ...new Set(
+      rawUuids.map((uuid) =>
+        normalizeMinecraftUuid(uuid),
+      ),
+    ),
+  ];
+
+  const results = new Map<
+    string,
+    MojangPlayer | null
+  >();
+
+  for (
+    let index = 0;
+    index < uniqueUuids.length;
+    index += BATCH_CONCURRENCY
+  ) {
+    const batch = uniqueUuids.slice(
+      index,
+      index + BATCH_CONCURRENCY,
+    );
+
+    const batchResults = await Promise.all(
+      batch.map(async (uuid) => {
+        try {
+          const player =
+            await resolveMinecraftPlayerByUuid(uuid);
+
+          return [uuid, player] as const;
+        } catch (error) {
+          console.warn(
+            `[NextFootball] Unable to resolve username for UUID "${uuid}".`,
+            error,
+          );
+
+          return [uuid, null] as const;
+        }
+      }),
+    );
+
+    for (const [uuid, player] of batchResults) {
+      results.set(uuid, player);
+    }
+  }
+
+  return results;
 }

@@ -294,8 +294,8 @@ export async function getMostPopularCosmetics(
         ? "WHERE available.cosmetic_id LIKE ?"
         : "";
     const parameters = typePrefix
-        ? [typePrefix, limit, offset]
-        : [limit, offset];
+        ? [typePrefix]
+        : [];
     const countParameters = typePrefix ? [typePrefix] : [];
 
     const [rows, countRows] = await Promise.all([
@@ -315,8 +315,8 @@ export async function getMostPopularCosmetics(
                     owners DESC,
                     active_users DESC,
                     available.cosmetic_id ASC
-                LIMIT ?
-                OFFSET ?
+                LIMIT ${limit}
+                OFFSET ${offset}
             `,
             parameters,
         ),
@@ -376,10 +376,10 @@ export async function getCosmeticOwners(
                    AND active.cosmetic_id = available.cosmetic_id
                 WHERE available.cosmetic_id = ?
                 ORDER BY active DESC, available.uuid ASC
-                LIMIT ?
-                OFFSET ?
+                LIMIT ${limit}
+                OFFSET ${offset}
             `,
-            [normalizedId, limit, offset],
+            [normalizedId],
         ),
         queryFb<CountRow[]>(
             `
@@ -416,10 +416,10 @@ export async function getPlayersWithActiveCosmetic(
                 FROM player_active_cosmetics
                 WHERE cosmetic_id = ?
                 ORDER BY uuid ASC
-                LIMIT ?
-                OFFSET ?
+                LIMIT ${limit}
+                OFFSET ${offset}
             `,
-            [normalizedId, limit, offset],
+            [normalizedId],
         ),
         queryFb<CountRow[]>(
             `

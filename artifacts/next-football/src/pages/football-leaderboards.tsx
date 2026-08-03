@@ -57,9 +57,32 @@ type LeaderboardType =
   | "saves"
   | "casino";
 
+interface MinecraftIdentity {
+  username?: string | null;
+}
+
+type PlayerBaseProfileWithUsername =
+  PlayerBaseProfile & MinecraftIdentity;
+
+type PlayerLeaderboardEntryWithUsername =
+  PlayerLeaderboardEntry & MinecraftIdentity;
+
+type RankedLeaderboardEntryWithUsername =
+  RankedLeaderboardEntry & MinecraftIdentity;
+
+type CasinoLeaderboardEntryWithUsername =
+  CasinoLeaderboardEntry & MinecraftIdentity;
+
+type LeaderboardApiEntry =
+  | PlayerBaseProfileWithUsername
+  | PlayerLeaderboardEntryWithUsername
+  | RankedLeaderboardEntryWithUsername
+  | CasinoLeaderboardEntryWithUsername;
+
 interface LeaderboardRow {
   position: number;
   uuid: string;
+  username: string | null;
   primaryValue: number;
   secondaryLabel?: string;
   secondaryValue?: number | string;
@@ -74,37 +97,44 @@ const LEADERBOARD_OPTIONS: Array<{
   {
     id: "level",
     label: "Level",
-    description: "Players with the highest NextFootball level.",
+    description:
+      "Players with the highest NextFootball level.",
   },
   {
     id: "coins",
     label: "Coins",
-    description: "Players with the largest coin balance.",
+    description:
+      "Players with the largest coin balance.",
   },
   {
     id: "ranked",
     label: "Ranked",
-    description: "Competitive players ordered by ranked MMR.",
+    description:
+      "Competitive players ordered by ranked MMR.",
   },
   {
     id: "goals",
     label: "Goals",
-    description: "Players with the most goals in Classic mode.",
+    description:
+      "Players with the most goals in Classic mode.",
   },
   {
     id: "assists",
     label: "Assists",
-    description: "Players with the most assists in Classic mode.",
+    description:
+      "Players with the most assists in Classic mode.",
   },
   {
     id: "saves",
     label: "Saves",
-    description: "Players with the most saves in Classic mode.",
+    description:
+      "Players with the most saves in Classic mode.",
   },
   {
     id: "casino",
     label: "Casino",
-    description: "Players with the highest lifetime casino winnings.",
+    description:
+      "Players with the highest lifetime casino winnings.",
   },
 ];
 
@@ -118,6 +148,19 @@ function shortenUuid(uuid: string): string {
   }
 
   return `${uuid.slice(0, 8)}...${uuid.slice(-8)}`;
+}
+
+function normalizeUsername(
+  username: string | null | undefined,
+): string | null {
+  if (
+    typeof username !== "string" ||
+    username.trim() === ""
+  ) {
+    return null;
+  }
+
+  return username.trim();
 }
 
 function getLeaderboardIcon(type: LeaderboardType) {
@@ -145,7 +188,9 @@ function getLeaderboardIcon(type: LeaderboardType) {
   }
 }
 
-function getPrimaryValueLabel(type: LeaderboardType): string {
+function getPrimaryValueLabel(
+  type: LeaderboardType,
+): string {
   switch (type) {
     case "level":
       return "Level";
@@ -173,12 +218,7 @@ function getPrimaryValueLabel(type: LeaderboardType): string {
 async function loadLeaderboard(
   type: LeaderboardType,
   offset: number,
-): Promise<PaginatedResult<
-  | PlayerBaseProfile
-  | PlayerLeaderboardEntry
-  | RankedLeaderboardEntry
-  | CasinoLeaderboardEntry
->> {
+): Promise<PaginatedResult<LeaderboardApiEntry>> {
   const pagination = {
     limit: PAGE_SIZE,
     offset,
@@ -186,62 +226,79 @@ async function loadLeaderboard(
 
   switch (type) {
     case "level":
-      return getLevelLeaderboard(pagination);
+      return getLevelLeaderboard(
+        pagination,
+      ) as Promise<
+        PaginatedResult<PlayerBaseProfileWithUsername>
+      >;
 
     case "coins":
-      return getCoinsLeaderboard(pagination);
+      return getCoinsLeaderboard(
+        pagination,
+      ) as Promise<
+        PaginatedResult<PlayerBaseProfileWithUsername>
+      >;
 
     case "ranked":
-      return getRankedLeaderboard(pagination);
+      return getRankedLeaderboard(
+        pagination,
+      ) as Promise<
+        PaginatedResult<RankedLeaderboardEntryWithUsername>
+      >;
 
     case "goals":
       return getPlayerStatLeaderboard(
         "DEFAULT",
         "GOALS",
         pagination,
-      );
+      ) as Promise<
+        PaginatedResult<PlayerLeaderboardEntryWithUsername>
+      >;
 
     case "assists":
       return getPlayerStatLeaderboard(
         "DEFAULT",
         "ASSISTS",
         pagination,
-      );
+      ) as Promise<
+        PaginatedResult<PlayerLeaderboardEntryWithUsername>
+      >;
 
     case "saves":
       return getPlayerStatLeaderboard(
         "DEFAULT",
         "SAVES",
         pagination,
-      );
+      ) as Promise<
+        PaginatedResult<PlayerLeaderboardEntryWithUsername>
+      >;
 
     case "casino":
       return getCasinoLeaderboard(
         "totalWon",
         pagination,
-      );
+      ) as Promise<
+        PaginatedResult<CasinoLeaderboardEntryWithUsername>
+      >;
   }
 }
 
 function createRows(
   type: LeaderboardType,
-  result: PaginatedResult<
-    | PlayerBaseProfile
-    | PlayerLeaderboardEntry
-    | RankedLeaderboardEntry
-    | CasinoLeaderboardEntry
-  >,
+  result: PaginatedResult<LeaderboardApiEntry>,
 ): LeaderboardRow[] {
   return result.data.map((entry, index) => {
     const fallbackPosition =
       result.offset + index + 1;
 
     if (type === "level") {
-      const player = entry as PlayerBaseProfile;
+      const player =
+        entry as PlayerBaseProfileWithUsername;
 
       return {
         position: fallbackPosition,
         uuid: player.uuid,
+        username: normalizeUsername(player.username),
         primaryValue: player.level,
         secondaryLabel: "XP",
         secondaryValue: player.xp,
@@ -249,11 +306,13 @@ function createRows(
     }
 
     if (type === "coins") {
-      const player = entry as PlayerBaseProfile;
+      const player =
+        entry as PlayerBaseProfileWithUsername;
 
       return {
         position: fallbackPosition,
         uuid: player.uuid,
+        username: normalizeUsername(player.username),
         primaryValue: player.coins,
         secondaryLabel: "Level",
         secondaryValue: player.level,
@@ -261,11 +320,14 @@ function createRows(
     }
 
     if (type === "ranked") {
-      const player = entry as RankedLeaderboardEntry;
+      const player =
+        entry as RankedLeaderboardEntryWithUsername;
 
       return {
-        position: player.position ?? fallbackPosition,
+        position:
+          player.position ?? fallbackPosition,
         uuid: player.uuid,
+        username: normalizeUsername(player.username),
         primaryValue: player.mmr,
         secondaryLabel: "Record",
         secondaryValue: `${player.wins}W · ${player.losses}L`,
@@ -278,22 +340,28 @@ function createRows(
       type === "assists" ||
       type === "saves"
     ) {
-      const player = entry as PlayerLeaderboardEntry;
+      const player =
+        entry as PlayerLeaderboardEntryWithUsername;
 
       return {
-        position: player.position ?? fallbackPosition,
+        position:
+          player.position ?? fallbackPosition,
         uuid: player.uuid,
+        username: normalizeUsername(player.username),
         primaryValue: player.value,
         secondaryLabel: "Mode",
         secondaryValue: "Classic",
       };
     }
 
-    const player = entry as CasinoLeaderboardEntry;
+    const player =
+      entry as CasinoLeaderboardEntryWithUsername;
 
     return {
-      position: player.position ?? fallbackPosition,
+      position:
+        player.position ?? fallbackPosition,
       uuid: player.uuid,
+      username: normalizeUsername(player.username),
       primaryValue: player.totalWon,
       secondaryLabel: "Net",
       secondaryValue:
@@ -359,7 +427,8 @@ export function FootballLeaderboards() {
 
   const currentOption =
     LEADERBOARD_OPTIONS.find(
-      (option) => option.id === activeLeaderboard,
+      (option) =>
+        option.id === activeLeaderboard,
     ) ?? LEADERBOARD_OPTIONS[0];
 
   const rows = useMemo(() => {
@@ -371,23 +440,33 @@ export function FootballLeaderboards() {
       activeLeaderboard,
       leaderboardQuery.data,
     );
-  }, [activeLeaderboard, leaderboardQuery.data]);
+  }, [
+    activeLeaderboard,
+    leaderboardQuery.data,
+  ]);
 
-  const total = leaderboardQuery.data?.total ?? 0;
+  const total =
+    leaderboardQuery.data?.total ?? 0;
+
   const totalPages = Math.max(
     1,
     Math.ceil(total / PAGE_SIZE),
   );
 
   const canGoBack = page > 0;
+
   const canGoForward =
     leaderboardQuery.data !== undefined &&
-    offset + leaderboardQuery.data.data.length < total;
+    offset +
+      leaderboardQuery.data.data.length <
+      total;
 
   function changeLeaderboard(
     value: string,
   ): void {
-    setActiveLeaderboard(value as LeaderboardType);
+    setActiveLeaderboard(
+      value as LeaderboardType,
+    );
     setPage(0);
   }
 
@@ -437,9 +516,9 @@ export function FootballLeaderboards() {
               </h1>
 
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-                Compare the strongest NextFootball players
-                across progression, competitive performance
-                and gameplay statistics.
+                Compare the strongest NextFootball
+                players across progression, competitive
+                performance and gameplay statistics.
               </p>
             </div>
 
@@ -464,15 +543,17 @@ export function FootballLeaderboards() {
         >
           <div className="overflow-x-auto pb-2">
             <TabsList className="h-auto min-w-max justify-start gap-1 bg-card p-1">
-              {LEADERBOARD_OPTIONS.map((option) => (
-                <TabsTrigger
-                  key={option.id}
-                  value={option.id}
-                  className="font-display uppercase tracking-wider"
-                >
-                  {option.label}
-                </TabsTrigger>
-              ))}
+              {LEADERBOARD_OPTIONS.map(
+                (option) => (
+                  <TabsTrigger
+                    key={option.id}
+                    value={option.id}
+                    className="font-display uppercase tracking-wider"
+                  >
+                    {option.label}
+                  </TabsTrigger>
+                ),
+              )}
             </TabsList>
           </div>
         </Tabs>
@@ -489,7 +570,9 @@ export function FootballLeaderboards() {
                     backgroundColor: `${FOOTBALL_ACCENT}10`,
                   }}
                 >
-                  {getLeaderboardIcon(activeLeaderboard)}
+                  {getLeaderboardIcon(
+                    activeLeaderboard,
+                  )}
                 </div>
 
                 <div>
@@ -553,7 +636,10 @@ export function FootballLeaderboards() {
                   disabled={!canGoBack}
                   onClick={() =>
                     setPage((current) =>
-                      Math.max(0, current - 1),
+                      Math.max(
+                        0,
+                        current - 1,
+                      ),
                     )
                   }
                 >
@@ -565,7 +651,10 @@ export function FootballLeaderboards() {
                   variant="outline"
                   disabled={!canGoForward}
                   onClick={() =>
-                    setPage((current) => current + 1)
+                    setPage(
+                      (current) =>
+                        current + 1,
+                    )
                   }
                 >
                   Next
@@ -589,9 +678,14 @@ function LeaderboardEntry({
   const positionStyle =
     getPositionStyle(row.position);
 
+  const displayName =
+    row.username ?? shortenUuid(row.uuid);
+
   return (
     <Link
-      href={`/football/profile/${encodeURIComponent(row.uuid)}`}
+      href={`/football/profile/${encodeURIComponent(
+        row.uuid,
+      )}`}
       className="group block"
     >
       <div className="grid min-h-24 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-5 transition-colors hover:bg-[#39ff14]/5 sm:px-6">
@@ -611,10 +705,13 @@ function LeaderboardEntry({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p
-              className="truncate font-mono text-sm font-semibold text-foreground transition-colors group-hover:text-[#39ff14]"
-              title={row.uuid}
+              className="truncate font-display text-base font-semibold text-foreground transition-colors group-hover:text-[#39ff14]"
+              title={
+                row.username ??
+                row.uuid
+              }
             >
-              {shortenUuid(row.uuid)}
+              {displayName}
             </p>
 
             {row.badge && (
@@ -631,12 +728,25 @@ function LeaderboardEntry({
             )}
           </div>
 
+          {row.username && (
+            <p
+              className="mt-1 truncate font-mono text-xs text-muted-foreground"
+              title={row.uuid}
+            >
+              {shortenUuid(row.uuid)}
+            </p>
+          )}
+
           {row.secondaryLabel &&
-            row.secondaryValue !== undefined && (
+            row.secondaryValue !==
+              undefined && (
               <p className="mt-1 text-xs text-muted-foreground">
                 {row.secondaryLabel}:{" "}
-                {typeof row.secondaryValue === "number"
-                  ? formatNumber(row.secondaryValue)
+                {typeof row.secondaryValue ===
+                "number"
+                  ? formatNumber(
+                      row.secondaryValue,
+                    )
                   : row.secondaryValue}
               </p>
             )}
@@ -649,7 +759,9 @@ function LeaderboardEntry({
             </p>
 
             <p className="mt-1 font-display text-xl font-bold sm:text-2xl">
-              {formatNumber(row.primaryValue)}
+              {formatNumber(
+                row.primaryValue,
+              )}
             </p>
           </div>
 
@@ -663,24 +775,26 @@ function LeaderboardEntry({
 function LeaderboardLoading() {
   return (
     <div className="divide-y divide-border">
-      {Array.from({ length: 10 }).map((_, index) => (
-        <div
-          key={index}
-          className="grid min-h-24 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-5 sm:px-6"
-        >
-          <Skeleton className="h-12 w-14 rounded-xl" />
+      {Array.from({ length: 10 }).map(
+        (_, index) => (
+          <div
+            key={index}
+            className="grid min-h-24 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-5 sm:px-6"
+          >
+            <Skeleton className="h-12 w-14 rounded-xl" />
 
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-44" />
-            <Skeleton className="h-3 w-24" />
-          </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-3 w-24" />
+            </div>
 
-          <div className="space-y-2">
-            <Skeleton className="ml-auto h-3 w-14" />
-            <Skeleton className="ml-auto h-7 w-20" />
+            <div className="space-y-2">
+              <Skeleton className="ml-auto h-3 w-14" />
+              <Skeleton className="ml-auto h-7 w-20" />
+            </div>
           </div>
-        </div>
-      ))}
+        ),
+      )}
     </div>
   );
 }
@@ -701,8 +815,8 @@ function LeaderboardError({
       </h2>
 
       <p className="mt-3 max-w-md text-muted-foreground">
-        The NextFootball leaderboard could not be loaded.
-        Please retry the request.
+        The NextFootball leaderboard could not be
+        loaded. Please retry the request.
       </p>
 
       <Button
@@ -728,8 +842,8 @@ function EmptyLeaderboard() {
       </h2>
 
       <p className="mt-3 max-w-md text-muted-foreground">
-        There are currently no players available for this
-        NextFootball leaderboard.
+        There are currently no players available for
+        this NextFootball leaderboard.
       </p>
     </div>
   );

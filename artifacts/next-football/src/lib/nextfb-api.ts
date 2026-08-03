@@ -20,6 +20,20 @@ export interface PaginatedResult<T> {
 }
 
 /*
+ * Identità Minecraft.
+ *
+ * username è opzionale perché:
+ * - le leaderboard arricchite lo restituiscono;
+ * - alcune risposte più vecchie o il profilo singolo
+ *   potrebbero contenere soltanto l'UUID.
+ */
+
+export interface MinecraftPlayerIdentity {
+  uuid: string;
+  username?: string | null;
+}
+
+/*
  * Errori API
  */
 
@@ -63,7 +77,8 @@ export const GAME_MODES = [
   "DODGEBALL",
 ] as const;
 
-export type GameMode = (typeof GAME_MODES)[number];
+export type GameMode =
+  (typeof GAME_MODES)[number];
 
 export const PLAYER_STATS = [
   "GOALS",
@@ -77,7 +92,8 @@ export const PLAYER_STATS = [
   "MATCHES_PLAYED",
 ] as const;
 
-export type PlayerStat = (typeof PLAYER_STATS)[number];
+export type PlayerStat =
+  (typeof PLAYER_STATS)[number];
 
 export const PLAYER_SETTINGS = [
   "SKINS",
@@ -88,24 +104,29 @@ export const PLAYER_SETTINGS = [
   "ACCESSORIES",
 ] as const;
 
-export type PlayerSetting = (typeof PLAYER_SETTINGS)[number];
+export type PlayerSetting =
+  (typeof PLAYER_SETTINGS)[number];
 
-export type PlayerStats = Record<PlayerStat, number>;
-export type PlayerSettings = Record<PlayerSetting, boolean>;
+export type PlayerStats =
+  Record<PlayerStat, number>;
+
+export type PlayerSettings =
+  Record<PlayerSetting, boolean>;
 
 export type PlayerModeStats = Partial<
   Record<GameMode, PlayerStats>
 >;
 
-export interface PlayerBaseProfile {
-  uuid: string;
+export interface PlayerBaseProfile
+  extends MinecraftPlayerIdentity {
   level: number;
   xp: number;
   coins: number;
   lastRewardClaimedLevel: number;
 }
 
-export interface PlayerProfile extends PlayerBaseProfile {
+export interface PlayerProfile
+  extends PlayerBaseProfile {
   globalStats: PlayerStats;
   modeStats: PlayerModeStats;
   settings: PlayerSettings;
@@ -131,7 +152,9 @@ export type PlayerProfileOrder =
   | "coins"
   | "uuid";
 
-export type SortDirection = "asc" | "desc";
+export type SortDirection =
+  | "asc"
+  | "desc";
 
 export interface PlayerSearchOptions
   extends PaginationOptions {
@@ -156,9 +179,11 @@ export const RANKED_STATS = [
   "DRAWS",
 ] as const;
 
-export type RankedStat = (typeof RANKED_STATS)[number];
+export type RankedStat =
+  (typeof RANKED_STATS)[number];
 
-export type RankedStats = Record<RankedStat, number>;
+export type RankedStats =
+  Record<RankedStat, number>;
 
 export type RankName =
   | "IRON"
@@ -182,8 +207,8 @@ export interface RankedRank {
   displayWithDivision: string;
 }
 
-export interface RankedProfile {
-  uuid: string;
+export interface RankedProfile
+  extends MinecraftPlayerIdentity {
   mmr: number;
   wins: number;
   losses: number;
@@ -199,9 +224,9 @@ export interface RankedLeaderboardEntry
   position: number;
 }
 
-export interface RankedStatLeaderboardEntry {
+export interface RankedStatLeaderboardEntry
+  extends MinecraftPlayerIdentity {
   position: number;
-  uuid: string;
   stat: RankedStat;
   value: number;
   mmr: number;
@@ -254,6 +279,7 @@ export interface LeagueTeamStanding {
 
 export interface LeaguePlayerStatistics {
   playerUuid: string;
+  username?: string | null;
   goals: number;
   assists: number;
   passes: number;
@@ -286,8 +312,8 @@ export interface PlayerLeagueProfile {
  * Casino
  */
 
-export interface CasinoPlayerStats {
-  uuid: string;
+export interface CasinoPlayerStats
+  extends MinecraftPlayerIdentity {
   currentDay: string;
   dailyPlays: number;
   dailyBet: number;
@@ -388,7 +414,11 @@ export interface NextFootballPlayerPage {
 function addQueryParameter(
   parameters: URLSearchParams,
   name: string,
-  value: string | number | boolean | undefined,
+  value:
+    | string
+    | number
+    | boolean
+    | undefined,
 ): void {
   if (value === undefined) {
     return;
@@ -400,13 +430,24 @@ function addQueryParameter(
 function createQueryString(
   values: Record<
     string,
-    string | number | boolean | undefined
+    | string
+    | number
+    | boolean
+    | undefined
   >,
 ): string {
-  const parameters = new URLSearchParams();
+  const parameters =
+    new URLSearchParams();
 
-  for (const [name, value] of Object.entries(values)) {
-    addQueryParameter(parameters, name, value);
+  for (
+    const [name, value]
+    of Object.entries(values)
+  ) {
+    addQueryParameter(
+      parameters,
+      name,
+      value,
+    );
   }
 
   const query = parameters.toString();
@@ -416,9 +457,12 @@ function createQueryString(
 
 async function readErrorBody(
   response: Response,
-): Promise<NextFootballApiErrorBody | null> {
+): Promise<
+  NextFootballApiErrorBody | null
+> {
   try {
-    return await response.json() as NextFootballApiErrorBody;
+    return await response.json()
+      as NextFootballApiErrorBody;
   } catch {
     return null;
   }
@@ -440,7 +484,8 @@ async function requestNextFootball<T>(
   );
 
   if (!response.ok) {
-    const errorBody = await readErrorBody(response);
+    const errorBody =
+      await readErrorBody(response);
 
     throw new NextFootballApiError(
       errorBody?.message ??
@@ -460,7 +505,8 @@ async function requestNextFootball<T>(
 export async function resolveNextFootballPlayer(
   username: string,
 ): Promise<ResolvedNextFootballPlayer> {
-  const normalizedUsername = username.trim();
+  const normalizedUsername =
+    username.trim();
 
   if (!normalizedUsername) {
     throw new NextFootballApiError(
@@ -470,28 +516,38 @@ export async function resolveNextFootballPlayer(
     );
   }
 
-  return requestNextFootball<ResolvedNextFootballPlayer>(
-    `/players/resolve/${encodeURIComponent(normalizedUsername)}`,
+  return requestNextFootball<
+    ResolvedNextFootballPlayer
+  >(
+    `/players/resolve/${encodeURIComponent(
+      normalizedUsername,
+    )}`,
   );
 }
 
 export async function getNextFootballPlayer(
   uuid: string,
 ): Promise<NextFootballPlayerPage> {
-  return requestNextFootball<NextFootballPlayerPage>(
+  return requestNextFootball<
+    NextFootballPlayerPage
+  >(
     `/players/${encodeURIComponent(uuid)}`,
   );
 }
 
 export async function getNextFootballPlayers(
   options: PlayerSearchOptions = {},
-): Promise<PaginatedResult<PlayerBaseProfile>> {
+): Promise<
+  PaginatedResult<PlayerBaseProfile>
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
-    minimumLevel: options.minimumLevel,
+    minimumLevel:
+      options.minimumLevel,
     orderBy: options.orderBy,
-    orderDirection: options.orderDirection,
+    orderDirection:
+      options.orderDirection,
   });
 
   return requestNextFootball<
@@ -502,7 +558,9 @@ export async function getNextFootballPlayers(
 export async function getPlayerMmrHistory(
   uuid: string,
   options: PaginationOptions = {},
-): Promise<PaginatedResult<MmrHistoryEntry>> {
+): Promise<
+  PaginatedResult<MmrHistoryEntry>
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
@@ -511,7 +569,9 @@ export async function getPlayerMmrHistory(
   return requestNextFootball<
     PaginatedResult<MmrHistoryEntry>
   >(
-    `/players/${encodeURIComponent(uuid)}/mmr-history${query}`,
+    `/players/${encodeURIComponent(
+      uuid,
+    )}/mmr-history${query}`,
   );
 }
 
@@ -521,7 +581,9 @@ export async function getPlayerMmrHistory(
 
 export async function getLevelLeaderboard(
   options: PaginationOptions = {},
-): Promise<PaginatedResult<PlayerBaseProfile>> {
+): Promise<
+  PaginatedResult<PlayerBaseProfile>
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
@@ -529,12 +591,16 @@ export async function getLevelLeaderboard(
 
   return requestNextFootball<
     PaginatedResult<PlayerBaseProfile>
-  >(`/leaderboards/players/level${query}`);
+  >(
+    `/leaderboards/players/level${query}`,
+  );
 }
 
 export async function getCoinsLeaderboard(
   options: PaginationOptions = {},
-): Promise<PaginatedResult<PlayerBaseProfile>> {
+): Promise<
+  PaginatedResult<PlayerBaseProfile>
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
@@ -542,14 +608,18 @@ export async function getCoinsLeaderboard(
 
   return requestNextFootball<
     PaginatedResult<PlayerBaseProfile>
-  >(`/leaderboards/players/coins${query}`);
+  >(
+    `/leaderboards/players/coins${query}`,
+  );
 }
 
 export async function getPlayerStatLeaderboard(
   mode: GameMode,
   stat: PlayerStat,
   options: PaginationOptions = {},
-): Promise<PaginatedResult<PlayerLeaderboardEntry>> {
+): Promise<
+  PaginatedResult<PlayerLeaderboardEntry>
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
@@ -558,7 +628,11 @@ export async function getPlayerStatLeaderboard(
   return requestNextFootball<
     PaginatedResult<PlayerLeaderboardEntry>
   >(
-    `/leaderboards/players/${encodeURIComponent(mode)}/${encodeURIComponent(stat)}${query}`,
+    `/leaderboards/players/${encodeURIComponent(
+      mode,
+    )}/${encodeURIComponent(
+      stat,
+    )}${query}`,
   );
 }
 
@@ -569,7 +643,9 @@ export async function getPlayerStatLeaderboard(
 export async function getRankedLeaderboard(
   options: PaginationOptions = {},
   includeBanned = false,
-): Promise<PaginatedResult<RankedLeaderboardEntry>> {
+): Promise<
+  PaginatedResult<RankedLeaderboardEntry>
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
@@ -585,7 +661,9 @@ export async function getRankedStatLeaderboard(
   stat: RankedStat,
   options: PaginationOptions = {},
 ): Promise<
-  PaginatedResult<RankedStatLeaderboardEntry>
+  PaginatedResult<
+    RankedStatLeaderboardEntry
+  >
 > {
   const query = createQueryString({
     limit: options.limit,
@@ -593,9 +671,13 @@ export async function getRankedStatLeaderboard(
   });
 
   return requestNextFootball<
-    PaginatedResult<RankedStatLeaderboardEntry>
+    PaginatedResult<
+      RankedStatLeaderboardEntry
+    >
   >(
-    `/leaderboards/ranked/stats/${encodeURIComponent(stat)}${query}`,
+    `/leaderboards/ranked/stats/${encodeURIComponent(
+      stat,
+    )}${query}`,
   );
 }
 
@@ -603,18 +685,19 @@ export async function getRankedStatLeaderboard(
  * League API
  */
 
-export async function getNextFootballLeagues(): Promise<
-  LeagueSummary[]
-> {
-  return requestNextFootball<LeagueSummary[]>("/leagues");
+export async function getNextFootballLeagues():
+  Promise<LeagueSummary[]> {
+  return requestNextFootball<
+    LeagueSummary[]
+  >("/leagues");
 }
 
 export async function getNextFootballLeague(
   leagueId: number,
 ): Promise<LeagueDetails> {
-  return requestNextFootball<LeagueDetails>(
-    `/leagues/${leagueId}`,
-  );
+  return requestNextFootball<
+    LeagueDetails
+  >(`/leagues/${leagueId}`);
 }
 
 export async function getLeaguePlayerLeaderboard(
@@ -622,7 +705,9 @@ export async function getLeaguePlayerLeaderboard(
   stat: LeaguePlayerStat,
   options: PaginationOptions = {},
 ): Promise<
-  PaginatedResult<LeaguePlayerLeaderboardEntry>
+  PaginatedResult<
+    LeaguePlayerLeaderboardEntry
+  >
 > {
   const query = createQueryString({
     limit: options.limit,
@@ -630,9 +715,13 @@ export async function getLeaguePlayerLeaderboard(
   });
 
   return requestNextFootball<
-    PaginatedResult<LeaguePlayerLeaderboardEntry>
+    PaginatedResult<
+      LeaguePlayerLeaderboardEntry
+    >
   >(
-    `/leagues/${leagueId}/leaderboards/${encodeURIComponent(stat)}${query}`,
+    `/leagues/${leagueId}/leaderboards/${encodeURIComponent(
+      stat,
+    )}${query}`,
   );
 }
 
@@ -641,27 +730,36 @@ export async function getLeaguePlayerLeaderboard(
  */
 
 export async function getCasinoLeaderboard(
-  metric: CasinoLeaderboardMetric = "totalWon",
+  metric:
+    CasinoLeaderboardMetric =
+      "totalWon",
   options: PaginationOptions = {},
-): Promise<PaginatedResult<CasinoLeaderboardEntry>> {
+): Promise<
+  PaginatedResult<
+    CasinoLeaderboardEntry
+  >
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
   });
 
   return requestNextFootball<
-    PaginatedResult<CasinoLeaderboardEntry>
+    PaginatedResult<
+      CasinoLeaderboardEntry
+    >
   >(
-    `/leaderboards/casino/${encodeURIComponent(metric)}${query}`,
+    `/leaderboards/casino/${encodeURIComponent(
+      metric,
+    )}${query}`,
   );
 }
 
-export async function getCasinoHouseStats(): Promise<
-  CasinoHouseStats
-> {
-  return requestNextFootball<CasinoHouseStats>(
-    "/casino/house",
-  );
+export async function getCasinoHouseStats():
+  Promise<CasinoHouseStats> {
+  return requestNextFootball<
+    CasinoHouseStats
+  >("/casino/house");
 }
 
 /*
@@ -671,7 +769,11 @@ export async function getCasinoHouseStats(): Promise<
 export async function getPopularCosmetics(
   options: PaginationOptions = {},
   type?: CosmeticType,
-): Promise<PaginatedResult<CosmeticPopularityEntry>> {
+): Promise<
+  PaginatedResult<
+    CosmeticPopularityEntry
+  >
+> {
   const query = createQueryString({
     limit: options.limit,
     offset: options.offset,
@@ -679,6 +781,8 @@ export async function getPopularCosmetics(
   });
 
   return requestNextFootball<
-    PaginatedResult<CosmeticPopularityEntry>
+    PaginatedResult<
+      CosmeticPopularityEntry
+    >
   >(`/cosmetics/popular${query}`);
 }

@@ -318,10 +318,10 @@ export async function getCasinoPlayers(
                     total_lost
                 FROM casino_player_stats
                 ORDER BY total_plays DESC, total_bet DESC, uuid ASC
-                LIMIT ?
-                OFFSET ?
+                LIMIT ${limit}
+                OFFSET ${offset}
             `,
-            [limit, offset],
+            [],
         ),
         queryFb<CountRow[]>(
             `
@@ -368,12 +368,12 @@ export async function getCasinoLeaderboard(
                 total_lost
             FROM casino_player_stats
             ORDER BY ${expression} DESC, total_plays DESC, uuid ASC
-            LIMIT ?
-            OFFSET ?
+            LIMIT ${limit}
+                OFFSET ${offset}
         `,
         usesTodayParameter
-            ? [today, limit, offset]
-            : [limit, offset],
+            ? [today]
+            : [],
     );
 
     const countRows = await queryFb<CountRow[]>(

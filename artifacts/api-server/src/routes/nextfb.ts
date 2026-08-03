@@ -26,6 +26,7 @@ import {
 
 import {
   resolveMinecraftPlayer,
+  resolveMinecraftPlayersByUuids,
 } from "../lib/nextfb/mojang";
 
 import {
@@ -270,6 +271,44 @@ function isPlayerProfileOrder(
   ).includes(value);
 }
 
+interface PaginatedData<T> {
+  data: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Aggiunge username alle righe che contengono un UUID.
+ *
+ * La risoluzione avviene tramite la cache e PlayerDB definite
+ * in mojang.ts. Un errore su un singolo account non blocca
+ * l'intera leaderboard: username sarà null.
+ */
+async function addUsernamesToPaginatedResult<
+  T extends { uuid: string },
+>(
+  result: PaginatedData<T>,
+): Promise<
+  PaginatedData<T & { username: string | null }>
+> {
+  const playersByUuid =
+    await resolveMinecraftPlayersByUuids(
+      result.data.map((entry) => entry.uuid),
+    );
+
+  return {
+    ...result,
+    data: result.data.map((entry) => ({
+      ...entry,
+      username:
+        playersByUuid.get(
+          normalizeUuid(entry.uuid),
+        )?.username ?? null,
+    })),
+  };
+}
+
 /*
  * Risolve un giocatore tramite username Minecraft.
  *
@@ -446,7 +485,12 @@ nextFootballRouter.get(
       orderDirection,
     });
 
-    return response.status(200).json(players);
+    const enrichedPlayers =
+      await addUsernamesToPaginatedResult(players);
+
+    return response.status(200).json(
+      enrichedPlayers,
+    );
   }),
 );
 
@@ -463,7 +507,12 @@ nextFootballRouter.get(
       parsePagination(request),
     );
 
-    return response.status(200).json(result);
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(
+      enrichedResult,
+    );
   }),
 );
 
@@ -480,7 +529,12 @@ nextFootballRouter.get(
       parsePagination(request),
     );
 
-    return response.status(200).json(result);
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(
+      enrichedResult,
+    );
   }),
 );
 
@@ -521,7 +575,12 @@ nextFootballRouter.get(
       parsePagination(request),
     );
 
-    return response.status(200).json(result);
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(
+      enrichedResult,
+    );
   }),
 );
 
@@ -544,7 +603,12 @@ nextFootballRouter.get(
       includeBanned,
     );
 
-    return response.status(200).json(result);
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(
+      enrichedResult,
+    );
   }),
 );
 
@@ -574,7 +638,12 @@ nextFootballRouter.get(
         parsePagination(request),
       );
 
-    return response.status(200).json(result);
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(
+      enrichedResult,
+    );
   }),
 );
 
@@ -603,7 +672,12 @@ nextFootballRouter.get(
       parsePagination(request),
     );
 
-    return response.status(200).json(result);
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(
+      enrichedResult,
+    );
   }),
 );
 
@@ -762,4 +836,5 @@ nextFootballRouter.use(
 );
 
 export default nextFootballRouter;
+
 

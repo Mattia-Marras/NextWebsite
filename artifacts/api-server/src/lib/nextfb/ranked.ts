@@ -329,7 +329,7 @@ export async function getRankedLeaderboard(
       )
     `;
   const now = Date.now();
-  const parameters = includeBanned ? [limit, offset] : [now, limit, offset];
+  const parameters = includeBanned ? [] : [now];
   const countParameters = includeBanned ? [] : [now];
 
   const [playerRows, countRows] = await Promise.all([
@@ -339,7 +339,8 @@ export async function getRankedLeaderboard(
         FROM ranked_players
         ${banFilter}
         ORDER BY mmr DESC, wins DESC, losses ASC, uuid ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limit}
+                OFFSET ${offset}
       `,
       parameters,
     ),
@@ -412,9 +413,10 @@ export async function getRankedStatLeaderboard(
             OR (rp.banned = TRUE AND rp.ranked_ban_until = 0)
           )
         ORDER BY rps.value DESC, rp.mmr DESC, rps.uuid ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limit}
+                OFFSET ${offset}
       `,
-      [stat, now, limit, offset],
+      [stat, now],
     ),
     queryFb<CountRow[]>(
       `
@@ -462,9 +464,10 @@ export async function getPlayerMmrHistory(
         FROM player_mmr_history
         WHERE uuid = ?
         ORDER BY created_at DESC, id DESC
-        LIMIT ? OFFSET ?
+        LIMIT ${limit}
+                OFFSET ${offset}
       `,
-      [normalizedUuid, limit, offset],
+      [normalizedUuid],
     ),
     queryFb<CountRow[]>(
       `SELECT COUNT(*) AS total FROM player_mmr_history WHERE uuid = ?`,

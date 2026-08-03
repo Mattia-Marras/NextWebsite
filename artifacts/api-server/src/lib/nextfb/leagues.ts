@@ -334,9 +334,10 @@ export async function getLeaguePlayers(
         FROM player_stats
         WHERE league_id = ?
         ORDER BY matches_played DESC, goals DESC, assists DESC, player_uuid ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limit}
+                OFFSET ${offset}
       `,
-      [id, limit, offset],
+      [id],
     ),
     queryFb<CountRow[]>(
       `SELECT COUNT(*) AS total FROM player_stats WHERE league_id = ?`,
@@ -411,9 +412,10 @@ export async function getLeaguePlayerLeaderboard(
         FROM player_stats
         WHERE league_id = ? AND ${column} > 0
         ORDER BY ${column} DESC, matches_played ASC, player_uuid ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limit}
+                OFFSET ${offset}
       `,
-      [id, limit, offset],
+      [id],
     ),
     queryFb<CountRow[]>(
       `

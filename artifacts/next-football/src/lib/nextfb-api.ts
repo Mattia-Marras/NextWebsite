@@ -1,4 +1,4 @@
-*
+/*
  * Client HTTP per le API pubbliche NextFootball.
  *
  * Questo file non accede direttamente a MySQL.
@@ -461,8 +461,7 @@ async function readErrorBody(
   NextFootballApiErrorBody | null
 > {
   try {
-    return (await response.json())
-      as NextFootballApiErrorBody;
+    return (await response.json()) as NextFootballApiErrorBody;
   } catch {
     return null;
   }

@@ -8,7 +8,6 @@ import {
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -222,14 +221,14 @@ export function Landing() {
               </Button>
             </Link>
 
-            <Link href="/profile">
+            <Link href="/football/players">
               <Button
                 size="lg"
                 variant="outline"
                 className="h-12 gap-2 border-border px-8 font-display uppercase tracking-widest hover:border-[#39ff14] hover:text-[#39ff14]"
               >
                 <UserRound className="h-4 w-4" />
-                Player Profile
+                NextFootball Players
               </Button>
             </Link>
           </div>

@@ -75,6 +75,15 @@ export function Layout({ children }: LayoutProps) {
                   <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/lower/fixtures">Fixtures</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/lower/standings">Standings</Link></DropdownMenuItem>
                 </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-border/50" />
+                <DropdownMenuLabel className="font-display uppercase tracking-widest text-xs text-[#39ff14]">
+                  NextFootball
+                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/football/players">Player Profiles</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -136,6 +145,21 @@ export function Layout({ children }: LayoutProps) {
                     {p === "" ? "Dashboard" : p.slice(1).charAt(0).toUpperCase() + p.slice(2)}
                   </Link>
                 ))}
+              </div>
+
+              <div className="mt-3 border-t border-border/50 pt-3">
+                <div className="mb-2 font-display text-sm font-bold uppercase tracking-widest text-[#39ff14]">
+                  NextFootball
+                </div>
+                <div className="flex flex-col gap-2 pl-4">
+                  <Link
+                    href="/football/players"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-muted-foreground transition-colors hover:text-[#39ff14]"
+                  >
+                    Player Profiles
+                  </Link>
+                </div>
               </div>
             </div>
 

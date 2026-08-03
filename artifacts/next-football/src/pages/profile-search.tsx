@@ -61,7 +61,7 @@ function getSearchErrorMessage(error: unknown): string {
     }
 
     if (error.status >= 500) {
-      return "The profile service is temporarily unavailable. Please try again.";
+      return "The NextFootball profile service is temporarily unavailable. Please try again.";
     }
 
     return error.message;
@@ -100,23 +100,16 @@ export function ProfileSearch() {
 
     setError(null);
 
-    /*
-     * Se il valore è già un UUID valido, non serve interrogare Mojang.
-     * Apriamo direttamente la pagina del profilo.
-     */
     if (isValidMinecraftUuid(normalizedValue)) {
       const normalizedUuid = normalizeUuid(normalizedValue);
 
       navigate(
-        `/profile/${encodeURIComponent(normalizedUuid)}`,
+        `/football/profile/${encodeURIComponent(normalizedUuid)}`,
       );
 
       return;
     }
 
-    /*
-     * Se non è un UUID deve essere uno username Minecraft valido.
-     */
     if (!isValidMinecraftUsername(normalizedValue)) {
       setError(
         "Enter a valid Minecraft username or UUID. Usernames must contain 3–16 letters, numbers or underscores.",
@@ -132,7 +125,7 @@ export function ProfileSearch() {
       );
 
       navigate(
-        `/profile/${encodeURIComponent(player.uuid)}`,
+        `/football/profile/${encodeURIComponent(player.uuid)}`,
       );
     } catch (searchError) {
       setError(getSearchErrorMessage(searchError));
@@ -143,7 +136,6 @@ export function ProfileSearch() {
 
   return (
     <div className="relative min-h-[calc(100dvh-4rem)] overflow-hidden bg-background px-4 py-16 md:py-24">
-      {/* Background effects */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-16 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#39ff14]/10 blur-[130px]" />
 
@@ -151,42 +143,40 @@ export function ProfileSearch() {
       </div>
 
       <main className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center">
-        {/* Back link */}
         <div className="mb-10 flex w-full max-w-2xl justify-start">
           <Link
-            href="/"
+            href="/football/main"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[#39ff14]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            Back to NextFootball
           </Link>
         </div>
 
-        {/* Header icon */}
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#39ff14]/30 bg-[#39ff14]/10 shadow-[0_0_30px_#39ff1420]">
           <UserRound className="h-8 w-8 text-[#39ff14]" />
         </div>
 
         <p className="mb-3 font-display text-xs uppercase tracking-[0.35em] text-[#39ff14]">
-          NextFootball Players
+          NextFootball Player Database
         </p>
 
         <h1 className="text-center font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">
-          Find a player
+          Football Players
         </h1>
 
         <p className="mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">
-          Search by Minecraft username or UUID and explore
-          the player&apos;s statistics across every game mode.
+          Search the NextFootball player database by Minecraft
+          username or UUID and explore statistics, ranked
+          progress, leagues, casino activity and cosmetics.
         </p>
 
-        {/* Search form */}
         <form
           onSubmit={handleSubmit}
           className="mt-10 w-full max-w-2xl"
           noValidate
         >
-          <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-2xl backdrop-blur-sm">
+          <div className="rounded-2xl border border-[#39ff14]/20 bg-card/70 p-3 shadow-2xl backdrop-blur-sm">
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative flex-1">
                 <Search
@@ -204,8 +194,8 @@ export function ProfileSearch() {
                       setError(null);
                     }
                   }}
-                  placeholder="Minecraft username or UUID"
-                  aria-label="Minecraft username or UUID"
+                  placeholder="NextFootball username or Minecraft UUID"
+                  aria-label="NextFootball username or Minecraft UUID"
                   aria-invalid={Boolean(error)}
                   aria-describedby={
                     error
@@ -255,22 +245,25 @@ export function ProfileSearch() {
                 id="profile-search-help"
                 className="text-sm text-muted-foreground"
               >
-                Enter a Java Edition username or a Minecraft
-                UUID, with or without hyphens.
+                Search is limited to Minecraft Java Edition
+                accounts registered on NextFootball.
               </p>
             )}
           </div>
         </form>
 
-        {/* Feature cards */}
         <section className="mt-12 grid w-full max-w-2xl gap-4 sm:grid-cols-2">
-          <article className="rounded-2xl border border-border bg-card/50 p-5 backdrop-blur-sm transition-colors hover:border-[#39ff14]/30">
+          <article className="rounded-2xl border border-[#39ff14]/20 bg-card/50 p-5 backdrop-blur-sm transition-colors hover:border-[#39ff14]/50">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-[#39ff14]/20 bg-[#39ff14]/10">
               <UserRound className="h-5 w-5 text-[#39ff14]" />
             </div>
 
+            <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-[#39ff14]">
+              NextFootball
+            </p>
+
             <h2 className="font-display text-lg font-bold uppercase">
-              Player profiles
+              Football profiles
             </h2>
 
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -285,13 +278,18 @@ export function ProfileSearch() {
               <Trophy className="h-5 w-5 text-amber-400" />
             </div>
 
+            <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-amber-400">
+              Coming next
+            </p>
+
             <h2 className="font-display text-lg font-bold uppercase">
-              Leaderboards
+              Football leaderboards
             </h2>
 
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              The same profile data is ready to support global
-              and mode-specific leaderboards in the future.
+              Compare NextFootball players by level, coins,
+              ranked MMR, goals, assists, saves and other
+              statistics.
             </p>
           </article>
         </section>
@@ -299,4 +297,3 @@ export function ProfileSearch() {
     </div>
   );
 }
-

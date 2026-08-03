@@ -190,14 +190,14 @@ function ProfileContent({
 
         <div className="container relative z-10 mx-auto px-4">
           <div className="mb-8">
-            <Link href="/profile">
+            <Link href="/football/players">
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-2 text-muted-foreground hover:text-foreground"
+                className="gap-2 text-muted-foreground hover:text-[#39ff14]"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Search another player
+                Search another NextFootball player
               </Button>
             </Link>
           </div>
@@ -218,20 +218,29 @@ function ProfileContent({
               </div>
 
               <div>
-                <Badge
-                  variant="outline"
-                  className="mb-4 font-display uppercase tracking-[0.2em]"
-                  style={{
-                    color: PROFILE_ACCENT,
-                    borderColor: `${PROFILE_ACCENT}55`,
-                    backgroundColor: `${PROFILE_ACCENT}12`,
-                  }}
-                >
-                  NextFootball profile
-                </Badge>
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="font-display uppercase tracking-[0.2em]"
+                    style={{
+                      color: PROFILE_ACCENT,
+                      borderColor: `${PROFILE_ACCENT}55`,
+                      backgroundColor: `${PROFILE_ACCENT}12`,
+                    }}
+                  >
+                    NextFootball
+                  </Badge>
+
+                  <Badge
+                    variant="secondary"
+                    className="font-display uppercase tracking-[0.15em]"
+                  >
+                    Football Player
+                  </Badge>
+                </div>
 
                 <h1 className="font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">
-                  Player profile
+                  NextFootball Player Profile
                 </h1>
 
                 <p
@@ -1088,10 +1097,10 @@ function ProfileError({
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/profile">
+            <Link href="/football/players">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to search
+                Back to NextFootball players
               </Button>
             </Link>
 

@@ -1,5 +1,8 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,24 +37,45 @@ function Router() {
         <Route path="/" component={Landing} />
         <Route path="/admin" component={Admin} />
 
-        {/* Player profile routes */}
+        {/* NextFootball player routes */}
+        <Route
+          path="/football/players"
+          component={ProfileSearch}
+        />
+
+        <Route
+          path="/football/profile/:uuid"
+          component={Profile}
+        />
+
+        {/* Temporary compatibility routes */}
         <Route path="/profile" component={ProfileSearch} />
-        <Route path="/profile/:uuid" component={Profile} />
+
+        <Route
+          path="/profile/:uuid"
+          component={Profile}
+        />
 
         {/* Dynamic league routes */}
         <Route
           path="/:server/:league/results"
           component={Results}
         />
+
         <Route
           path="/:server/:league/fixtures"
           component={Fixtures}
         />
+
         <Route
           path="/:server/:league/standings"
           component={Standings}
         />
-        <Route path="/:server/:league" component={Home} />
+
+        <Route
+          path="/:server/:league"
+          component={Home}
+        />
 
         {/* Fallback */}
         <Route component={NotFound} />
@@ -61,7 +85,10 @@ function Router() {
 }
 
 function App() {
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const basePath = import.meta.env.BASE_URL.replace(
+    /\/$/,
+    "",
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -77,4 +104,3 @@ function App() {
 }
 
 export default App;
-

@@ -19,6 +19,7 @@ import { Standings } from "@/pages/standings";
 import { Admin } from "@/pages/admin";
 import { ProfileSearch } from "@/pages/profile-search";
 import { Profile } from "@/pages/profile";
+import { FootballLeaderboards } from "@/pages/football-leaderboards";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,8 +49,16 @@ function Router() {
           component={Profile}
         />
 
+        <Route
+          path="/football/leaderboards"
+          component={FootballLeaderboards}
+        />
+
         {/* Temporary compatibility routes */}
-        <Route path="/profile" component={ProfileSearch} />
+        <Route
+          path="/profile"
+          component={ProfileSearch}
+        />
 
         <Route
           path="/profile/:uuid"

@@ -83,6 +83,9 @@ export function Layout({ children }: LayoutProps) {
                   <DropdownMenuItem asChild className="cursor-pointer">
                     <Link href="/football/players">Player Profiles</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/football/leaderboards">Leaderboards</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -158,6 +161,13 @@ export function Layout({ children }: LayoutProps) {
                     className="text-muted-foreground transition-colors hover:text-[#39ff14]"
                   >
                     Player Profiles
+                  </Link>
+                  <Link
+                    href="/football/leaderboards"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-muted-foreground transition-colors hover:text-[#39ff14]"
+                  >
+                    Leaderboards
                   </Link>
                 </div>
               </div>

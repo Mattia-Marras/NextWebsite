@@ -444,8 +444,17 @@ export async function getPlayers(
         options.orderDirection === "asc" ? "asc" : "desc";
 
     const orderColumn = PROFILE_ORDER_COLUMNS[orderBy];
-    const sqlDirection = direction === "asc" ? "ASC" : "DESC";
+    const sqlDirection =
+        direction === "asc" ? "ASC" : "DESC";
 
+    /*
+     * limit e offset sono già normalizzati come interi,
+     * quindi possono essere inseriti direttamente nella query.
+     *
+     * Evitiamo i placeholder per LIMIT/OFFSET perché alcune
+     * versioni/configurazioni MySQL o MariaDB restituiscono:
+     * "Incorrect arguments to mysqld_stmt_execute".
+     */
     const [playerRows, countRows] = await Promise.all([
         queryFb<PlayerRow[]>(
             `
@@ -458,10 +467,10 @@ export async function getPlayers(
                 FROM players AS p
                 WHERE p.level >= ?
                 ORDER BY ${orderColumn} ${sqlDirection}, p.uuid ASC
-                LIMIT ?
-                OFFSET ?
+                LIMIT ${limit}
+                OFFSET ${offset}
             `,
-            [minimumLevel, limit, offset],
+            [minimumLevel],
         ),
 
         queryFb<PlayerCountRow[]>(
@@ -476,12 +485,13 @@ export async function getPlayers(
 
     return {
         data: playerRows.map(mapBaseProfile),
-        total: normalizeNonNegative(countRows[0]?.total),
+        total: normalizeNonNegative(
+            countRows[0]?.total,
+        ),
         limit,
         offset,
     };
 }
-
 export async function getTopPlayersByStat(
     stat: PlayerStat,
     mode: GameMode = "DEFAULT",

@@ -1,5 +1,10 @@
 import type { RowDataPacket } from "mysql2";
 
+import type { CasinoPlayerStats } from "./casino";
+import type { PlayerCosmetics } from "./cosmetics";
+import type { LeaguePlayerStatistics } from "./leagues";
+import type { RankedProfile } from "./ranked";
+
 /*
  * Valori salvati dal plugin Java tramite Enum.name().
  * Devono quindi restare scritti esattamente in questo modo.
@@ -49,7 +54,9 @@ export type PlayerSetting = (typeof PLAYER_SETTINGS)[number];
 export type PlayerStats = Record<PlayerStat, number>;
 export type PlayerSettings = Record<PlayerSetting, boolean>;
 
-export type PlayerModeStats = Partial<Record<GameMode, PlayerStats>>;
+export type PlayerModeStats = Partial<
+    Record<GameMode, PlayerStats>
+>;
 
 /*
  * Righe restituite direttamente da MySQL.
@@ -117,12 +124,14 @@ export interface PlayerProfile extends PlayerBaseProfile {
     settings: PlayerSettings;
 }
 
-export interface PlayerProfileWithCosmetics extends PlayerProfile {
+export interface PlayerProfileWithCosmetics
+    extends PlayerProfile {
     availableCosmetics: string[];
     activeCosmetics: string[];
 }
 
-export interface PlayerProfileSummary extends PlayerBaseProfile {
+export interface PlayerProfileSummary
+    extends PlayerBaseProfile {
     matchesPlayed: number;
     wins: number;
     draws: number;
@@ -132,12 +141,43 @@ export interface PlayerProfileSummary extends PlayerBaseProfile {
     saves: number;
 }
 
-export interface PlayerLeaderboardEntry extends PlayerBaseProfile {
+export interface PlayerLeaderboardEntry
+    extends PlayerBaseProfile {
     stat: PlayerStat;
     mode: GameMode;
     value: number;
     position: number;
 }
+
+/*
+ * Dati league appartenenti a un singolo giocatore.
+ *
+ * Un array viene usato perché lo stesso giocatore può avere
+ * statistiche in più leghe o stagioni.
+ */
+
+export interface PlayerLeagueProfile {
+    leagueId: number;
+    leagueName: string;
+    statistics: LeaguePlayerStatistics;
+}
+
+/*
+ * Oggetto aggregato utilizzato dalla pagina pubblica
+ * di un giocatore NextFootball.
+ */
+
+export interface NextFootballPlayerPage {
+    profile: PlayerProfile;
+    ranked: RankedProfile | null;
+    leagues: PlayerLeagueProfile[];
+    casino: CasinoPlayerStats | null;
+    cosmetics: PlayerCosmetics;
+}
+
+/*
+ * Paginazione e ordinamento.
+ */
 
 export interface PaginationOptions {
     limit?: number;
@@ -151,7 +191,8 @@ export interface PaginatedResult<T> {
     offset: number;
 }
 
-export interface PlayerSearchOptions extends PaginationOptions {
+export interface PlayerSearchOptions
+    extends PaginationOptions {
     minimumLevel?: number;
     orderBy?: PlayerProfileOrder;
     orderDirection?: SortDirection;
@@ -169,15 +210,21 @@ export type SortDirection = "asc" | "desc";
  * Utility di validazione.
  */
 
-export function isGameMode(value: string): value is GameMode {
+export function isGameMode(
+    value: string,
+): value is GameMode {
     return (GAME_MODES as readonly string[]).includes(value);
 }
 
-export function isPlayerStat(value: string): value is PlayerStat {
+export function isPlayerStat(
+    value: string,
+): value is PlayerStat {
     return (PLAYER_STATS as readonly string[]).includes(value);
 }
 
-export function isPlayerSetting(value: string): value is PlayerSetting {
+export function isPlayerSetting(
+    value: string,
+): value is PlayerSetting {
     return (PLAYER_SETTINGS as readonly string[]).includes(value);
 }
 
@@ -197,7 +244,8 @@ export function createEmptyPlayerStats(): PlayerStats {
 
 export function createDefaultPlayerSettings(): PlayerSettings {
     /*
-     * Nel Profile Java, un'impostazione assente viene letta come true.
+     * Nel Profile Java, un'impostazione assente
+     * viene letta come true.
      */
     return {
         SKINS: true,

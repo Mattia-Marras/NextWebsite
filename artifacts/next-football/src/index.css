@@ -107,3 +107,20 @@
     @apply font-display tracking-tight uppercase;
   }
 }
+
+@layer utilities {
+  .surface-panel {
+    @apply rounded-2xl border border-white/10 bg-[#10161f]/80 shadow-[0_18px_70px_rgba(0,0,0,.25)] backdrop-blur;
+  }
+
+  .soft-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
+
+html { background: #090d13; }
+body { min-width: 320px; }
+::selection { background: rgba(57,255,20,.28); color: white; }

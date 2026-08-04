@@ -28,11 +28,11 @@ export function Home() {
   return (
     <div className="pb-16">
       <section className="border-b border-border bg-card/30">
-        <div className="container mx-auto px-4 py-12 md:py-16">
+        <div className="container mx-auto px-4 py-8 md:py-10">
           <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="font-display text-xs uppercase tracking-[0.32em]" style={{ color: theme.hex }}>NEXT Football League</p>
-              <h1 className="mt-3 font-display text-5xl font-bold uppercase tracking-tight md:text-7xl">{leagueName}</h1>
+              <h1 className="mt-3 font-display text-4xl font-bold uppercase tracking-tight md:text-5xl">{leagueName}</h1>
               <p className="mt-4 max-w-2xl text-muted-foreground">One clear overview for standings, upcoming fixtures and recent results.</p>
             </div>
 
@@ -44,8 +44,8 @@ export function Home() {
         </div>
       </section>
 
-      <main className="container mx-auto space-y-10 px-4 pt-10">
-        <section className="rounded-2xl border border-border bg-card/70 p-5 md:p-7">
+      <main className="container mx-auto space-y-7 px-4 pt-7">
+        <section className="surface-panel p-5 md:p-6">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">League table</p>
@@ -74,7 +74,7 @@ export function Home() {
           </div>
         </section>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           <MatchSection title="Upcoming fixtures" icon={<CalendarDays className="h-5 w-5" />} href={`/${server}/${league}/fixtures`} loading={upcoming.isLoading} matches={upcoming.data?.slice(0, 3) ?? []} empty="No upcoming fixtures." compact />
           <MatchSection title="Recent results" icon={<Trophy className="h-5 w-5" />} href={`/${server}/${league}/results`} loading={recent.isLoading} matches={recent.data?.slice(0, 3) ?? []} empty="No recent results." />
         </div>
@@ -85,7 +85,7 @@ export function Home() {
 
 function MatchSection({ title, icon, href, loading, matches, empty, compact = false }: { title: string; icon: React.ReactNode; href: string; loading: boolean; matches: any[]; empty: string; compact?: boolean }) {
   return (
-    <section className="rounded-2xl border border-border bg-card/70 p-5 md:p-7">
+    <section className="surface-panel p-5 md:p-6">
       <div className="mb-6 flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase">{icon}{title}</h2>
         <Link href={href} className="text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground">View all</Link>

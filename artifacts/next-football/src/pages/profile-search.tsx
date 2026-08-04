@@ -273,13 +273,13 @@ export function ProfileSearch() {
             </p>
           </article>
 
-          <article className="rounded-2xl border border-border bg-card/50 p-5 backdrop-blur-sm transition-colors hover:border-amber-400/30">
+          <Link href="/football/leaderboards" className="rounded-2xl border border-amber-400/20 bg-card/50 p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/50 hover:bg-card/80">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10">
               <Trophy className="h-5 w-5 text-amber-400" />
             </div>
 
             <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-amber-400">
-              Coming next
+              Available now
             </p>
 
             <h2 className="font-display text-lg font-bold uppercase">
@@ -291,7 +291,7 @@ export function ProfileSearch() {
               ranked MMR, goals, assists, saves and other
               statistics.
             </p>
-          </article>
+          </Link>
         </section>
       </main>
     </div>

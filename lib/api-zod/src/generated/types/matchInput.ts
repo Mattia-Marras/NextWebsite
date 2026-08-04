@@ -18,7 +18,8 @@ export interface MatchInput {
   homeScore?: number | null;
   /** @nullable */
   awayScore?: number | null;
-  matchDate: string;
+  /** @nullable */
+  matchDate?: string | null;
   status?: MatchInputStatus;
   round: string;
   /** @nullable */

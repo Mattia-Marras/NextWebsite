@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,14 +29,23 @@ const matchSchema = z
     awayTeamId: z.coerce.number().min(1, "Select the away team"),
     homeScore: z.coerce.number().min(0).nullable().optional(),
     awayScore: z.coerce.number().min(0).nullable().optional(),
-    matchDate: z.string().min(1, "Select a date"),
+    matchDate: z.string().optional(),
     matchTime: z.string().optional(),
+    dateTba: z.boolean(),
     timeTba: z.boolean(),
     status: z.enum(["scheduled", "live", "finished"]),
     round: z.string().min(1, "Enter the round"),
     venue: z.string().nullable().optional(),
     server: z.literal("football"),
     league: z.enum(["main", "lower"]),
+  })
+  .refine((data) => data.dateTba || Boolean(data.matchDate), {
+    message: "Select a date or mark it as not announced",
+    path: ["matchDate"],
+  })
+  .refine((data) => data.status === "scheduled" || !data.dateTba, {
+    message: "Live and finished matches need a date",
+    path: ["matchDate"],
   })
   .refine((data) => data.homeTeamId !== data.awayTeamId, {
     message: "Home and away teams cannot be the same",
@@ -72,7 +81,6 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
     query: { enabled: !!matchId, queryKey: getGetMatchQueryKey(matchId as number) },
   });
 
-  const today = useMemo(() => localDateParts(new Date()).date, []);
   const form = useForm<MatchFormValues>({
     resolver: zodResolver(matchSchema),
     defaultValues: {
@@ -80,8 +88,9 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
       awayTeamId: 0,
       homeScore: null,
       awayScore: null,
-      matchDate: today,
+      matchDate: "",
       matchTime: "",
+      dateTba: true,
       timeTba: true,
       status: "scheduled",
       round: "Round 1",
@@ -93,6 +102,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
 
   const selectedLeague = form.watch("league");
   const selectedStatus = form.watch("status");
+  const dateTba = form.watch("dateTba");
   const timeTba = form.watch("timeTba");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -110,10 +120,10 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
   useEffect(() => {
     if (match && initializedForId.current !== match.id) {
       initializedForId.current = match.id;
-      const parsed = new Date(match.matchDate);
-      const parts = localDateParts(parsed);
-      // Matches saved at 12:00 represent a date whose kickoff time is not announced yet.
-      const inferredTba = parts.time === "12:00";
+      const hasDate = Boolean(match.matchDate);
+      const parts = hasDate ? localDateParts(new Date(match.matchDate as string)) : { date: "", time: "" };
+      // A 12:00 kickoff represents a known day whose exact time is not announced yet.
+      const inferredTimeTba = !hasDate || parts.time === "12:00";
 
       form.reset({
         homeTeamId: match.homeTeamId,
@@ -121,8 +131,9 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
         homeScore: match.homeScore,
         awayScore: match.awayScore,
         matchDate: parts.date,
-        matchTime: inferredTba ? "" : parts.time,
-        timeTba: inferredTba,
+        matchTime: inferredTimeTba ? "" : parts.time,
+        dateTba: !hasDate,
+        timeTba: inferredTimeTba,
         status: match.status as MatchInputStatus,
         round: match.round,
         venue: match.venue || "",
@@ -147,9 +158,11 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
   };
 
   const onSubmit = (data: MatchFormValues) => {
-    // Noon is used as a stable internal placeholder when only the date is known.
-    const time = data.timeTba || !data.matchTime ? "12:00" : data.matchTime;
-    const localDate = new Date(`${data.matchDate}T${time}:00`);
+    // A null date means the fixture exists but its day has not been announced yet.
+    // Noon remains the internal marker when the day is known but the kickoff time is not.
+    const localDate = data.dateTba || !data.matchDate
+      ? null
+      : new Date(`${data.matchDate}T${data.timeTba || !data.matchTime ? "12:00" : data.matchTime}:00`);
 
     const payload = {
       homeTeamId: data.homeTeamId,
@@ -158,7 +171,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
       league: data.league,
       homeScore: data.status === "scheduled" ? null : data.homeScore,
       awayScore: data.status === "scheduled" ? null : data.awayScore,
-      matchDate: localDate.toISOString(),
+      matchDate: localDate ? localDate.toISOString() : null,
       status: data.status,
       round: data.round.trim(),
       venue: data.venue?.trim() || null,
@@ -278,52 +291,86 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="matchDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Date</FormLabel>
-                <FormControl><Input type="date" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="matchTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Kickoff time</FormLabel>
-                <FormControl><Input type="time" {...field} disabled={timeTba} value={field.value || ""} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <div className="rounded-lg border border-border bg-muted/15 p-4 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">Match date not announced</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Create the fixture now and add its date later.</p>
+            </div>
+            <FormField
+              control={form.control}
+              name="dateTba"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        if (checked) {
+                          form.setValue("matchDate", "");
+                          form.setValue("matchTime", "");
+                          form.setValue("timeTba", true);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
 
-        <FormField
-          control={form.control}
-          name="timeTba"
-          render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-4 py-3">
-              <div>
-                <FormLabel className="cursor-pointer text-sm font-medium">Kickoff time not announced</FormLabel>
-                <p className="mt-0.5 text-xs text-muted-foreground">The public page will show “Time TBA” instead of an incorrect hour.</p>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={(checked) => {
-                    field.onChange(checked);
-                    if (checked) form.setValue("matchTime", "");
-                  }}
+          {!dateTba && (
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="matchDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-display tracking-widest uppercase">Date</FormLabel>
+                      <FormControl><Input type="date" {...field} value={field.value || ""} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </FormControl>
-            </FormItem>
+                <FormField
+                  control={form.control}
+                  name="matchTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-display tracking-widest uppercase">Kickoff time</FormLabel>
+                      <FormControl><Input type="time" {...field} disabled={timeTba} value={field.value || ""} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="timeTba"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border border-border bg-background/40 px-4 py-3">
+                    <div>
+                      <FormLabel className="cursor-pointer text-sm font-medium">Kickoff time not announced</FormLabel>
+                      <p className="mt-0.5 text-xs text-muted-foreground">The fixture will show the date with “Time TBA”.</p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (checked) form.setValue("matchTime", "");
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </>
           )}
-        />
+        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField

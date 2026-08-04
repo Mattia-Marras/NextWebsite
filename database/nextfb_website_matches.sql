@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS website_matches (
   away_team_name VARCHAR(128) NOT NULL,
   home_score INT NULL,
   away_score INT NULL,
-  match_date DATETIME NOT NULL,
+  match_date DATETIME NULL,
   status ENUM('scheduled','live','finished') NOT NULL DEFAULT 'scheduled',
   round_name VARCHAR(128) NOT NULL,
   venue VARCHAR(255) NULL,
@@ -19,3 +19,7 @@ CREATE TABLE IF NOT EXISTS website_matches (
   INDEX website_matches_slug_status_date_idx (league_slug, status, match_date),
   CONSTRAINT website_matches_distinct_teams CHECK (home_team_name <> away_team_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Run this once on existing installations created before optional dates were supported.
+ALTER TABLE website_matches MODIFY COLUMN match_date DATETIME NULL;

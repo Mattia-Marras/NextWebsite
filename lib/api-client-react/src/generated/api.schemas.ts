@@ -150,7 +150,8 @@ export interface Match {
   homeScore?: number | null;
   /** @nullable */
   awayScore?: number | null;
-  matchDate: string;
+  /** @nullable */
+  matchDate?: string | null;
   status: MatchStatus;
   round: string;
   /** @nullable */
@@ -192,7 +193,8 @@ export interface MatchInput {
   homeScore?: number | null;
   /** @nullable */
   awayScore?: number | null;
-  matchDate: string;
+  /** @nullable */
+  matchDate?: string | null;
   status?: MatchInputStatus;
   round: string;
   /** @nullable */
@@ -231,7 +233,8 @@ export interface MatchUpdate {
   homeScore?: number | null;
   /** @nullable */
   awayScore?: number | null;
-  matchDate?: string;
+  /** @nullable */
+  matchDate?: string | null;
   status?: MatchUpdateStatus;
   round?: string;
   /** @nullable */

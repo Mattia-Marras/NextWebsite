@@ -18,7 +18,7 @@ interface MatchRow extends RowDataPacket {
   away_team_name: string;
   home_score: number | null;
   away_score: number | null;
-  match_date: Date | string;
+  match_date: Date | string | null;
   status: MatchStatus;
   round_name: string;
   venue: string | null;
@@ -50,7 +50,7 @@ export interface OfficialMatch {
   league: LeagueSlug;
   homeScore: number | null;
   awayScore: number | null;
-  matchDate: string;
+  matchDate: string | null;
   status: MatchStatus;
   round: string;
   venue: string | null;
@@ -71,7 +71,7 @@ export function ensureCompetitionSchema(): Promise<void> {
           away_team_name VARCHAR(128) NOT NULL,
           home_score INT NULL,
           away_score INT NULL,
-          match_date DATETIME NOT NULL,
+          match_date DATETIME NULL,
           status ENUM('scheduled','live','finished') NOT NULL DEFAULT 'scheduled',
           round_name VARCHAR(128) NOT NULL,
           venue VARCHAR(255) NULL,
@@ -82,6 +82,13 @@ export function ensureCompetitionSchema(): Promise<void> {
           INDEX website_matches_slug_status_date_idx (league_slug, status, match_date),
           CONSTRAINT website_matches_distinct_teams CHECK (home_team_name <> away_team_name)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      // Existing installations originally required a date. Allow fixtures to be created
+      // before their day and kickoff time have been announced.
+      await nextFootballPool.execute(`
+        ALTER TABLE website_matches
+        MODIFY COLUMN match_date DATETIME NULL
       `);
     })().catch((error) => {
       schemaReady = null;
@@ -199,7 +206,7 @@ async function mapMatches(rows: MatchRow[]): Promise<OfficialMatch[]> {
       homeTeam: home, awayTeam: away, server: "football", league: row.league_slug,
       homeScore: row.home_score === null ? null : Number(row.home_score),
       awayScore: row.away_score === null ? null : Number(row.away_score),
-      matchDate: iso(row.match_date), status: row.status, round: row.round_name,
+      matchDate: row.match_date == null ? null : iso(row.match_date), status: row.status, round: row.round_name,
       venue: row.venue, createdAt: iso(row.created_at),
     });
   }
@@ -216,7 +223,7 @@ export async function listOfficialMatches(filters: { slug?: LeagueSlug; status?:
   const rows = await queryFb<MatchRow[]>(`
     SELECT * FROM website_matches
     ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
-    ORDER BY match_date ${filters.ascending ? "ASC" : "DESC"}
+    ORDER BY (match_date IS NULL) ASC, match_date ${filters.ascending ? "ASC" : "DESC"}
     LIMIT ${limit}
   `, params);
   return mapMatches(rows);
@@ -231,7 +238,7 @@ export async function getOfficialMatch(id: number): Promise<OfficialMatch | null
 
 export async function createOfficialMatch(data: {
   homeTeamId: number; awayTeamId: number; league: LeagueSlug; homeScore?: number | null;
-  awayScore?: number | null; matchDate: Date; status: MatchStatus; round: string; venue?: string | null;
+  awayScore?: number | null; matchDate: Date | null; status: MatchStatus; round: string; venue?: string | null;
 }): Promise<OfficialMatch> {
   await ensureCompetitionSchema();
   const league = await resolveLeague(data.league);
@@ -253,7 +260,7 @@ export async function createOfficialMatch(data: {
 }
 
 export async function updateOfficialMatch(id: number, data: Partial<{
-  homeScore: number | null; awayScore: number | null; matchDate: Date; status: MatchStatus;
+  homeScore: number | null; awayScore: number | null; matchDate: Date | null; status: MatchStatus;
   round: string; venue: string | null;
 }>): Promise<OfficialMatch | null> {
   await ensureCompetitionSchema();

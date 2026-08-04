@@ -494,7 +494,7 @@ components:
 
     Match:
       type: object
-      required: [id, homeTeamId, awayTeamId, homeTeam, awayTeam, server, league, matchDate, status, round, createdAt]
+      required: [id, homeTeamId, awayTeamId, homeTeam, awayTeam, server, league, status, round, createdAt]
       properties:
         id:
           type: integer
@@ -517,7 +517,7 @@ components:
         awayScore:
           type: ["integer", "null"]
         matchDate:
-          type: string
+          type: ["string", "null"]
         status:
           type: string
           enum: [scheduled, live, finished]
@@ -530,7 +530,7 @@ components:
 
     MatchInput:
       type: object
-      required: [homeTeamId, awayTeamId, server, league, matchDate, round]
+      required: [homeTeamId, awayTeamId, server, league, round]
       properties:
         homeTeamId:
           type: integer
@@ -547,7 +547,7 @@ components:
         awayScore:
           type: ["integer", "null"]
         matchDate:
-          type: string
+          type: ["string", "null"]
         status:
           type: string
           enum: [scheduled, live, finished]
@@ -570,7 +570,7 @@ components:
         awayScore:
           type: ["integer", "null"]
         matchDate:
-          type: string
+          type: ["string", "null"]
         status:
           type: string
           enum: [scheduled, live, finished]

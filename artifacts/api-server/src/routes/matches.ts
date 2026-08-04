@@ -75,7 +75,7 @@ router.post("/matches", async (req, res, next) => {
       league,
       homeScore: parsed.data.homeScore ?? null,
       awayScore: parsed.data.awayScore ?? null,
-      matchDate: new Date(parsed.data.matchDate),
+      matchDate: parsed.data.matchDate ? new Date(parsed.data.matchDate) : null,
       status: (parsed.data.status ?? "scheduled") as MatchStatus,
       round: parsed.data.round,
       venue: parsed.data.venue ?? null,
@@ -104,7 +104,7 @@ router.patch("/matches/:id", async (req, res, next) => {
     const match = await updateOfficialMatch(params.data.id, {
       ...(data.homeScore !== undefined ? { homeScore: data.homeScore } : {}),
       ...(data.awayScore !== undefined ? { awayScore: data.awayScore } : {}),
-      ...(data.matchDate !== undefined ? { matchDate: new Date(data.matchDate) } : {}),
+      ...(data.matchDate !== undefined ? { matchDate: data.matchDate ? new Date(data.matchDate) : null } : {}),
       ...(data.status !== undefined ? { status: data.status as MatchStatus } : {}),
       ...(data.round !== undefined ? { round: data.round } : {}),
       ...(data.venue !== undefined ? { venue: data.venue } : {}),

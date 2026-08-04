@@ -16,7 +16,8 @@ export interface MatchUpdate {
   homeScore?: number | null;
   /** @nullable */
   awayScore?: number | null;
-  matchDate?: string;
+  /** @nullable */
+  matchDate?: string | null;
   status?: MatchUpdateStatus;
   round?: string;
   /** @nullable */

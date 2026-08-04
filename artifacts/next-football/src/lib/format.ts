@@ -1,6 +1,7 @@
 import { format, parseISO } from "date-fns";
 
-export function formatDate(dateString: string) {
+export function formatDate(dateString: string | null | undefined) {
+  if (!dateString) return "Date TBA";
   try {
     return format(parseISO(dateString), "MMM d, yyyy");
   } catch {
@@ -8,7 +9,8 @@ export function formatDate(dateString: string) {
   }
 }
 
-export function formatTime(dateString: string) {
+export function formatTime(dateString: string | null | undefined) {
+  if (!dateString) return "Time TBA";
   try {
     return format(parseISO(dateString), "HH:mm");
   } catch {
@@ -20,7 +22,8 @@ export function formatTime(dateString: string) {
  * A 12:00 kickoff is the internal placeholder used when the date is known
  * but the real kickoff time has not been announced.
  */
-export function isMatchTimeTba(dateString: string) {
+export function isMatchTimeTba(dateString: string | null | undefined) {
+  if (!dateString) return true;
   try {
     return format(parseISO(dateString), "HH:mm") === "12:00";
   } catch {
@@ -28,7 +31,8 @@ export function isMatchTimeTba(dateString: string) {
   }
 }
 
-export function formatDateTime(dateString: string) {
+export function formatDateTime(dateString: string | null | undefined) {
+  if (!dateString) return "Date TBA";
   try {
     const date = parseISO(dateString);
     return isMatchTimeTba(dateString)

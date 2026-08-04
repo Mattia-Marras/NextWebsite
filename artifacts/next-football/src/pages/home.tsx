@@ -1,143 +1,98 @@
-import { useListRecentMatches, useListUpcomingMatches, useGetStatsSummary } from "@workspace/api-client-react";
-import { MatchCard } from "@/components/match-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { useListRecentMatches, useListUpcomingMatches } from "@workspace/api-client-react";
+import { ArrowRight, CalendarDays, Trophy } from "lucide-react";
 import { Link, useParams } from "wouter";
-import logoPath from "@assets/NEXTLogo2_2_1782769726637.png";
-import { ArrowRight, Trophy, Activity, CalendarDays, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
+import { MatchCard } from "@/components/match-card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getLeagueTheme } from "@/lib/league-theme";
+import { getNextFootballLeague } from "@/lib/nextfb-api";
+
+const LEAGUE_IDS: Record<string, number> = { main: 1, lower: 2 };
 
 export function Home() {
   const { server = "football", league = "main" } = useParams<{ server: string; league: string }>();
-
-  const serverName = server === "blockball" ? "Blockball" : "NEXT Football";
-  const leagueName = league === "lower" ? "Lower League" : "Main League";
   const theme = getLeagueTheme(server, league);
+  const leagueId = server === "football" ? LEAGUE_IDS[league] : undefined;
+  const leagueName = league === "lower" ? "Lower League" : "Main League";
 
-  const { data: recentMatches, isLoading: isLoadingRecent } = useListRecentMatches({ server: server as any, league: league as any });
-  const { data: upcomingMatches, isLoading: isLoadingUpcoming } = useListUpcomingMatches({ server: server as any, league: league as any });
-  const { data: stats, isLoading: isLoadingStats } = useGetStatsSummary({ server: server as any, league: league as any });
-
-  const topMatches = recentMatches?.slice(0, 4) || [];
-  const nextMatches = upcomingMatches?.slice(0, 4) || [];
+  const recent = useListRecentMatches({ server: server as any, league: league as any });
+  const upcoming = useListUpcomingMatches({ server: server as any, league: league as any });
+  const standings = useQuery({
+    queryKey: ["nextfb", "league", leagueId],
+    queryFn: () => getNextFootballLeague(leagueId!),
+    enabled: Boolean(leagueId),
+  });
 
   return (
-    <div className="flex flex-col gap-12 pb-12">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-background pt-16 pb-20 lg:pt-24 lg:pb-28 border-b border-border">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3" style={{ backgroundColor: `hsl(${theme.hsl} / 0.12)` }} />
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay" />
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="flex-1 text-center md:text-left">
-              <Badge variant="outline" className="mb-6 px-3 py-1 font-display tracking-widest uppercase" style={{ color: theme.hex, borderColor: `${theme.hex}55`, backgroundColor: `${theme.hex}11` }}>
-                Official League Platform
-              </Badge>
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold uppercase tracking-tighter leading-none mb-6">
-                {serverName}<br />
-                <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${theme.hex}, #fff, ${theme.hex})` }}>
-                  {leagueName}
-                </span>
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto md:mx-0 font-sans mb-8">
-                The underground fast-moving football league. High stakes, electric energy, and raw talent. Follow the action live.
-              </p>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                <Link href={`/${server}/${league}/results`} className="inline-flex items-center justify-center rounded-md text-sm font-medium h-12 px-8 font-display uppercase tracking-widest text-black shadow transition-colors" style={{ backgroundColor: theme.hex }}>
-                  Latest Results
-                </Link>
-                <Link href={`/${server}/${league}/standings`} className="inline-flex items-center justify-center rounded-md text-sm font-medium h-12 px-8 font-display uppercase tracking-widest border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors">
-                  View Standings
-                </Link>
-              </div>
+    <div className="pb-16">
+      <section className="border-b border-border bg-card/30">
+        <div className="container mx-auto px-4 py-12 md:py-16">
+          <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="font-display text-xs uppercase tracking-[0.32em]" style={{ color: theme.hex }}>NEXT Football League</p>
+              <h1 className="mt-3 font-display text-5xl font-bold uppercase tracking-tight md:text-7xl">{leagueName}</h1>
+              <p className="mt-4 max-w-2xl text-muted-foreground">One clear overview for standings, upcoming fixtures and recent results.</p>
             </div>
-            <div className="flex-1 flex justify-center md:justify-end">
-              <img src={logoPath} alt="NEXT Football Logo" className="w-64 md:w-80 lg:w-96 mix-blend-lighten animate-in zoom-in duration-1000" style={{ filter: `drop-shadow(0 0 30px ${theme.hex}55)` }} />
+
+            <div className="flex flex-wrap gap-3">
+              <Link href={`/${server}/main`}><Button variant={league === "main" ? "default" : "outline"}>Main League</Button></Link>
+              <Link href={`/${server}/lower`}><Button variant={league === "lower" ? "default" : "outline"}>Lower League</Button></Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Strip */}
-      <section className="container mx-auto px-4 -mt-16 relative z-20">
-        <div className="bg-card border border-border rounded-xl shadow-2xl p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 divide-x divide-border/50">
-          <StatBox icon={<Trophy className="w-5 h-5" style={{ color: theme.hex }} />} label="Total Matches" value={isLoadingStats ? <Skeleton className="h-8 w-16 mx-auto" /> : stats?.totalMatches} accentHex={theme.hex} />
-          <StatBox icon={<Activity className="w-5 h-5" style={{ color: theme.hex }} />} label="Goals Scored" value={isLoadingStats ? <Skeleton className="h-8 w-16 mx-auto" /> : stats?.totalGoals} accentHex={theme.hex} />
-          <StatBox icon={<Users className="w-5 h-5" style={{ color: theme.hex }} />} label="Teams" value={isLoadingStats ? <Skeleton className="h-8 w-16 mx-auto" /> : stats?.teamsCount} accentHex={theme.hex} />
-          <StatBox icon={<CalendarDays className="w-5 h-5" style={{ color: theme.hex }} />} label="Upcoming" value={isLoadingStats ? <Skeleton className="h-8 w-16 mx-auto" /> : stats?.upcomingCount} accentHex={theme.hex} />
+      <main className="container mx-auto space-y-10 px-4 pt-10">
+        <section className="rounded-2xl border border-border bg-card/70 p-5 md:p-7">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">League table</p>
+              <h2 className="mt-1 font-display text-2xl font-bold uppercase">Standings</h2>
+            </div>
+            <Link href={`/${server}/${league}/standings`} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider" style={{ color: theme.hex }}>Full standings <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+
+          <div className="overflow-x-auto">
+            <div className="min-w-[620px]">
+              <div className="grid grid-cols-[56px_1fr_repeat(5,64px)] border-b border-border px-3 pb-3 text-xs uppercase tracking-widest text-muted-foreground">
+                <span>#</span><span>Team</span><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">GD</span><span className="text-center">Pts</span>
+              </div>
+              {standings.isLoading ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="my-2 h-14 w-full" />) : standings.data?.standings.slice(0, 6).map((row) => (
+                <div key={row.teamName} className="grid grid-cols-[56px_1fr_repeat(5,64px)] items-center border-b border-border/60 px-3 py-4 last:border-0">
+                  <span className="font-display text-lg font-bold" style={{ color: row.position <= 3 ? theme.hex : undefined }}>{row.position}</span>
+                  <span className="font-display font-semibold uppercase tracking-wide">{row.teamName}</span>
+                  <span className="text-center text-muted-foreground">{row.played}</span>
+                  <span className="text-center text-muted-foreground">{row.won}</span>
+                  <span className="text-center text-muted-foreground">{row.drawn}</span>
+                  <span className="text-center text-muted-foreground">{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</span>
+                  <span className="text-center font-bold" style={{ color: theme.hex }}>{row.points}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <div className="grid gap-8 lg:grid-cols-2">
+          <MatchSection title="Upcoming fixtures" icon={<CalendarDays className="h-5 w-5" />} href={`/${server}/${league}/fixtures`} loading={upcoming.isLoading} matches={upcoming.data?.slice(0, 3) ?? []} empty="No upcoming fixtures." compact />
+          <MatchSection title="Recent results" icon={<Trophy className="h-5 w-5" />} href={`/${server}/${league}/results`} loading={recent.isLoading} matches={recent.data?.slice(0, 3) ?? []} empty="No recent results." />
         </div>
-      </section>
-
-      <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Results */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-display font-bold uppercase tracking-wider flex items-center gap-3">
-              <span className="w-3 h-8 block rounded-sm" style={{ backgroundColor: theme.hex }}></span>
-              Matchday Results
-            </h2>
-            <Link href={`/${server}/${league}/results`} className="font-display uppercase tracking-widest text-sm flex items-center gap-1 group transition-colors hover:opacity-80" style={{ color: theme.hex }}>
-              All Results <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {isLoadingRecent ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full rounded-lg" />)
-            ) : topMatches.length > 0 ? (
-              topMatches.map(match => (
-                <MatchCard key={match.id} match={match} />
-              ))
-            ) : (
-              <div className="py-12 text-center text-muted-foreground bg-card rounded-lg border border-dashed border-border">
-                No recent matches found.
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Upcoming Fixtures */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-display font-bold uppercase tracking-wider flex items-center gap-3">
-              <span className="w-3 h-8 bg-muted-foreground block rounded-sm"></span>
-              Up Next
-            </h2>
-            <Link href={`/${server}/${league}/fixtures`} className="font-display uppercase tracking-widest text-sm flex items-center gap-1 group transition-colors hover:opacity-80" style={{ color: theme.hex }}>
-              All Fixtures <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {isLoadingUpcoming ? (
-              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full rounded-lg" />)
-            ) : nextMatches.length > 0 ? (
-              nextMatches.map(match => (
-                <MatchCard key={match.id} match={match} variant="compact" />
-              ))
-            ) : (
-              <div className="py-12 text-center text-muted-foreground bg-card rounded-lg border border-dashed border-border">
-                No upcoming matches scheduled.
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
+      </main>
     </div>
   );
 }
 
-function StatBox({ icon, label, value, accentHex }: { icon: React.ReactNode; label: string; value: React.ReactNode; accentHex: string }) {
+function MatchSection({ title, icon, href, loading, matches, empty, compact = false }: { title: string; icon: React.ReactNode; href: string; loading: boolean; matches: any[]; empty: string; compact?: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-4">
-      <div className="mb-2 p-2 rounded-full" style={{ backgroundColor: `${accentHex}18` }}>
-        {icon}
+    <section className="rounded-2xl border border-border bg-card/70 p-5 md:p-7">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase">{icon}{title}</h2>
+        <Link href={href} className="text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground">View all</Link>
       </div>
-      <div className="text-3xl md:text-4xl font-display font-bold text-foreground mb-1">{value}</div>
-      <div className="text-xs uppercase tracking-widest text-muted-foreground font-display">{label}</div>
-    </div>
+      <div className="space-y-3">
+        {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-36 w-full" />) : matches.length ? matches.map((match) => <MatchCard key={match.id} match={match} variant={compact ? "compact" : undefined} />) : <div className="rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">{empty}</div>}
+      </div>
+    </section>
   );
 }

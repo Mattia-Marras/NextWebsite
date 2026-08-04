@@ -408,8 +408,13 @@ function getPositionStyle(position: number): {
 }
 
 export function FootballLeaderboards() {
+  const initialLeaderboard: LeaderboardType =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "ranked"
+      ? "ranked"
+      : "level";
+
   const [activeLeaderboard, setActiveLeaderboard] =
-    useState<LeaderboardType>("level");
+    useState<LeaderboardType>(initialLeaderboard);
 
   const [page, setPage] = useState(0);
 

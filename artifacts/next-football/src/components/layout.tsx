@@ -1,12 +1,11 @@
 import { Link, useLocation } from "wouter";
 import logoPath from "@assets/NEXTLogo2_2_1782769726637.png";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -14,206 +13,101 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getLeagueTheme } from "@/lib/league-theme";
 
-interface LayoutProps {
-  children: React.ReactNode;
+interface LayoutProps { children: React.ReactNode; }
+
+function parseLeagueFromPath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  return {
+    server: parts[0] === "blockball" ? "blockball" : "football",
+    league: parts[1] === "lower" ? "lower" : "main",
+  };
 }
 
-function parseLeagueFromPath(path: string): { server: string; league: string } {
-  const parts = path.split("/").filter(Boolean);
-  const server = parts[0] ?? "football";
-  const league = parts[1] ?? "main";
-  return { server, league };
-}
+const footballLinks = [
+  { label: "Ranked", href: "/football/leaderboards?tab=ranked" },
+  { label: "League", href: "/football/main" },
+  { label: "Player search", href: "/football/players" },
+  { label: "Leaderboards", href: "/football/leaderboards" },
+];
 
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const { server, league } = parseLeagueFromPath(location);
   const theme = getLeagueTheme(server, league);
 
-  const getIsActive = (s: string) => location.startsWith(`/${s}`);
-
   return (
-    <div
-      className="min-h-[100dvh] flex flex-col bg-background text-foreground dark"
-      style={{ "--primary": theme.hsl } as React.CSSProperties}
-    >
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-[100dvh] flex flex-col bg-background text-foreground dark" style={{ "--primary": theme.hsl } as React.CSSProperties}>
+      <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-xl">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-3">
-            <img src={logoPath} alt="NEXT Football" className="h-10 w-auto mix-blend-lighten" />
-            <span className="font-display font-bold text-2xl uppercase tracking-wider hidden sm:block">
-              NEXT <span className="text-primary">Football</span>
+            <img src={logoPath} alt="NEXT Football" className="h-9 w-auto mix-blend-lighten" />
+            <span className="hidden font-display text-xl font-bold uppercase tracking-wider sm:block">
+              NEXT <span className="text-[#39ff14]">Football</span>
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden items-center gap-2 md:flex">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className={`font-display font-semibold uppercase tracking-wider ${getIsActive("football") ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"}`}>
-                  Football <ChevronDown className="ml-1 h-4 w-4" />
+                <Button variant="ghost" className="font-display font-semibold uppercase tracking-wider text-[#39ff14]">
+                  NextFootball <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-card border-border">
-                <DropdownMenuLabel className="font-display uppercase tracking-widest text-xs" style={{ color: getLeagueTheme("football", "main").hex }}>
-                  Main League
-                </DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/main">Dashboard</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/main/results">Results</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/main/fixtures">Fixtures</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/main/standings">Standings</Link></DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuLabel className="font-display uppercase tracking-widest text-xs" style={{ color: getLeagueTheme("football", "lower").hex }}>
-                  Lower League
-                </DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/lower">Dashboard</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/lower/results">Results</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/lower/fixtures">Fixtures</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/football/lower/standings">Standings</Link></DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuLabel className="font-display uppercase tracking-widest text-xs text-[#39ff14]">
-                  NextFootball
-                </DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/football/players">Player Profiles</Link>
+              <DropdownMenuContent align="end" className="w-56 border-border bg-card">
+                <DropdownMenuLabel className="font-display text-xs uppercase tracking-[0.2em] text-[#39ff14]">Choose section</DropdownMenuLabel>
+                {footballLinks.map((item) => (
+                  <DropdownMenuItem key={item.label} asChild className="cursor-pointer">
+                    <Link href={item.href}>{item.label}</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/football/leaderboards">Leaderboards</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="font-display text-xs uppercase tracking-[0.2em] text-muted-foreground">League division</DropdownMenuLabel>
+                <DropdownMenuItem asChild><Link href="/football/main">Main League</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/football/lower">Lower League</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className={`font-display font-semibold uppercase tracking-wider ${getIsActive("blockball") ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"}`}>
+                <Button variant="ghost" className="font-display font-semibold uppercase tracking-wider text-muted-foreground">
                   Blockball <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-card border-border">
-                <DropdownMenuLabel className="font-display uppercase tracking-widest text-xs" style={{ color: getLeagueTheme("blockball", "main").hex }}>
-                  Main League
-                </DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/main">Dashboard</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/main/results">Results</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/main/fixtures">Fixtures</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/main/standings">Standings</Link></DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuLabel className="font-display uppercase tracking-widest text-xs" style={{ color: getLeagueTheme("blockball", "lower").hex }}>
-                  Lower League
-                </DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/lower">Dashboard</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/lower/results">Results</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/lower/fixtures">Fixtures</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer"><Link href="/blockball/lower/standings">Standings</Link></DropdownMenuItem>
-                </DropdownMenuGroup>
+              <DropdownMenuContent align="end" className="w-52 border-border bg-card">
+                <DropdownMenuLabel className="font-display text-xs uppercase tracking-[0.2em] text-muted-foreground">Coming later</DropdownMenuLabel>
+                <DropdownMenuItem disabled>Ranked</DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/blockball/main">League</Link></DropdownMenuItem>
+                <DropdownMenuItem disabled>Player search</DropdownMenuItem>
+                <DropdownMenuItem disabled>Leaderboards</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-foreground hover:text-primary"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen((open) => !open)}>
+            {mobileMenuOpen ? <X /> : <Menu />}
           </Button>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-card px-4 py-4 flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <div className="font-display font-bold uppercase tracking-widest text-sm mb-1" style={{ color: getLeagueTheme("football", "main").hex }}>Football — Main League</div>
-              <div className="pl-4 flex flex-col gap-2">
-                {["", "/results", "/fixtures", "/standings"].map((p) => (
-                  <Link key={p} href={`/football/main${p}`} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-primary transition-colors">
-                    {p === "" ? "Dashboard" : p.slice(1).charAt(0).toUpperCase() + p.slice(2)}
-                  </Link>
-                ))}
-              </div>
-              <div className="font-display font-bold uppercase tracking-widest text-sm mb-1 mt-2" style={{ color: getLeagueTheme("football", "lower").hex }}>Football — Lower League</div>
-              <div className="pl-4 flex flex-col gap-2">
-                {["", "/results", "/fixtures", "/standings"].map((p) => (
-                  <Link key={p} href={`/football/lower${p}`} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-primary transition-colors">
-                    {p === "" ? "Dashboard" : p.slice(1).charAt(0).toUpperCase() + p.slice(2)}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-3 border-t border-border/50 pt-3">
-                <div className="mb-2 font-display text-sm font-bold uppercase tracking-widest text-[#39ff14]">
-                  NextFootball
-                </div>
-                <div className="flex flex-col gap-2 pl-4">
-                  <Link
-                    href="/football/players"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-muted-foreground transition-colors hover:text-[#39ff14]"
-                  >
-                    Player Profiles
-                  </Link>
-                  <Link
-                    href="/football/leaderboards"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-muted-foreground transition-colors hover:text-[#39ff14]"
-                  >
-                    Leaderboards
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="h-px bg-border/50" />
-
-            <div className="flex flex-col gap-2">
-              <div className="font-display font-bold uppercase tracking-widest text-sm mb-1" style={{ color: getLeagueTheme("blockball", "main").hex }}>Blockball — Main League</div>
-              <div className="pl-4 flex flex-col gap-2">
-                {["", "/results", "/fixtures", "/standings"].map((p) => (
-                  <Link key={p} href={`/blockball/main${p}`} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-primary transition-colors">
-                    {p === "" ? "Dashboard" : p.slice(1).charAt(0).toUpperCase() + p.slice(2)}
-                  </Link>
-                ))}
-              </div>
-              <div className="font-display font-bold uppercase tracking-widest text-sm mb-1 mt-2" style={{ color: getLeagueTheme("blockball", "lower").hex }}>Blockball — Lower League</div>
-              <div className="pl-4 flex flex-col gap-2">
-                {["", "/results", "/fixtures", "/standings"].map((p) => (
-                  <Link key={p} href={`/blockball/lower${p}`} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-primary transition-colors">
-                    {p === "" ? "Dashboard" : p.slice(1).charAt(0).toUpperCase() + p.slice(2)}
-                  </Link>
-                ))}
-              </div>
+          <div className="border-t border-border bg-card px-4 py-4 md:hidden">
+            <p className="mb-3 font-display text-xs uppercase tracking-[0.25em] text-[#39ff14]">NextFootball</p>
+            <div className="grid gap-1">
+              {footballLinks.map((item) => (
+                <Link key={item.label} href={item.href} onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
         )}
       </header>
 
-      <main className="flex-1 flex flex-col">
-        {children}
-      </main>
-
-      <footer className="border-t border-border bg-card py-8 mt-12">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex flex-col items-start gap-2">
-            <img src={logoPath} alt="NEXT Football" className="h-8 w-auto mix-blend-lighten opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500" />
-            <p className="text-muted-foreground text-sm font-display uppercase tracking-widest">
-              © {new Date().getFullYear()} NEXT Football League. All rights reserved.
-            </p>
-          </div>
-          <Link href="/admin" data-testid="link-admin-footer">
-            <Button variant="outline" size="sm" className="font-display uppercase tracking-widest text-xs text-muted-foreground border-border hover:text-primary hover:border-primary">
-              Admin
-            </Button>
-          </Link>
+      <main className="flex-1">{children}</main>
+      <footer className="border-t border-border bg-card/40">
+        <div className="container mx-auto flex flex-col gap-3 px-4 py-8 text-xs uppercase tracking-widest text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <span>© 2026 NEXT Football League</span>
+          <Link href="/admin" className="hover:text-foreground">Admin</Link>
         </div>
       </footer>
     </div>

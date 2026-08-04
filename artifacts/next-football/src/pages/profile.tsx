@@ -41,6 +41,7 @@ import {
   type GameMode,
   type NextFootballPlayerPage,
   getNextFootballPlayer,
+  getPlayerMmrHistory,
 } from "@/lib/nextfb-api";
 
 const PROFILE_ACCENT = "#39ff14";
@@ -602,6 +603,11 @@ function RankedSection({
   player: NextFootballPlayerPage;
 }) {
   const ranked = player.ranked;
+  const historyQuery = useQuery({
+    queryKey: ["nextfootball-mmr-history", player.profile.uuid],
+    queryFn: () => getPlayerMmrHistory(player.profile.uuid, { limit: 30, offset: 0 }),
+    enabled: Boolean(ranked),
+  });
 
   if (!ranked) {
     return (
@@ -686,6 +692,12 @@ function RankedSection({
         </CardContent>
       </Card>
 
+      <MmrTrendCard
+        currentMmr={ranked.mmr}
+        entries={historyQuery.data?.data ?? []}
+        loading={historyQuery.isLoading}
+      />
+
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="MMR" value={ranked.mmr} />
         <StatCard label="Wins" value={ranked.wins} />
@@ -708,6 +720,73 @@ function RankedSection({
         />
       </div>
     </div>
+  );
+}
+
+function MmrTrendCard({
+  currentMmr,
+  entries,
+  loading,
+}: {
+  currentMmr: number;
+  entries: Array<{ mmr: number; createdAt: string }>;
+  loading: boolean;
+}) {
+  const ordered = [...entries].reverse();
+  const values = ordered.length > 0 ? ordered.map((entry) => entry.mmr) : [currentMmr];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(1, max - min);
+  const width = 900;
+  const height = 220;
+  const padding = 22;
+  const points = values.map((value, index) => {
+    const x = values.length === 1 ? width / 2 : padding + (index / (values.length - 1)) * (width - padding * 2);
+    const y = height - padding - ((value - min) / range) * (height - padding * 2);
+    return `${x},${y}`;
+  }).join(" ");
+  const change = values.length > 1 ? values[values.length - 1] - values[0] : 0;
+
+  return (
+    <Card className="overflow-hidden border-border bg-card/70">
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <CardTitle className="font-display text-2xl uppercase tracking-wider">MMR trend</CardTitle>
+          <CardDescription className="mt-1">Latest competitive rating changes.</CardDescription>
+        </div>
+        <Badge variant="outline" style={{ color: change >= 0 ? PROFILE_ACCENT : undefined, borderColor: change >= 0 ? `${PROFILE_ACCENT}55` : undefined }}>
+          {change > 0 ? "+" : ""}{change} MMR
+        </Badge>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <Skeleton className="h-56 w-full rounded-xl" />
+        ) : (
+          <div className="rounded-xl border border-border bg-background/50 p-3">
+            <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full" role="img" aria-label="MMR history chart">
+              <defs>
+                <linearGradient id="mmrArea" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor={PROFILE_ACCENT} stopOpacity="0.28" />
+                  <stop offset="100%" stopColor={PROFILE_ACCENT} stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" opacity="0.15" />
+              {values.length > 1 && <polygon points={`${padding},${height-padding} ${points} ${width-padding},${height-padding}`} fill="url(#mmrArea)" />}
+              <polyline points={points} fill="none" stroke={PROFILE_ACCENT} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+              {values.map((value, index) => {
+                const [x, y] = points.split(" ")[index].split(",");
+                return <circle key={`${value}-${index}`} cx={x} cy={y} r="5" fill={PROFILE_ACCENT} />;
+              })}
+            </svg>
+            <div className="mt-2 flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">
+              <span>{ordered[0]?.createdAt ? new Date(ordered[0].createdAt).toLocaleDateString() : "First record"}</span>
+              <span>{min}–{max} MMR</span>
+              <span>{ordered.at(-1)?.createdAt ? new Date(ordered.at(-1)!.createdAt).toLocaleDateString() : "Current"}</span>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

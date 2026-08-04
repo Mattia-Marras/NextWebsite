@@ -32,6 +32,8 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 
+import { getRankTheme } from "@/lib/rank-colors";
+
 import {
   type CasinoLeaderboardEntry,
   type PaginatedResult,
@@ -87,6 +89,8 @@ interface LeaderboardRow {
   secondaryLabel?: string;
   secondaryValue?: number | string;
   badge?: string;
+  rankName?: RankedLeaderboardEntry["rank"]["name"];
+  secondaryTone?: "positive" | "negative" | "neutral";
 }
 
 const LEADERBOARD_OPTIONS: Array<{
@@ -332,6 +336,7 @@ function createRows(
         secondaryLabel: "Record",
         secondaryValue: `${player.wins}W · ${player.losses}L`,
         badge: player.rank.displayWithDivision,
+        rankName: player.rank.name,
       };
     }
 
@@ -368,6 +373,12 @@ function createRows(
         player.totalNet > 0
           ? `+${formatNumber(player.totalNet)}`
           : formatNumber(player.totalNet),
+      secondaryTone:
+        player.totalNet > 0
+          ? "positive"
+          : player.totalNet < 0
+            ? "negative"
+            : "neutral",
     };
   });
 }
@@ -685,6 +696,7 @@ function LeaderboardEntry({
 
   const displayName =
     row.username ?? shortenUuid(row.uuid);
+  const rankTheme = row.rankName ? getRankTheme(row.rankName) : null;
 
   return (
     <Link
@@ -723,7 +735,11 @@ function LeaderboardEntry({
               <Badge
                 variant="outline"
                 className="hidden sm:inline-flex"
-                style={{
+                style={rankTheme ? {
+                  color: rankTheme.text,
+                  borderColor: rankTheme.border,
+                  backgroundColor: rankTheme.background,
+                } : {
                   color: FOOTBALL_ACCENT,
                   borderColor: `${FOOTBALL_ACCENT}44`,
                 }}
@@ -745,13 +761,22 @@ function LeaderboardEntry({
           {row.secondaryLabel &&
             row.secondaryValue !==
               undefined && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {row.secondaryLabel}:{" "}
-                {typeof row.secondaryValue ===
-                "number"
-                  ? formatNumber(
-                      row.secondaryValue,
-                    )
+              <p
+                className="mt-1 text-xs font-medium"
+                style={{
+                  color:
+                    row.secondaryTone === "positive"
+                      ? "#4ade80"
+                      : row.secondaryTone === "negative"
+                        ? "#fb7185"
+                        : row.secondaryTone === "neutral"
+                          ? "#cbd5e1"
+                          : undefined,
+                }}
+              >
+                <span className="text-muted-foreground">{row.secondaryLabel}: </span>
+                {typeof row.secondaryValue === "number"
+                  ? formatNumber(row.secondaryValue)
                   : row.secondaryValue}
               </p>
             )}

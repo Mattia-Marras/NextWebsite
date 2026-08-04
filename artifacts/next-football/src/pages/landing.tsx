@@ -24,7 +24,7 @@ export function Landing() {
                   <Layers3 className="h-6 w-6" />
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  {mode.available ? <><Check className="h-3 w-3" /> Available</> : <><Clock3 className="h-3 w-3" /> Expanding</>}
+                  {mode.available ? <><Check className="h-3 w-3" /> Available</> : <><Clock3 className="h-3 w-3" /> Coming soon</>}
                 </span>
               </div>
 
@@ -46,14 +46,13 @@ export function Landing() {
                 </Link>
               ) : (
                 <div className="mt-7 flex h-11 items-center justify-between rounded-xl border border-white/6 bg-white/[0.02] px-4 font-display text-sm font-bold uppercase tracking-[0.12em] text-muted-foreground/60">
-                  Dedicated area coming later<Clock3 className="h-4 w-4" />
+                  Coming soon<Clock3 className="h-4 w-4" />
                 </div>
               )}
             </article>
           ))}
         </div>
 
-        <p className="mx-auto mt-7 max-w-2xl text-center text-xs leading-relaxed text-muted-foreground">New game modes can be added from one shared configuration without rebuilding the navigation structure.</p>
       </section>
     </div>
   );

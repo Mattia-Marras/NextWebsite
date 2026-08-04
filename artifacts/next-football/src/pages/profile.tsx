@@ -34,6 +34,8 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 
+import { getRankTheme } from "@/lib/rank-colors";
+
 import {
   GAME_MODES,
   NextFootballApiError,
@@ -620,6 +622,7 @@ function RankedSection({
   }
 
   const stats = ranked.stats;
+  const rankTheme = getRankTheme(ranked.rank.name);
   const winRate = calculatePercentage(
     ranked.wins,
     ranked.wins + ranked.losses,
@@ -633,10 +636,16 @@ function RankedSection({
         icon={<Trophy className="h-6 w-6" />}
       />
 
-      <Card className="overflow-hidden border-border bg-card/70">
+      <Card
+        className="overflow-hidden bg-card/75"
+        style={{
+          borderColor: rankTheme.border,
+          boxShadow: `0 18px 70px ${rankTheme.glow}`,
+        }}
+      >
         <div
           className="h-1 w-full"
-          style={{ backgroundColor: PROFILE_ACCENT }}
+          style={{ backgroundColor: rankTheme.text }}
         />
 
         <CardContent className="p-6 md:p-8">
@@ -647,12 +656,22 @@ function RankedSection({
               </p>
 
               <div className="mt-3 flex items-center gap-4">
-                <span className="text-4xl">
+                <span
+                  className="flex h-16 w-16 items-center justify-center rounded-2xl border text-4xl"
+                  style={{
+                    color: rankTheme.text,
+                    borderColor: rankTheme.border,
+                    backgroundColor: rankTheme.background,
+                  }}
+                >
                   {ranked.rank.symbol}
                 </span>
 
                 <div>
-                  <h3 className="font-display text-3xl font-bold uppercase">
+                  <h3
+                    className="font-display text-3xl font-bold uppercase"
+                    style={{ color: rankTheme.text }}
+                  >
                     {ranked.rank.displayWithDivision}
                   </h3>
 
@@ -740,48 +759,80 @@ function MmrTrendCard({
   const width = 900;
   const height = 220;
   const padding = 22;
-  const points = values.map((value, index) => {
+  const coordinates = values.map((value, index) => {
     const x = values.length === 1 ? width / 2 : padding + (index / (values.length - 1)) * (width - padding * 2);
     const y = height - padding - ((value - min) / range) * (height - padding * 2);
-    return `${x},${y}`;
-  }).join(" ");
-  const change = values.length > 1 ? values[values.length - 1] - values[0] : 0;
+    return { x, y, value };
+  });
+  const points = coordinates.map(({ x, y }) => `${x},${y}`).join(" ");
+  const first = values[0];
+  const latest = values[values.length - 1];
+  const change = values.length > 1 ? latest - first : 0;
+  const changeColor = change > 0 ? "#4ade80" : change < 0 ? "#fb7185" : "#cbd5e1";
 
   return (
-    <Card className="overflow-hidden border-border bg-card/70">
+    <Card className="overflow-hidden border-border bg-card/70 transition hover:border-white/15">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div>
           <CardTitle className="font-display text-2xl uppercase tracking-wider">MMR trend</CardTitle>
-          <CardDescription className="mt-1">Latest competitive rating changes.</CardDescription>
+          <CardDescription className="mt-1">Recent competitive rating progression.</CardDescription>
         </div>
-        <Badge variant="outline" style={{ color: change >= 0 ? PROFILE_ACCENT : undefined, borderColor: change >= 0 ? `${PROFILE_ACCENT}55` : undefined }}>
+        <Badge
+          variant="outline"
+          style={{
+            color: changeColor,
+            borderColor: `${changeColor}66`,
+            backgroundColor: `${changeColor}14`,
+          }}
+        >
           {change > 0 ? "+" : ""}{change} MMR
         </Badge>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-56 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
         ) : (
-          <div className="rounded-xl border border-border bg-background/50 p-3">
-            <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full" role="img" aria-label="MMR history chart">
-              <defs>
-                <linearGradient id="mmrArea" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor={PROFILE_ACCENT} stopOpacity="0.28" />
-                  <stop offset="100%" stopColor={PROFILE_ACCENT} stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" opacity="0.15" />
-              {values.length > 1 && <polygon points={`${padding},${height-padding} ${points} ${width-padding},${height-padding}`} fill="url(#mmrArea)" />}
-              <polyline points={points} fill="none" stroke={PROFILE_ACCENT} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-              {values.map((value, index) => {
-                const [x, y] = points.split(" ")[index].split(",");
-                return <circle key={`${value}-${index}`} cx={x} cy={y} r="5" fill={PROFILE_ACCENT} />;
-              })}
-            </svg>
-            <div className="mt-2 flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">
-              <span>{ordered[0]?.createdAt ? new Date(ordered[0].createdAt).toLocaleDateString() : "First record"}</span>
-              <span>{min}–{max} MMR</span>
-              <span>{ordered.at(-1)?.createdAt ? new Date(ordered.at(-1)!.createdAt).toLocaleDateString() : "Current"}</span>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <CompactStat label="Starting" value={first} />
+              <CompactStat label="Current" value={latest} emphasized />
+              <CompactStat label="Peak" value={max} />
+              <CompactStat
+                label="Change"
+                value={`${change > 0 ? "+" : ""}${formatNumber(change)}`}
+                tone={change > 0 ? "positive" : change < 0 ? "negative" : "neutral"}
+              />
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/50 p-3 transition hover:border-white/15">
+              <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full overflow-visible" role="img" aria-label="MMR progression chart">
+                <defs>
+                  <linearGradient id="mmrArea" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor={PROFILE_ACCENT} stopOpacity="0.3" />
+                    <stop offset="100%" stopColor={PROFILE_ACCENT} stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {[0.25, 0.5, 0.75, 1].map((part) => {
+                  const y = padding + (height - padding * 2) * part;
+                  return <line key={part} x1={padding} y1={y} x2={width - padding} y2={y} stroke="currentColor" opacity="0.08" />;
+                })}
+                {values.length > 1 && (
+                  <polygon points={`${padding},${height - padding} ${points} ${width - padding},${height - padding}`} fill="url(#mmrArea)" />
+                )}
+                <polyline points={points} fill="none" stroke={PROFILE_ACCENT} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                {coordinates.map(({ x, y, value }, index) => (
+                  <g key={`${value}-${index}`} className="group/point cursor-pointer">
+                    <circle cx={x} cy={y} r="11" fill="transparent" />
+                    <circle cx={x} cy={y} r="5" fill={PROFILE_ACCENT} className="transition-all group-hover/point:r-[8]" />
+                    <title>{`Entry ${index + 1}: ${formatNumber(value)} MMR`}</title>
+                  </g>
+                ))}
+              </svg>
+              <div className="mt-2 flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">
+                <span>Earlier</span>
+                <span>{formatNumber(min)}–{formatNumber(max)} MMR</span>
+                <span>Latest</span>
+              </div>
             </div>
           </div>
         )}
@@ -971,6 +1022,7 @@ function CasinoStatsCard({
                 : formatNumber(net)
             }
             emphasized
+            tone={net > 0 ? "positive" : net < 0 ? "negative" : "neutral"}
           />
           <CompactStat
             label="Return rate"
@@ -1260,28 +1312,36 @@ function CompactStat({
   label,
   value,
   emphasized = false,
+  tone = "default",
 }: {
   label: string;
   value: number | string;
   emphasized?: boolean;
+  tone?: "default" | "positive" | "negative" | "neutral";
 }) {
+  const toneStyle =
+    tone === "positive"
+      ? { color: "#4ade80", borderColor: "rgba(74, 222, 128, 0.38)", backgroundColor: "rgba(74, 222, 128, 0.08)" }
+      : tone === "negative"
+        ? { color: "#fb7185", borderColor: "rgba(251, 113, 133, 0.42)", backgroundColor: "rgba(251, 113, 133, 0.09)" }
+        : tone === "neutral"
+          ? { color: "#cbd5e1", borderColor: "rgba(203, 213, 225, 0.22)", backgroundColor: "rgba(203, 213, 225, 0.05)" }
+          : undefined;
+
   return (
-    <div className="rounded-lg border border-border bg-background/50 p-4">
+    <div
+      className="rounded-lg border border-border bg-background/50 p-4 transition hover:-translate-y-0.5 hover:border-white/15"
+      style={toneStyle}
+    >
       <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
 
       <p
         className="mt-2 font-display text-xl font-bold"
-        style={
-          emphasized
-            ? { color: PROFILE_ACCENT }
-            : undefined
-        }
+        style={toneStyle ? { color: toneStyle.color } : emphasized ? { color: PROFILE_ACCENT } : undefined}
       >
-        {typeof value === "number"
-          ? formatNumber(value)
-          : value}
+        {typeof value === "number" ? formatNumber(value) : value}
       </p>
     </div>
   );

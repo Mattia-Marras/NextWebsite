@@ -420,6 +420,8 @@ export const UpdateMatchParams = zod.object({
 })
 
 export const UpdateMatchBody = zod.object({
+  "homeTeamId": zod.number().optional(),
+  "awayTeamId": zod.number().optional(),
   "server": zod.enum(['football', 'blockball']).optional(),
   "league": zod.enum(['main', 'lower']).optional(),
   "homeScore": zod.number().nullish(),

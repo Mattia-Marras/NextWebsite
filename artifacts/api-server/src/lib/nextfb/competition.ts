@@ -36,7 +36,7 @@ export interface OfficialTeam {
   primaryColor: string;
   secondaryColor: string;
   logoInitials: string;
-  logoUrl: null;
+  logoUrl: string | null;
   createdAt: string;
 }
 
@@ -113,9 +113,21 @@ function initials(name: string): string {
   return raw.slice(0, 3).toUpperCase();
 }
 
-function shortName(name: string): string {
-  const compact = name.replace(/[^a-zA-Z0-9]/g, "");
-  return (compact || name).slice(0, 12);
+function displayTeamName(name: string): string {
+  return name
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function logoFileName(name: string): string {
+  return name
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }
 
 function teamKey(leagueId: number, name: string): string {
@@ -127,13 +139,13 @@ function toTeam(leagueId: number, league: LeagueSlug, name: string): OfficialTea
     id: stablePositiveId(teamKey(leagueId, name)),
     leagueId,
     name,
-    shortName: shortName(name),
+    shortName: displayTeamName(name),
     server: "football",
     league,
     primaryColor: league === "main" ? "#70e000" : "#ff7b00",
     secondaryColor: "#0b0f14",
     logoInitials: initials(name),
-    logoUrl: null,
+    logoUrl: `/team-logos/${logoFileName(name)}.png`,
     createdAt: new Date(0).toISOString(),
   };
 }
@@ -260,12 +272,32 @@ export async function createOfficialMatch(data: {
 }
 
 export async function updateOfficialMatch(id: number, data: Partial<{
+  homeTeamId: number; awayTeamId: number; league: LeagueSlug;
   homeScore: number | null; awayScore: number | null; matchDate: Date | null; status: MatchStatus;
   round: string; venue: string | null;
 }>): Promise<OfficialMatch | null> {
   await ensureCompetitionSchema();
-  const assignments: string[] = [];
-  const params: Array<string | number | Date | null> = [];
+  const current = await getOfficialMatch(id);
+  if (!current) return null;
+
+  const targetLeague = data.league ?? current.league;
+  const homeId = data.homeTeamId ?? current.homeTeamId;
+  const awayId = data.awayTeamId ?? current.awayTeamId;
+  const [leagueRow, home, away] = await Promise.all([
+    resolveLeague(targetLeague),
+    getOfficialTeamById(homeId, targetLeague),
+    getOfficialTeamById(awayId, targetLeague),
+  ]);
+  if (!home || !away) throw new Error("Selected team does not belong to the selected NEXT Football league");
+  if (home.id == away.id) throw new Error("Home and away teams must be different");
+
+  const assignments: string[] = [
+    "league_id = ?",
+    "league_slug = ?",
+    "home_team_name = ?",
+    "away_team_name = ?",
+  ];
+  const params: Array<string | number | Date | null> = [leagueRow.id, targetLeague, home.name, away.name];
   if (data.homeScore !== undefined) { assignments.push("home_score = ?"); params.push(data.homeScore); }
   if (data.awayScore !== undefined) { assignments.push("away_score = ?"); params.push(data.awayScore); }
   if (data.matchDate !== undefined) { assignments.push("match_date = ?"); params.push(data.matchDate); }

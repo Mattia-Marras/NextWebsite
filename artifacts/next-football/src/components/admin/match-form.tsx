@@ -22,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MatchInputStatus } from "@workspace/api-client-react";
 import { ChevronDown, MapPin } from "lucide-react";
+import { formatTeamName } from "@/lib/team-display";
 
 const matchSchema = z
   .object({
@@ -106,10 +107,10 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
   const timeTba = form.watch("timeTba");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useListTeams({
-    server: "football",
-    league: selectedLeague,
-  });
+  const { data: teams = [], isLoading: isLoadingTeams } = useListTeams(
+    { server: "football", league: selectedLeague },
+    { query: { enabled: !matchId || Boolean(match) } },
+  );
 
   const createMatch = useCreateMatch();
   const updateMatch = useUpdateMatch();
@@ -237,7 +238,6 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                   form.setValue("awayTeamId", 0);
                 }}
                 value={field.value}
-                disabled={!!matchId}
               >
                 <FormControl>
                   <SelectTrigger><SelectValue placeholder="Select league" /></SelectTrigger>
@@ -264,7 +264,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                     <SelectTrigger><SelectValue placeholder={isLoadingTeams ? "Loading teams..." : "Select team"} /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {teams.map((team) => <SelectItem key={team.id} value={String(team.id)}>{team.name}</SelectItem>)}
+                    {teams.map((team) => <SelectItem key={team.id} value={String(team.id)}>{formatTeamName(team.name)}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -282,7 +282,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                     <SelectTrigger><SelectValue placeholder={isLoadingTeams ? "Loading teams..." : "Select team"} /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {teams.map((team) => <SelectItem key={team.id} value={String(team.id)}>{team.name}</SelectItem>)}
+                    {teams.map((team) => <SelectItem key={team.id} value={String(team.id)}>{formatTeamName(team.name)}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />

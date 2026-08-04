@@ -559,6 +559,10 @@ components:
     MatchUpdate:
       type: object
       properties:
+        homeTeamId:
+          type: integer
+        awayTeamId:
+          type: integer
         server:
           type: string
           enum: [football, blockball]

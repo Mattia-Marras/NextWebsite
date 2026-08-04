@@ -10,6 +10,8 @@ import type { MatchUpdateServer } from './matchUpdateServer';
 import type { MatchUpdateStatus } from './matchUpdateStatus';
 
 export interface MatchUpdate {
+  homeTeamId?: number;
+  awayTeamId?: number;
   server?: MatchUpdateServer;
   league?: MatchUpdateLeague;
   /** @nullable */

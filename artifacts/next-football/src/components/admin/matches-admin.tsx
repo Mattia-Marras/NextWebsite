@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeamBadge } from "@/components/team-badge";
+import { formatTeamName } from "@/lib/team-display";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MatchForm } from "./match-form";
@@ -151,7 +152,7 @@ export function MatchesAdmin() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <TeamBadge team={match.homeTeam} size="sm" />
-                      <span className="font-medium truncate">{match.homeTeam.shortName}</span>
+                      <span className="font-medium truncate">{formatTeamName(match.homeTeam.shortName || match.homeTeam.name)}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-center font-display font-bold text-lg">
@@ -160,7 +161,7 @@ export function MatchesAdmin() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <TeamBadge team={match.awayTeam} size="sm" />
-                      <span className="font-medium truncate">{match.awayTeam.shortName}</span>
+                      <span className="font-medium truncate">{formatTeamName(match.awayTeam.shortName || match.awayTeam.name)}</span>
                     </div>
                   </TableCell>
                   <TableCell>

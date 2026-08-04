@@ -101,7 +101,12 @@ router.patch("/matches/:id", async (req, res, next) => {
     const parsed = UpdateMatchBody.safeParse(req.body);
     if (!parsed.success) return void res.status(400).json({ error: parsed.error.message });
     const data = parsed.data;
+    const league = data.league === undefined ? undefined : slug(data.league);
+    if (data.league !== undefined && !league) return void res.status(400).json({ error: "Invalid league" });
     const match = await updateOfficialMatch(params.data.id, {
+      ...(data.homeTeamId !== undefined ? { homeTeamId: data.homeTeamId } : {}),
+      ...(data.awayTeamId !== undefined ? { awayTeamId: data.awayTeamId } : {}),
+      ...(league !== undefined ? { league } : {}),
       ...(data.homeScore !== undefined ? { homeScore: data.homeScore } : {}),
       ...(data.awayScore !== undefined ? { awayScore: data.awayScore } : {}),
       ...(data.matchDate !== undefined ? { matchDate: data.matchDate ? new Date(data.matchDate) : null } : {}),

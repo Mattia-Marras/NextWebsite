@@ -2,6 +2,7 @@ import { Match } from "@workspace/api-client-react";
 import { TeamBadge } from "./team-badge";
 import { formatDateTime } from "@/lib/format";
 import { Badge } from "./ui/badge";
+import { formatTeamName } from "@/lib/team-display";
 
 interface MatchCardProps {
   match: Match;
@@ -33,7 +34,7 @@ export function MatchCard({ match, variant = "default" }: MatchCardProps) {
       <div className="flex items-center justify-between relative z-10">
         <div className="flex-1 flex flex-col items-center gap-2">
           <TeamBadge team={match.homeTeam} size={variant === "compact" ? "lg" : "xl"} />
-          <span className="font-display font-semibold text-center text-sm md:text-base line-clamp-1 w-full">{match.homeTeam.shortName}</span>
+          <span className="font-display font-semibold text-center text-sm md:text-base line-clamp-2 min-h-10 w-full leading-tight">{formatTeamName(match.homeTeam.shortName || match.homeTeam.name)}</span>
         </div>
 
         <div className="flex-[0.5] flex justify-center items-center px-2">
@@ -50,7 +51,7 @@ export function MatchCard({ match, variant = "default" }: MatchCardProps) {
 
         <div className="flex-1 flex flex-col items-center gap-2">
           <TeamBadge team={match.awayTeam} size={variant === "compact" ? "lg" : "xl"} />
-          <span className="font-display font-semibold text-center text-sm md:text-base line-clamp-1 w-full">{match.awayTeam.shortName}</span>
+          <span className="font-display font-semibold text-center text-sm md:text-base line-clamp-2 min-h-10 w-full leading-tight">{formatTeamName(match.awayTeam.shortName || match.awayTeam.name)}</span>
         </div>
       </div>
 

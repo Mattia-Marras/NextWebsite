@@ -227,6 +227,8 @@ export const MatchUpdateStatus = {
 } as const;
 
 export interface MatchUpdate {
+  homeTeamId?: number;
+  awayTeamId?: number;
   server?: MatchUpdateServer;
   league?: MatchUpdateLeague;
   /** @nullable */

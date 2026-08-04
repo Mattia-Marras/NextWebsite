@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Team } from "@workspace/api-client-react";
+import { formatTeamName } from "@/lib/team-display";
 
 interface TeamBadgeProps {
   team: Team;
@@ -8,6 +10,8 @@ interface TeamBadgeProps {
 }
 
 export function TeamBadge({ team, size = "md", showName = false, className = "" }: TeamBadgeProps) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = Boolean(team.logoUrl) && !logoFailed;
   const sizeClasses = {
     sm: "w-6 h-6 text-[10px]",
     md: "w-8 h-8 text-xs",
@@ -24,15 +28,15 @@ export function TeamBadge({ team, size = "md", showName = false, className = "" 
         } : {}}
         title={team.name}
       >
-        {team.logoUrl ? (
-          <img src={team.logoUrl} alt={team.name} className="w-full h-full object-contain" />
+        {showLogo ? (
+          <img src={team.logoUrl!} alt={formatTeamName(team.name)} onError={() => setLogoFailed(true)} className="w-full h-full object-contain p-0.5" />
         ) : (
           team.logoInitials
         )}
       </div>
       {showName && (
         <span className="font-display font-semibold tracking-wide truncate">
-          {team.shortName || team.name}
+          {formatTeamName(team.shortName || team.name)}
         </span>
       )}
     </div>

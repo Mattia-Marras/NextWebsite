@@ -8,6 +8,7 @@ import {
   useGetMatch,
   useListTeams,
   getListMatchesQueryKey,
+  getListTeamsQueryKey,
   getGetMatchQueryKey,
   getListRecentMatchesQueryKey,
   getListUpcomingMatchesQueryKey,
@@ -109,7 +110,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
 
   const { data: teams = [], isLoading: isLoadingTeams } = useListTeams(
     { server: "football", league: selectedLeague },
-    { query: { enabled: !matchId || Boolean(match) } },
+    { query: { enabled: !matchId || Boolean(match), queryKey: getListTeamsQueryKey({ server: "football", league: selectedLeague }) } },
   );
 
   const createMatch = useCreateMatch();

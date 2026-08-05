@@ -50,7 +50,7 @@ export function Layout({ children }: LayoutProps) {
                   Choose a game below
                 </span>
                 <a
-                  href={settings?.discordUrl || "https://discord.gg/nqhjCx7qY"}
+                  href="https://discord.gg/QEtx8dSBQr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground transition hover:border-white/8 hover:bg-white/5 hover:text-white"

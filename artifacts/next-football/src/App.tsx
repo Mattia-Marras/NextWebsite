@@ -24,6 +24,7 @@ import { BlockballHome } from "@/pages/blockball-home";
 import { BlockballPlayers } from "@/pages/blockball-players";
 import { BlockballProfile } from "@/pages/blockball-profile";
 import { BlockballLeaderboards } from "@/pages/blockball-leaderboards";
+import { BlockballRanked } from "@/pages/blockball-ranked";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +59,7 @@ function Router() {
           component={FootballLeaderboards}
         />
 
+        <Route path="/blockball/ranked" component={BlockballRanked} />
         <Route path="/blockball/players" component={BlockballPlayers} />
         <Route path="/blockball/profile/:uuid" component={BlockballProfile} />
         <Route path="/blockball/leaderboards" component={BlockballLeaderboards} />

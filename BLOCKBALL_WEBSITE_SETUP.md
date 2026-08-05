@@ -2,11 +2,11 @@
 
 The BlockBall API uses these environment variables:
 
-- `BLOCKBALL_DB_HOST`
-- `BLOCKBALL_DB_PORT` (defaults to `3308`)
-- `BLOCKBALL_DB_NAME` (defaults to `BlockBall`)
-- `BLOCKBALL_DB_USER`
-- `BLOCKBALL_DB_PASSWORD`
+- `NEXTBB_DB_HOST`
+- `NEXTBB_DB_PORT` (defaults to `3308`)
+- `NEXTBB_DB_NAME` (defaults to `BlockBall`)
+- `NEXTBB_DB_USER`
+- `NEXTBB_DB_PASSWORD`
 
 For compatibility, host/user/password fall back to the corresponding `NEXTFB_DB_*` values when the dedicated BlockBall values are not set.
 

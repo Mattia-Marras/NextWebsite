@@ -24,20 +24,20 @@ router.get("/league/:league", async (req, res, next) => {
     }
     const standings=[...map.values()].sort((a,b)=>b.points-a.points||(b.goalsFor-b.goalsAgainst)-(a.goalsFor-a.goalsAgainst)||b.goalsFor-a.goalsFor||a.teamName.localeCompare(b.teamName)).map((r,i)=>({...r,position:i+1,goalDifference:r.goalsFor-r.goalsAgainst}));
     const stats = await queryBlockball<(RowDataPacket & any)[]>(`SELECT s.player_uuid uuid,COALESCE(n.name,s.player_name,s.player_uuid) name,s.goals,s.assists,s.saves FROM blockball_league_player_stats s LEFT JOIN player_names n ON n.uuid=s.player_uuid WHERE s.league_code=?`,[code]);
-    res.json({ league:code, standings, matches:matches.map(m=>({id:m.id,team1:m.team1_name,team2:m.team2_name,score1:m.score1,score2:m.score2,matchday:m.matchday,playedAt:m.played_at})), leaders:{goals:[...stats].sort((a,b)=>b.goals-a.goals).slice(0,10),assists:[...stats].sort((a,b)=>b.assists-a.assists).slice(0,10),saves:[...stats].sort((a,b)=>b.saves-a.saves).slice(0,10)} });
-  } catch(e){next(e)}
+    return res.json({ league:code, standings, matches:matches.map(m=>({id:m.id,team1:m.team1_name,team2:m.team2_name,score1:m.score1,score2:m.score2,matchday:m.matchday,playedAt:m.played_at})), leaders:{goals:[...stats].sort((a,b)=>b.goals-a.goals).slice(0,10),assists:[...stats].sort((a,b)=>b.assists-a.assists).slice(0,10),saves:[...stats].sort((a,b)=>b.saves-a.saves).slice(0,10)} });
+  } catch(e){ return next(e); }
 });
 
 router.get("/players/resolve/:name", async (req,res,next)=>{try{
   const rows=await queryBlockball<(RowDataPacket & {uuid:string,name:string})[]>(`SELECT uuid,name FROM player_names WHERE LOWER(name)=LOWER(?) ORDER BY last_seen DESC LIMIT 1`,[req.params.name]);
   if(!rows[0]) return res.status(404).json({error:"BLOCKBALL_PLAYER_NOT_FOUND"});
-  res.json(rows[0]);
-}catch(e){next(e)}});
+  return res.json(rows[0]);
+}catch(e){ return next(e); }});
 
 router.get("/players", async (req,res,next)=>{try{
   const rows=await queryBlockball<(RowDataPacket & any)[]>(`SELECT p.uuid,COALESCE(n.name,p.uuid) name,p.level,p.xp,p.coins FROM players p LEFT JOIN player_names n ON n.uuid=p.uuid ORDER BY p.level DESC,p.xp DESC LIMIT 100`);
-  res.json(rows);
-}catch(e){next(e)}});
+  return res.json(rows);
+}catch(e){ return next(e); }});
 
 router.get("/players/:uuid", async (req,res,next)=>{try{
   const uuid=String(req.params.uuid).toLowerCase(); if(!uuidPattern.test(uuid)) return res.status(400).json({error:"INVALID_UUID"});
@@ -49,7 +49,7 @@ router.get("/players/:uuid", async (req,res,next)=>{try{
     queryBlockball<(RowDataPacket & any)[]>(`SELECT cosmetic_id id FROM player_active_cosmetics WHERE uuid=? ORDER BY cosmetic_id`,[uuid]),
     queryBlockball<(RowDataPacket & any)[]>(`SELECT league_code league,goals,assists,saves FROM blockball_league_player_stats WHERE player_uuid=? ORDER BY league_code`,[uuid])
   ]);
-  res.json({...rows[0],casino:casinoRows[0]||null,cosmetics:cosmetics.map(x=>x.id),activeCosmetics:active.map(x=>x.id),leagueStats});
-}catch(e){next(e)}});
+  return res.json({...rows[0],casino:casinoRows[0]||null,cosmetics:cosmetics.map(x=>x.id),activeCosmetics:active.map(x=>x.id),leagueStats});
+}catch(e){ return next(e); }});
 
 export default router;

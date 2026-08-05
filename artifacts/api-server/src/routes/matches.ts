@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAdmin } from "../lib/admin-auth";
 import {
   CreateMatchBody,
   UpdateMatchBody,
@@ -60,7 +61,7 @@ router.get("/matches/upcoming", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post("/matches", async (req, res, next) => {
+router.post("/matches", requireAdmin, async (req, res, next) => {
   try {
     const parsed = CreateMatchBody.safeParse(req.body);
     if (!parsed.success) return void res.status(400).json({ error: parsed.error.message });
@@ -94,7 +95,7 @@ router.get("/matches/:id", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.patch("/matches/:id", async (req, res, next) => {
+router.patch("/matches/:id", requireAdmin, async (req, res, next) => {
   try {
     const params = UpdateMatchParams.safeParse({ id: Number(req.params.id) });
     if (!params.success) return void res.status(400).json({ error: "Invalid id" });
@@ -119,7 +120,7 @@ router.patch("/matches/:id", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.delete("/matches/:id", async (req, res, next) => {
+router.delete("/matches/:id", requireAdmin, async (req, res, next) => {
   try {
     const params = DeleteMatchParams.safeParse({ id: Number(req.params.id) });
     if (!params.success) return void res.status(400).json({ error: "Invalid id" });

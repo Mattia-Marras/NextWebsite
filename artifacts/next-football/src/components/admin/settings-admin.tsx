@@ -252,8 +252,6 @@ export function SettingsAdmin() {
 
   return (
     <div className="max-w-xl flex flex-col gap-6">
-      <DatabaseSection />
-
       <div className="bg-card border border-border rounded-xl p-6 flex flex-col gap-5">
         <div className="flex flex-col gap-1">
           <h3 className="font-display font-bold uppercase tracking-widest text-sm text-foreground flex items-center gap-2">

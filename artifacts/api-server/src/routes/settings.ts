@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, settingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { requireAdmin } from "../lib/admin-auth";
 
 export const settingsRouter = Router();
 
@@ -20,7 +21,7 @@ settingsRouter.get("/", async (_req, res) => {
   res.json(settings);
 });
 
-settingsRouter.patch("/", async (req, res) => {
+settingsRouter.patch("/", requireAdmin, async (req, res) => {
   const body = req.body as Partial<Record<SettingKey, string | null>>;
   for (const key of KEYS) {
     if (key in body) {

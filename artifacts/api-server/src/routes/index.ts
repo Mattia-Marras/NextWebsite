@@ -8,6 +8,7 @@ import { settingsRouter } from "./settings";
 import databaseRouter from "./database";
 import nextFootballRouter from "./nextfb";
 import blockballRouter from "./blockball";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(databaseRouter);
  */
 router.use("/nextfb", nextFootballRouter);
 router.use("/blockball", blockballRouter);
+router.use(adminRouter);
 
 export default router;

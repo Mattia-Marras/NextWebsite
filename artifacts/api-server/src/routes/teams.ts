@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAdmin } from "../lib/admin-auth";
 import {
   getOfficialTeamById,
   listOfficialTeams,
@@ -61,8 +62,8 @@ function managedByPlugin(_req: unknown, res: any) {
   });
 }
 
-router.post("/teams", managedByPlugin);
-router.patch("/teams/:id", managedByPlugin);
-router.delete("/teams/:id", managedByPlugin);
+router.post("/teams", requireAdmin, managedByPlugin);
+router.patch("/teams/:id", requireAdmin, managedByPlugin);
+router.delete("/teams/:id", requireAdmin, managedByPlugin);
 
 export default router;

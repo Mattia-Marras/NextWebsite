@@ -22,3 +22,6 @@ Tables read by the website:
 - `blockball_league_teams`
 - `blockball_league_matches`
 - `blockball_league_player_stats`
+
+## Secure administration
+Set `ADMIN_PASSWORD` in Railway Variables. It is validated only by the API server and is never included in the frontend bundle. Admin sessions use an HttpOnly, Secure, SameSite=Strict cookie and expire after eight hours.

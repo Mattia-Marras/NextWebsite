@@ -15,13 +15,19 @@ export function BlockballProfile() {
 
   const player = query.data;
   const ranked = player.ranked;
-  const games = ranked ? ranked.wins + ranked.losses : 0;
-  const winRate = games ? (ranked.wins / games) * 100 : 0;
-  const history = ranked?.history?.map((entry: any, index: number) => ({
-    label: new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(entry.createdAt)),
-    mmr: entry.mmr,
-    index: index + 1,
-  })) || [];
+  const games = ranked ? ranked.games : 0;
+  const winRate = ranked ? ranked.winRate : 0;
+  const history = ranked?.history?.map((entry: any, index: number) => {
+    const date = entry.createdAt ? new Date(entry.createdAt) : null;
+    const validDate = date && !Number.isNaN(date.getTime());
+    return {
+      label: validDate
+        ? new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(date)
+        : `Match ${entry.sequence || index + 1}`,
+      mmr: entry.mmr,
+      index: index + 1,
+    };
+  }) || [];
 
   return (
     <div className="container mx-auto space-y-7 px-4 py-10">

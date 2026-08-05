@@ -7,19 +7,51 @@ const leagues = new Set(["ML", "LL"]);
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const RANKS = [
-  { name: "IRON", displayName: "Iron", minimumMmr: 500, maximumMmr: 649 },
-  { name: "BRONZE", displayName: "Bronze", minimumMmr: 650, maximumMmr: 799 },
-  { name: "GOLD", displayName: "Gold", minimumMmr: 800, maximumMmr: 949 },
-  { name: "EMERALD", displayName: "Emerald", minimumMmr: 950, maximumMmr: 1099 },
-  { name: "PLATINUM", displayName: "Platinum", minimumMmr: 1100, maximumMmr: 1249 },
-  { name: "RUBY", displayName: "Ruby", minimumMmr: 1250, maximumMmr: 1449 },
-  { name: "DIAMOND", displayName: "Diamond", minimumMmr: 1450, maximumMmr: 1649 },
-  { name: "LEGEND", displayName: "Legend", minimumMmr: 1650, maximumMmr: 1849 },
-  { name: "MYTHIC", displayName: "Mythic", minimumMmr: 1850, maximumMmr: null },
+  { name: "BRONZE_1", displayName: "Bronze 1", minimumMmr: 0, maximumMmr: 874 },
+  { name: "BRONZE_2", displayName: "Bronze 2", minimumMmr: 875, maximumMmr: 924 },
+  { name: "BRONZE_3", displayName: "Bronze 3", minimumMmr: 925, maximumMmr: 974 },
+  { name: "IRON_1", displayName: "Iron 1", minimumMmr: 975, maximumMmr: 1024 },
+  { name: "IRON_2", displayName: "Iron 2", minimumMmr: 1025, maximumMmr: 1074 },
+  { name: "IRON_3", displayName: "Iron 3", minimumMmr: 1075, maximumMmr: 1124 },
+  { name: "GOLD_1", displayName: "Gold 1", minimumMmr: 1125, maximumMmr: 1174 },
+  { name: "GOLD_2", displayName: "Gold 2", minimumMmr: 1175, maximumMmr: 1224 },
+  { name: "GOLD_3", displayName: "Gold 3", minimumMmr: 1225, maximumMmr: 1274 },
+  { name: "DIAMOND_1", displayName: "Diamond 1", minimumMmr: 1275, maximumMmr: 1324 },
+  { name: "DIAMOND_2", displayName: "Diamond 2", minimumMmr: 1325, maximumMmr: 1374 },
+  { name: "DIAMOND_3", displayName: "Diamond 3", minimumMmr: 1375, maximumMmr: 1424 },
+  { name: "RUBY_1", displayName: "Ruby 1", minimumMmr: 1425, maximumMmr: 1474 },
+  { name: "RUBY_2", displayName: "Ruby 2", minimumMmr: 1475, maximumMmr: 1524 },
+  { name: "RUBY_3", displayName: "Ruby 3", minimumMmr: 1525, maximumMmr: 1574 },
+  { name: "PLATINUM_1", displayName: "Platinum 1", minimumMmr: 1575, maximumMmr: 1624 },
+  { name: "PLATINUM_2", displayName: "Platinum 2", minimumMmr: 1625, maximumMmr: 1674 },
+  { name: "PLATINUM_3", displayName: "Platinum 3", minimumMmr: 1675, maximumMmr: 1724 },
+  { name: "LEGEND_1", displayName: "Legend 1", minimumMmr: 1725, maximumMmr: 1774 },
+  { name: "LEGEND_2", displayName: "Legend 2", minimumMmr: 1775, maximumMmr: 1824 },
+  { name: "LEGEND_3", displayName: "Legend 3", minimumMmr: 1825, maximumMmr: 1874 },
+  { name: "MYTHIC_1", displayName: "Mythic 1", minimumMmr: 1875, maximumMmr: null },
 ] as const;
 
+const RANKED_STATS = [
+  "PEAK_MMR",
+  "GAMES",
+  "WINS",
+  "LOSSES",
+  "WIN_RATE",
+  "WIN_STREAK",
+  "LOSS_STREAK",
+  "GOALS",
+  "ASSISTS",
+  "PASSES",
+  "SAVES",
+] as const;
+
+function number(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function getRank(mmrValue: unknown) {
-  const mmr = Math.max(0, Number(mmrValue) || 0);
+  const mmr = Math.max(0, number(mmrValue));
   return [...RANKS].reverse().find((rank) => mmr >= rank.minimumMmr) ?? RANKS[0];
 }
 
@@ -29,8 +61,69 @@ function league(value: unknown) {
   return result;
 }
 
-function statsMap(rows: Array<{ stat: string; value: unknown }>) {
-  return Object.fromEntries(rows.map((row) => [String(row.stat).toUpperCase(), Number(row.value) || 0]));
+function rankedFromPlayer(player: any) {
+  const mmr = number(player.mmr);
+  const wins = number(player.wins);
+  const losses = number(player.losses);
+  const games = number(player.games) || wins + losses;
+  const storedWinRate = number(player.winrate);
+  const winRate = storedWinRate || (games > 0 ? (wins / games) * 100 : 0);
+
+  return {
+    mmr,
+    peakMmr: number(player.peak_mmr),
+    games,
+    wins,
+    losses,
+    winRate,
+    winStreak: number(player.winstreak),
+    lossStreak: number(player.lossstreak),
+    goals: number(player.goals),
+    assists: number(player.assists),
+    passes: number(player.passes),
+    saves: number(player.saves),
+    rank: getRank(mmr),
+    stats: {
+      PEAK_MMR: number(player.peak_mmr),
+      GAMES: games,
+      WINS: wins,
+      LOSSES: losses,
+      WIN_RATE: winRate,
+      WIN_STREAK: number(player.winstreak),
+      LOSS_STREAK: number(player.lossstreak),
+      GOALS: number(player.goals),
+      ASSISTS: number(player.assists),
+      PASSES: number(player.passes),
+      SAVES: number(player.saves),
+    },
+  };
+}
+
+async function optionalQuery<T extends RowDataPacket[]>(sql: string, params: any[] = []): Promise<T> {
+  try {
+    return await queryBlockball<T>(sql, params);
+  } catch (error) {
+    console.warn("[BlockBall] Optional query failed:", error);
+    return [] as unknown as T;
+  }
+}
+
+async function loadMmrHistory(uuid: string) {
+  const rows = await optionalQuery<(RowDataPacket & Record<string, unknown>)[]>(
+    `SELECT * FROM elo_history WHERE player_uuid=? LIMIT 500`,
+    [uuid],
+  );
+
+  return rows.map((row, index) => {
+    const rawDate = row.created_at ?? row.createdAt ?? row.timestamp ?? row.date ?? null;
+    return {
+      id: row.id ?? index + 1,
+      mmr: number(row.mmr),
+      createdAt: rawDate,
+      sequence: index + 1,
+      rank: getRank(row.mmr),
+    };
+  });
 }
 
 router.get("/league/:league", async (req, res, next) => {
@@ -52,13 +145,13 @@ router.get("/league/:league", async (req, res, next) => {
           teamName: team.team_name,
           teamCode: team.team_code,
           logoPath: team.logo_path,
-          played: team.manual_played,
-          won: team.manual_won,
-          drawn: team.manual_drawn,
-          lost: team.manual_lost,
-          goalsFor: team.manual_goals_for,
-          goalsAgainst: team.manual_goals_against,
-          points: team.manual_points,
+          played: number(team.manual_played),
+          won: number(team.manual_won),
+          drawn: number(team.manual_drawn),
+          lost: number(team.manual_lost),
+          goalsFor: number(team.manual_goals_for),
+          goalsAgainst: number(team.manual_goals_against),
+          points: number(team.manual_points),
         },
       ]),
     );
@@ -67,17 +160,19 @@ router.get("/league/:league", async (req, res, next) => {
       const home = map.get(match.team1_name);
       const away = map.get(match.team2_name);
       if (!home || !away) continue;
+      const homeScore = number(match.score1);
+      const awayScore = number(match.score2);
       home.played++;
       away.played++;
-      home.goalsFor += match.score1;
-      home.goalsAgainst += match.score2;
-      away.goalsFor += match.score2;
-      away.goalsAgainst += match.score1;
-      if (match.score1 > match.score2) {
+      home.goalsFor += homeScore;
+      home.goalsAgainst += awayScore;
+      away.goalsFor += awayScore;
+      away.goalsAgainst += homeScore;
+      if (homeScore > awayScore) {
         home.won++;
         away.lost++;
         home.points += 3;
-      } else if (match.score2 > match.score1) {
+      } else if (awayScore > homeScore) {
         away.won++;
         home.lost++;
         away.points += 3;
@@ -114,15 +209,15 @@ router.get("/league/:league", async (req, res, next) => {
         id: match.id,
         team1: match.team1_name,
         team2: match.team2_name,
-        score1: match.score1,
-        score2: match.score2,
+        score1: number(match.score1),
+        score2: number(match.score2),
         matchday: match.matchday,
         playedAt: match.played_at,
       })),
       leaders: {
-        goals: [...stats].sort((a, b) => b.goals - a.goals).slice(0, 10),
-        assists: [...stats].sort((a, b) => b.assists - a.assists).slice(0, 10),
-        saves: [...stats].sort((a, b) => b.saves - a.saves).slice(0, 10),
+        goals: [...stats].sort((a, b) => number(b.goals) - number(a.goals)).slice(0, 10),
+        assists: [...stats].sort((a, b) => number(b.assists) - number(a.assists)).slice(0, 10),
+        saves: [...stats].sort((a, b) => number(b.saves) - number(a.saves)).slice(0, 10),
       },
     });
   } catch (error) {
@@ -133,44 +228,24 @@ router.get("/league/:league", async (req, res, next) => {
 router.get("/ranked", async (_req, res, next) => {
   try {
     const players = await queryBlockball<(RowDataPacket & any)[]>(
-      `SELECT rp.uuid,COALESCE(n.name,rp.uuid) name,rp.mmr,rp.wins,rp.losses,rp.banned,rp.ranked_ban_until rankedBanUntil
-       FROM ranked_players rp
-       LEFT JOIN player_names n ON n.uuid=rp.uuid
-       ORDER BY rp.mmr DESC,rp.wins DESC,rp.losses ASC,rp.uuid ASC
+      `SELECT p.uuid,COALESCE(n.name,p.name,p.uuid) name,
+              p.mmr,p.peak_mmr,p.games,p.wins,p.losses,p.winrate,p.winstreak,p.lossstreak,
+              p.goals,p.assists,p.passes,p.saves
+       FROM players p
+       LEFT JOIN player_names n ON n.uuid=p.uuid
+       WHERE p.mmr IS NOT NULL
+       ORDER BY p.mmr DESC,p.wins DESC,p.losses ASC,p.uuid ASC
        LIMIT 250`,
     );
-    const statRows = await queryBlockball<(RowDataPacket & any)[]>(
-      `SELECT uuid,stat,value FROM ranked_player_stats`,
-    );
-    const byUuid = new Map<string, Array<{ stat: string; value: unknown }>>();
-    for (const row of statRows) {
-      const values = byUuid.get(row.uuid) ?? [];
-      values.push(row);
-      byUuid.set(row.uuid, values);
-    }
 
-    const leaderboard = players.map((player, index) => {
-      const wins = Number(player.wins) || 0;
-      const losses = Number(player.losses) || 0;
-      const games = wins + losses;
-      return {
-        position: index + 1,
-        uuid: player.uuid,
-        name: player.name,
-        mmr: Number(player.mmr) || 0,
-        wins,
-        losses,
-        games,
-        winRate: games ? (wins / games) * 100 : 0,
-        banned: Boolean(player.banned),
-        rankedBanUntil: player.rankedBanUntil == null ? null : Number(player.rankedBanUntil),
-        rank: getRank(player.mmr),
-        stats: statsMap(byUuid.get(player.uuid) ?? []),
-      };
-    });
+    const leaderboard = players.map((player, index) => ({
+      position: index + 1,
+      uuid: String(player.uuid).toLowerCase(),
+      name: player.name,
+      ...rankedFromPlayer(player),
+    }));
 
-    const statNames = [...new Set(statRows.map((row) => String(row.stat).toUpperCase()))].sort();
-    return res.json({ leaderboard, statNames, ranks: RANKS });
+    return res.json({ leaderboard, statNames: RANKED_STATS, ranks: RANKS });
   } catch (error) {
     return next(error);
   }
@@ -183,7 +258,7 @@ router.get("/players/resolve/:name", async (req, res, next) => {
       [req.params.name],
     );
     if (!rows[0]) return res.status(404).json({ error: "BLOCKBALL_PLAYER_NOT_FOUND" });
-    return res.json(rows[0]);
+    return res.json({ ...rows[0], uuid: String(rows[0].uuid).toLowerCase() });
   } catch (error) {
     return next(error);
   }
@@ -192,11 +267,13 @@ router.get("/players/resolve/:name", async (req, res, next) => {
 router.get("/players", async (_req, res, next) => {
   try {
     const rows = await queryBlockball<(RowDataPacket & any)[]>(
-      `SELECT p.uuid,COALESCE(n.name,p.uuid) name,p.level,p.xp,p.coins
-       FROM players p LEFT JOIN player_names n ON n.uuid=p.uuid
-       ORDER BY p.level DESC,p.xp DESC LIMIT 100`,
+      `SELECT p.uuid,COALESCE(n.name,p.name,p.uuid) name,p.level,p.xp,p.coins,p.mmr
+       FROM players p
+       LEFT JOIN player_names n ON n.uuid=p.uuid
+       ORDER BY p.level DESC,p.xp DESC,p.mmr DESC
+       LIMIT 100`,
     );
-    return res.json(rows);
+    return res.json(rows.map((row) => ({ ...row, uuid: String(row.uuid).toLowerCase() })));
   } catch (error) {
     return next(error);
   }
@@ -206,67 +283,51 @@ router.get("/players/:uuid", async (req, res, next) => {
   try {
     const uuid = String(req.params.uuid).toLowerCase();
     if (!uuidPattern.test(uuid)) return res.status(400).json({ error: "INVALID_UUID" });
+
     const rows = await queryBlockball<(RowDataPacket & any)[]>(
-      `SELECT p.uuid,COALESCE(n.name,p.uuid) name,p.level,p.xp,p.coins,p.language,n.last_seen lastSeen
-       FROM players p LEFT JOIN player_names n ON n.uuid=p.uuid WHERE p.uuid=? LIMIT 1`,
+      `SELECT p.*,COALESCE(n.name,p.name,p.uuid) resolved_name,n.last_seen lastSeen
+       FROM players p
+       LEFT JOIN player_names n ON n.uuid=p.uuid
+       WHERE LOWER(p.uuid)=? LIMIT 1`,
       [uuid],
     );
-    if (!rows[0]) return res.status(404).json({ error: "BLOCKBALL_PLAYER_NOT_FOUND" });
+    const base = rows[0];
+    if (!base) return res.status(404).json({ error: "BLOCKBALL_PLAYER_NOT_FOUND" });
 
-    const [casinoRows, cosmetics, active, leagueStats, rankedRows, rankedStatRows, historyRows] = await Promise.all([
-      queryBlockball<(RowDataPacket & any)[]>(
+    const [casinoRows, cosmetics, active, leagueStats, history] = await Promise.all([
+      optionalQuery<(RowDataPacket & any)[]>(
         `SELECT daily_plays dailyPlays,daily_bet dailyBet,daily_won dailyWon,daily_lost dailyLost,
                 total_plays totalPlays,total_bet totalBet,total_won totalWon,total_lost totalLost
          FROM casino_player_stats WHERE uuid=? LIMIT 1`,
         [uuid],
       ),
-      queryBlockball<(RowDataPacket & any)[]>(
+      optionalQuery<(RowDataPacket & any)[]>(
         `SELECT cosmetic_id id FROM player_available_cosmetics WHERE uuid=? ORDER BY cosmetic_id`,
         [uuid],
       ),
-      queryBlockball<(RowDataPacket & any)[]>(
+      optionalQuery<(RowDataPacket & any)[]>(
         `SELECT cosmetic_id id FROM player_active_cosmetics WHERE uuid=? ORDER BY cosmetic_id`,
         [uuid],
       ),
-      queryBlockball<(RowDataPacket & any)[]>(
-        `SELECT league_code league,goals,assists,saves FROM blockball_league_player_stats WHERE player_uuid=? ORDER BY league_code`,
+      optionalQuery<(RowDataPacket & any)[]>(
+        `SELECT league_code league,goals,assists,saves
+         FROM blockball_league_player_stats WHERE player_uuid=? ORDER BY league_code`,
         [uuid],
       ),
-      queryBlockball<(RowDataPacket & any)[]>(
-        `SELECT uuid,mmr,wins,losses,banned,ranked_ban_until rankedBanUntil FROM ranked_players WHERE uuid=? LIMIT 1`,
-        [uuid],
-      ),
-      queryBlockball<(RowDataPacket & any)[]>(
-        `SELECT stat,value FROM ranked_player_stats WHERE uuid=? ORDER BY stat`,
-        [uuid],
-      ),
-      queryBlockball<(RowDataPacket & any)[]>(
-        `SELECT id,mmr,created_at createdAt FROM player_mmr_history WHERE uuid=? ORDER BY created_at ASC,id ASC LIMIT 500`,
-        [uuid],
-      ),
+      loadMmrHistory(uuid),
     ]);
 
-    const rankedRow = rankedRows[0];
-    const ranked = rankedRow
-      ? {
-          mmr: Number(rankedRow.mmr) || 0,
-          wins: Number(rankedRow.wins) || 0,
-          losses: Number(rankedRow.losses) || 0,
-          banned: Boolean(rankedRow.banned),
-          rankedBanUntil: rankedRow.rankedBanUntil == null ? null : Number(rankedRow.rankedBanUntil),
-          rank: getRank(rankedRow.mmr),
-          stats: statsMap(rankedStatRows),
-          history: historyRows.map((row) => ({
-            id: row.id,
-            mmr: Number(row.mmr) || 0,
-            createdAt: row.createdAt,
-            rank: getRank(row.mmr),
-          })),
-        }
-      : null;
+    const hasRankedData = base.mmr != null;
+    const ranked = hasRankedData ? { ...rankedFromPlayer(base), history } : null;
 
     return res.json({
-      ...rows[0],
+      uuid: String(base.uuid).toLowerCase(),
+      name: base.resolved_name,
+      level: number(base.level) || 1,
+      xp: number(base.xp),
+      coins: number(base.coins),
+      language: base.language || "en",
+      lastSeen: base.lastSeen == null ? null : number(base.lastSeen),
       casino: casinoRows[0] || null,
       cosmetics: cosmetics.map((item) => item.id),
       activeCosmetics: active.map((item) => item.id),

@@ -32,7 +32,7 @@ export function BlockballRanked() {
   const totalPlayers = data.leaderboard.length;
   const totalGames = data.leaderboard.reduce((sum: number, player: any) => sum + player.games, 0) / 2;
   const top = data.leaderboard[0];
-  const filters = ["MMR", "WIN_RATE", ...data.statNames];
+  const filters = ["MMR", ...data.statNames.filter((item: string) => item !== "WIN_RATE")];
 
   return (
     <div className="container mx-auto space-y-8 px-4 py-10">
@@ -73,7 +73,7 @@ export function BlockballRanked() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><BarChart3 className="text-sky-400" /> Top 10 overview</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Compare the leading players by any statistic stored in ranked_player_stats.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Compare the leading players using the statistics persisted by the BlockBall Ranked system.</p>
           </div>
           <select value={stat} onChange={(event) => setStat(event.target.value)} className="rounded-xl border border-white/10 bg-[#0b1017] px-4 py-2.5 text-sm outline-none focus:border-sky-400">
             {filters.map((item: string) => <option key={item} value={item}>{pretty(item)}</option>)}

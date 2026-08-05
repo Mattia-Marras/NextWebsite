@@ -16,7 +16,7 @@ import { useGetSettings } from "@workspace/api-client-react";
 import { useState } from "react";
 
 const DEFAULT_MINECRAFT_IP = "play.nextfootball.net";
-const DEFAULT_DISCORD_URL = "https://discord.gg/nqhjCx7qY";
+const DEFAULT_DISCORD_URL = "https://discord.gg/QEtx8dSBQr";
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/@NEXTFootballOfficial";
 
 function CopyServerIp({ ip }: { ip: string }) {

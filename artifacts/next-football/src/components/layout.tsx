@@ -1,18 +1,11 @@
 import { Link, useLocation } from "wouter";
 import logoPath from "@assets/NEXTLogo2_2_1782769726637.png";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { Menu, MessageCircle, X, Youtube } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { GAME_MODES, getGameModeFromPath } from "@/lib/game-modes";
 import { getLeagueTheme } from "@/lib/league-theme";
+import { useGetSettings } from "@workspace/api-client-react";
 
 interface LayoutProps { children: React.ReactNode; }
 
@@ -33,6 +26,7 @@ function isSectionActive(location: string, href: string, label: string) {
 
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
+  const { data: settings } = useGetSettings();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { server, league } = parseLeagueFromPath(location);
   const theme = getLeagueTheme(server, league);
@@ -45,25 +39,49 @@ export function Layout({ children }: LayoutProps) {
           <Link href="/" className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <img src={logoPath} alt="NEXT" className="h-9 w-auto mix-blend-lighten" />
             <span className="hidden font-display text-xl font-bold uppercase tracking-[0.08em] sm:block">
-              NEXT <span className="text-[#39ff14]">Football</span>
+              NEXT <span className="text-[#39ff14]">{location === "/" ? "Network" : activeMode.shortName}</span>
             </span>
           </Link>
 
           <div className="hidden items-center gap-2 md:flex">
-            {GAME_MODES.map((mode) => (
-              <Link
-                key={mode.id}
-                href={mode.available ? mode.landingHref : "/"}
-                className={`rounded-xl border px-4 py-2 font-display text-sm font-semibold uppercase tracking-[0.1em] transition ${
-                  activeMode.id === mode.id && location !== "/"
-                    ? "border-white/12 bg-white/8 text-white"
-                    : "border-transparent text-muted-foreground hover:border-white/8 hover:bg-white/5 hover:text-white"
-                }`}
-                style={activeMode.id === mode.id && location !== "/" ? { boxShadow: `inset 0 -2px 0 ${mode.accent}` } : undefined}
-              >
-                {mode.shortName}
-              </Link>
-            ))}
+            {location === "/" ? (
+              <>
+                <span className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-2 font-display text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Choose a game below
+                </span>
+                <a
+                  href={settings?.discordUrl || "https://discord.gg/nqhjCx7qY"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground transition hover:border-white/8 hover:bg-white/5 hover:text-white"
+                >
+                  <MessageCircle className="h-4 w-4" /> Discord
+                </a>
+                <a
+                  href={settings?.youtubeUrl || "https://www.youtube.com/@NEXTFootballOfficial"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground transition hover:border-white/8 hover:bg-white/5 hover:text-white"
+                >
+                  <Youtube className="h-4 w-4" /> YouTube
+                </a>
+              </>
+            ) : (
+              GAME_MODES.map((mode) => (
+                <Link
+                  key={mode.id}
+                  href={mode.available ? mode.landingHref : "/"}
+                  className={`rounded-xl border px-4 py-2 font-display text-sm font-semibold uppercase tracking-[0.1em] transition ${
+                    activeMode.id === mode.id
+                      ? "border-white/12 bg-white/8 text-white"
+                      : "border-transparent text-muted-foreground hover:border-white/8 hover:bg-white/5 hover:text-white"
+                  }`}
+                  style={activeMode.id === mode.id ? { boxShadow: `inset 0 -2px 0 ${mode.accent}` } : undefined}
+                >
+                  {mode.shortName}
+                </Link>
+              ))
+            )}
           </div>
 
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Toggle navigation">

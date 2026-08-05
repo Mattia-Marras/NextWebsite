@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 
 export const settingsRouter = Router();
 
-const KEYS = ["minecraftIp", "discordUrl"] as const;
+const KEYS = ["minecraftIp", "discordUrl", "youtubeUrl"] as const;
 type SettingKey = (typeof KEYS)[number];
 
 async function getAll(): Promise<Record<SettingKey, string | null>> {

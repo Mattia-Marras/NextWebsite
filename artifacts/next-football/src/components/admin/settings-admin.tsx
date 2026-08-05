@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Server, Hash, Database, CheckCircle2, XCircle, Loader2, Unplug } from "lucide-react";
+import { Server, Hash, Youtube, Database, CheckCircle2, XCircle, Loader2, Unplug } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -222,11 +222,13 @@ export function SettingsAdmin() {
 
   const [minecraftIp, setMinecraftIp] = useState("");
   const [discordUrl, setDiscordUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
 
   useEffect(() => {
     if (settings) {
       setMinecraftIp(settings.minecraftIp ?? "");
       setDiscordUrl(settings.discordUrl ?? "");
+      setYoutubeUrl(settings.youtubeUrl ?? "");
     }
   }, [settings]);
 
@@ -236,6 +238,7 @@ export function SettingsAdmin() {
         data: {
           minecraftIp: minecraftIp || null,
           discordUrl: discordUrl || null,
+          youtubeUrl: youtubeUrl || null,
         },
       });
       await qc.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
@@ -277,6 +280,21 @@ export function SettingsAdmin() {
             placeholder="e.g. https://discord.gg/abc123"
             value={discordUrl}
             onChange={e => setDiscordUrl(e.target.value)}
+            type="url"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <h3 className="font-display font-bold uppercase tracking-widest text-sm text-foreground flex items-center gap-2">
+            <Youtube className="w-4 h-4 text-primary" />
+            YouTube Channel URL
+          </h3>
+          <p className="text-xs text-muted-foreground">Full YouTube channel link. Shown on the homepage. Leave blank to hide.</p>
+          <Input
+            className="mt-2 bg-background border-border"
+            placeholder="e.g. https://www.youtube.com/@NEXTFootballOfficial"
+            value={youtubeUrl}
+            onChange={e => setYoutubeUrl(e.target.value)}
             type="url"
           />
         </div>

@@ -14,6 +14,8 @@ export interface SiteSettings {
   minecraftIp: string | null;
   /** @nullable */
   discordUrl: string | null;
+  /** @nullable */
+  youtubeUrl: string | null;
 }
 
 export interface SiteSettingsUpdate {
@@ -21,6 +23,8 @@ export interface SiteSettingsUpdate {
   minecraftIp?: string | null;
   /** @nullable */
   discordUrl?: string | null;
+  /** @nullable */
+  youtubeUrl?: string | null;
 }
 
 export type TeamServer = typeof TeamServer[keyof typeof TeamServer];

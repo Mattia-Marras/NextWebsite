@@ -42,7 +42,7 @@ export const GAME_MODES: GameModeDefinition[] = [
     id: "blockball",
     name: "NEXT Blockball",
     shortName: "Blockball",
-    description: "A separate competitive ecosystem, ready for its dedicated pages.",
+    description: "Leagues, matches and competitive statistics in a dedicated Blockball ecosystem.",
     accent: "#38bdf8",
     accentSoft: "rgba(56,189,248,.12)",
     available: true,

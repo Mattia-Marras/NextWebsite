@@ -401,11 +401,13 @@ components:
 
     SiteSettings:
       type: object
-      required: [minecraftIp, discordUrl]
+      required: [minecraftIp, discordUrl, youtubeUrl]
       properties:
         minecraftIp:
           type: ["string", "null"]
         discordUrl:
+          type: ["string", "null"]
+        youtubeUrl:
           type: ["string", "null"]
 
     SiteSettingsUpdate:
@@ -414,6 +416,8 @@ components:
         minecraftIp:
           type: ["string", "null"]
         discordUrl:
+          type: ["string", "null"]
+        youtubeUrl:
           type: ["string", "null"]
 
     Team:

@@ -13,7 +13,8 @@ import * as zod from 'zod';
  */
 export const GetSettingsResponse = zod.object({
   "minecraftIp": zod.string().nullable(),
-  "discordUrl": zod.string().nullable()
+  "discordUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable()
 })
 
 
@@ -22,12 +23,14 @@ export const GetSettingsResponse = zod.object({
  */
 export const UpdateSettingsBody = zod.object({
   "minecraftIp": zod.string().nullish(),
-  "discordUrl": zod.string().nullish()
+  "discordUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish()
 })
 
 export const UpdateSettingsResponse = zod.object({
   "minecraftIp": zod.string().nullable(),
-  "discordUrl": zod.string().nullable()
+  "discordUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable()
 })
 
 

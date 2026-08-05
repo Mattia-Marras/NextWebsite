@@ -11,4 +11,5 @@ export interface SiteSettings {
   minecraftIp: string | null;
   /** @nullable */
   discordUrl: string | null;
+  youtubeUrl: string | null;
 }

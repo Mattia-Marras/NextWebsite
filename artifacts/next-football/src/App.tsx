@@ -20,6 +20,10 @@ import { Admin } from "@/pages/admin";
 import { ProfileSearch } from "@/pages/profile-search";
 import { Profile } from "@/pages/profile";
 import { FootballLeaderboards } from "@/pages/football-leaderboards";
+import { BlockballHome } from "@/pages/blockball-home";
+import { BlockballPlayers } from "@/pages/blockball-players";
+import { BlockballProfile } from "@/pages/blockball-profile";
+import { BlockballLeaderboards } from "@/pages/blockball-leaderboards";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +57,11 @@ function Router() {
           path="/football/leaderboards"
           component={FootballLeaderboards}
         />
+
+        <Route path="/blockball/players" component={BlockballPlayers} />
+        <Route path="/blockball/profile/:uuid" component={BlockballProfile} />
+        <Route path="/blockball/leaderboards" component={BlockballLeaderboards} />
+        <Route path="/blockball/:league" component={BlockballHome} />
 
         {/* Temporary compatibility routes */}
         <Route

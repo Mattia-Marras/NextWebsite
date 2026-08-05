@@ -7,6 +7,7 @@ import standingsRouter from "./standings";
 import { settingsRouter } from "./settings";
 import databaseRouter from "./database";
 import nextFootballRouter from "./nextfb";
+import blockballRouter from "./blockball";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(databaseRouter);
  * NextFootball public API
  */
 router.use("/nextfb", nextFootballRouter);
+router.use("/blockball", blockballRouter);
 
 export default router;

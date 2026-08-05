@@ -50,8 +50,8 @@ export const GAME_MODES: GameModeDefinition[] = [
     sections: [
       { label: "League", href: "/blockball/main", icon: Trophy, available: true },
       { label: "Ranked", href: "/blockball/main", icon: BarChart3, available: false },
-      { label: "Player search", href: "/blockball/main", icon: Search, available: false },
-      { label: "Leaderboards", href: "/blockball/main", icon: Users, available: false },
+      { label: "Player search", href: "/blockball/players", icon: Search, available: true },
+      { label: "Leaderboards", href: "/blockball/leaderboards", icon: Users, available: true },
     ],
   },
 ];

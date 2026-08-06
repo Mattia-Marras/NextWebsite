@@ -9,7 +9,7 @@ async function get<T>(url: string): Promise<T> {
 }
 
 export type BBLeague = "ML" | "LL";
-export const getBlockballLeague = (league: BBLeague) => get<any>(`/league/${league}`);
+export const getBlockballLeague = (league: BBLeague, season?: string) => get<any>(`/league/${league}${season ? `?season=${encodeURIComponent(season)}` : ""}`);
 export const getBlockballRanked = () => get<any>("/ranked");
 export const getBlockballPlayers = () => get<any[]>("/players");
 export const getBlockballPlayer = (uuid: string) => get<any>(`/players/${encodeURIComponent(uuid)}`);

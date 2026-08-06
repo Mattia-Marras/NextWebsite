@@ -202,6 +202,52 @@ router.get("/league/:league", async (req, res, next) => {
       [code],
     );
 
+    const seasons = await optionalQuery<(RowDataPacket & any)[]>(
+      `SELECT season_id seasonId,
+              MAX(finalized) finalized,
+              COUNT(*) players,
+              SUM(matches) matches,SUM(goals) goals,SUM(assists) assists,SUM(saves) saves,
+              SUM(clean_sheets) cleanSheets,SUM(wins) wins,SUM(draws) draws,SUM(losses) losses
+       FROM league_player_season_stats
+       WHERE UPPER(league_id)=?
+       GROUP BY season_id
+       ORDER BY finalized ASC, season_id DESC`,
+      [code],
+    );
+
+    const requestedSeason = String(req.query.season || "").trim();
+    const selectedSeason = requestedSeason || String(seasons[0]?.seasonId || "");
+    const [seasonPlayers, seasonAwards] = selectedSeason
+      ? await Promise.all([
+          optionalQuery<(RowDataPacket & any)[]>(
+            `SELECT s.player_uuid uuid,COALESCE(n.name,s.player_uuid) name,
+                    s.matches,s.goals,s.assists,s.saves,s.clean_sheets cleanSheets,
+                    s.wins,s.draws,s.losses,s.finalized
+             FROM league_player_season_stats s
+             LEFT JOIN player_names n ON n.uuid=s.player_uuid
+             WHERE UPPER(s.league_id)=? AND s.season_id=?
+             ORDER BY s.goals DESC,s.assists DESC,s.saves DESC,s.matches DESC`,
+            [code, selectedSeason],
+          ),
+          optionalQuery<(RowDataPacket & any)[]>(
+            `SELECT a.id,a.player_uuid uuid,COALESCE(n.name,a.player_uuid) name,
+                    a.award_type awardType,a.amount,a.awarded_at awardedAt
+             FROM league_player_awards a
+             LEFT JOIN player_names n ON n.uuid=a.player_uuid
+             WHERE UPPER(a.league_id)=? AND a.season_id=?
+             ORDER BY a.award_type,a.amount DESC,name`,
+            [code, selectedSeason],
+          ),
+        ])
+      : [[], []];
+
+    const awardTotals = await optionalQuery<(RowDataPacket & any)[]>(
+      `SELECT a.award_type awardType,SUM(a.amount) amount,COUNT(DISTINCT a.player_uuid) recipients
+       FROM league_player_awards a WHERE UPPER(a.league_id)=?
+       GROUP BY a.award_type ORDER BY amount DESC,a.award_type`,
+      [code],
+    );
+
     return res.json({
       league: code,
       standings,
@@ -218,6 +264,13 @@ router.get("/league/:league", async (req, res, next) => {
         goals: [...stats].sort((a, b) => number(b.goals) - number(a.goals)).slice(0, 10),
         assists: [...stats].sort((a, b) => number(b.assists) - number(a.assists)).slice(0, 10),
         saves: [...stats].sort((a, b) => number(b.saves) - number(a.saves)).slice(0, 10),
+      },
+      history: {
+        seasons: seasons.map((row) => ({ ...row, finalized: Boolean(row.finalized) })),
+        selectedSeason: selectedSeason || null,
+        players: seasonPlayers.map((row) => ({ ...row, uuid: String(row.uuid).toLowerCase(), finalized: Boolean(row.finalized) })),
+        awards: seasonAwards.map((row) => ({ ...row, uuid: String(row.uuid).toLowerCase() })),
+        awardTotals,
       },
     });
   } catch (error) {
@@ -294,7 +347,7 @@ router.get("/players/:uuid", async (req, res, next) => {
     const base = rows[0];
     if (!base) return res.status(404).json({ error: "BLOCKBALL_PLAYER_NOT_FOUND" });
 
-    const [casinoRows, cosmetics, active, leagueStats, history] = await Promise.all([
+    const [casinoRows, cosmetics, active, leagueStats, history, leagueCareer, leagueSeasons, leagueAwards] = await Promise.all([
       optionalQuery<(RowDataPacket & any)[]>(
         `SELECT daily_plays dailyPlays,daily_bet dailyBet,daily_won dailyWon,daily_lost dailyLost,
                 total_plays totalPlays,total_bet totalBet,total_won totalWon,total_lost totalLost
@@ -315,6 +368,24 @@ router.get("/players/:uuid", async (req, res, next) => {
         [uuid],
       ),
       loadMmrHistory(uuid),
+      optionalQuery<(RowDataPacket & any)[]>(
+        `SELECT matches,goals,assists,saves,clean_sheets cleanSheets,wins,draws,losses
+         FROM league_total_player_stats WHERE player_uuid=? LIMIT 1`,
+        [uuid],
+      ),
+      optionalQuery<(RowDataPacket & any)[]>(
+        `SELECT league_id league,season_id season,matches,goals,assists,saves,
+                clean_sheets cleanSheets,wins,draws,losses,finalized
+         FROM league_player_season_stats WHERE player_uuid=?
+         ORDER BY finalized ASC,season_id DESC,league_id`,
+        [uuid],
+      ),
+      optionalQuery<(RowDataPacket & any)[]>(
+        `SELECT league_id league,season_id season,award_type awardType,amount,awarded_at awardedAt
+         FROM league_player_awards WHERE player_uuid=?
+         ORDER BY season_id DESC,league_id,award_type`,
+        [uuid],
+      ),
     ]);
 
     const hasRankedData = base.mmr != null;
@@ -332,6 +403,11 @@ router.get("/players/:uuid", async (req, res, next) => {
       cosmetics: cosmetics.map((item) => item.id),
       activeCosmetics: active.map((item) => item.id),
       leagueStats,
+      leagueHistory: {
+        career: leagueCareer[0] || null,
+        seasons: leagueSeasons.map((row) => ({ ...row, finalized: Boolean(row.finalized) })),
+        awards: leagueAwards,
+      },
       ranked,
     });
   } catch (error) {

@@ -308,6 +308,26 @@ export interface PlayerLeagueProfile {
   statistics: LeaguePlayerStatistics;
 }
 
+export interface HistoricalStatLine {
+  matches: number; goals: number; assists: number; passes: number; shotsOnNet: number; saves: number;
+  cleanSheets: number; wins: number; draws: number; losses: number;
+}
+export type LeagueCode = "ML" | "LL";
+export interface PlayerLeagueSeasonRecord extends HistoricalStatLine { league: LeagueCode; season: string; finalized: boolean; }
+export interface LeagueAwardRecord { id: number; league: LeagueCode; season: string; playerUuid: string; awardType: string; amount: number; }
+export interface LeagueRewardRecord { id: number; league: LeagueCode; season: string; playerUuid: string; rewardType: string; amount: number; details: string | null; }
+export interface LeagueCardRecord { id: number; league: string; season: string; playerUuid: string; cardType: string; position: string; overall: number; pace: number; shooting: number; passing: number; dribbling: number; defending: number; physical: number; }
+export interface PlayerLeagueHistoryView {
+  current: Record<LeagueCode, HistoricalStatLine | null>;
+  pastSeasons: PlayerLeagueSeasonRecord[];
+  totalsByLeague: Record<LeagueCode, HistoricalStatLine>;
+  careerFinalized: HistoricalStatLine;
+  careerWithCurrent: HistoricalStatLine;
+  awards: LeagueAwardRecord[]; rewards: LeagueRewardRecord[]; cards: LeagueCardRecord[];
+}
+export interface LeagueSeasonOverview extends HistoricalStatLine { season: string; players: number; finalized: boolean; }
+export interface LeagueHistoryOverview { league: LeagueCode; current: LeagueSeasonOverview; pastSeasons: LeagueSeasonOverview[]; finalizedTotal: HistoricalStatLine; totalWithCurrent: HistoricalStatLine; awards: LeagueAwardRecord[]; rewards: LeagueRewardRecord[]; cards: LeagueCardRecord[]; }
+
 /*
  * Casino
  */
@@ -405,6 +425,7 @@ export interface NextFootballPlayerPage {
   leagues: PlayerLeagueProfile[];
   casino: CasinoPlayerStats | null;
   cosmetics: PlayerCosmetics;
+  leagueHistory: PlayerLeagueHistoryView;
 }
 
 /*
@@ -683,6 +704,10 @@ export async function getRankedStatLeaderboard(
 /*
  * League API
  */
+
+export async function getNextFootballLeagueHistory(league: LeagueCode): Promise<LeagueHistoryOverview> {
+  return requestNextFootball<LeagueHistoryOverview>(`/league-history/${league}`);
+}
 
 export async function getNextFootballLeagues():
   Promise<LeagueSummary[]> {

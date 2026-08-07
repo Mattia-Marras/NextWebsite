@@ -17,6 +17,8 @@ import {
   type CosmeticType,
 } from "../lib/nextfb/cosmetics";
 
+import { getLeagueHistoryOverview, normalizeLeagueCode } from "../lib/nextfb/league-history";
+
 import {
   getLeagueById,
   getLeaguePlayerLeaderboard,
@@ -693,6 +695,19 @@ nextFootballRouter.get(
     const result = await getCasinoHouseStats();
 
     return response.status(200).json(result);
+  }),
+);
+
+
+/* Historical + live NextFootball league overview. CURRENT always comes from player_stats. */
+nextFootballRouter.get(
+  "/league-history/:league",
+  asyncRoute(async (request, response) => {
+    const raw = getRouteParameter(request.params.league, "league");
+    let league;
+    try { league = normalizeLeagueCode(raw); }
+    catch { throw new InvalidRequestError(`Invalid league: ${raw}`); }
+    return response.status(200).json(await getLeagueHistoryOverview(league));
   }),
 );
 

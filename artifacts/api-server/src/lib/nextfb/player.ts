@@ -11,6 +11,8 @@ import {
     getLeagues,
 } from "./leagues";
 
+import { getPlayerLeagueHistory } from "./league-history";
+
 import {
     getPlayerProfile,
 } from "./profiles";
@@ -52,11 +54,13 @@ export async function getNextFootballPlayerPage(
         casino,
         cosmetics,
         leagues,
+        leagueHistory,
     ] = await Promise.all([
         getRankedProfile(profile.uuid),
         getCasinoPlayerStats(profile.uuid),
         getPlayerCosmetics(profile.uuid),
         getLeagues(),
+        getPlayerLeagueHistory(profile.uuid),
     ]);
 
     /*
@@ -98,6 +102,7 @@ export async function getNextFootballPlayerPage(
         leagues: playerLeagues,
         casino,
         cosmetics,
+        leagueHistory,
     };
 }
 

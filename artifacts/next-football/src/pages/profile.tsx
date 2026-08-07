@@ -44,6 +44,8 @@ import {
   type NextFootballPlayerPage,
   getNextFootballPlayer,
   getPlayerMmrHistory,
+  type HistoricalStatLine,
+  type LeagueCode,
 } from "@/lib/nextfb-api";
 
 const PROFILE_ACCENT = "#39ff14";
@@ -841,88 +843,104 @@ function MmrTrendCard({
   );
 }
 
-function LeaguesSection({
-  player,
-}: {
-  player: NextFootballPlayerPage;
-}) {
-  if (player.leagues.length === 0) {
-    return (
-      <EmptySection
-        title="No league statistics"
-        description="This player is not currently associated with a league profile."
-        icon={<Crown className="h-8 w-8" />}
-      />
-    );
+function prettyLeagueValue(value: string): string {
+  return value
+    .toLowerCase()
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function LeagueStatGrid({ stats }: { stats: HistoricalStatLine }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      <CompactStat label="Matches" value={stats.matches} />
+      <CompactStat label="Wins" value={stats.wins} />
+      <CompactStat label="Draws" value={stats.draws} />
+      <CompactStat label="Losses" value={stats.losses} />
+      <CompactStat label="Goals" value={stats.goals} />
+      <CompactStat label="Assists" value={stats.assists} />
+      <CompactStat label="Passes" value={stats.passes} />
+      <CompactStat label="Shots" value={stats.shotsOnNet} />
+      <CompactStat label="Saves" value={stats.saves} />
+      <CompactStat label="Clean sheets" value={stats.cleanSheets} />
+    </div>
+  );
+}
+
+function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
+  const history = player.leagueHistory;
+  const hasAnything = player.leagues.length > 0 || history.pastSeasons.length > 0 || history.current.ML || history.current.LL;
+
+  if (!hasAnything) {
+    return <EmptySection title="No league statistics" description="This player has no current or historical NextFootball league statistics." icon={<Crown className="h-8 w-8" />} />;
   }
+
+  const labels: Record<LeagueCode, string> = { ML: "Main League", LL: "Lower League" };
 
   return (
     <div className="space-y-8">
-      <SectionHeading
-        title="League statistics"
-        description="Performance across registered leagues and seasons."
-        icon={<Crown className="h-6 w-6" />}
-      />
+      <SectionHeading title="League career" description="Live current-season data plus finalized past seasons, awards, rewards and cards. Main League and Lower League are always kept separate." icon={<Crown className="h-6 w-6" />} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {player.leagues.map((league) => {
-          const statistics = league.statistics;
+      <Card className="border-border bg-card/70">
+        <CardHeader>
+          <CardTitle className="font-display text-2xl uppercase tracking-wider">Overall career</CardTitle>
+          <CardDescription>All finalized ML + LL seasons, with current live player_stats added on top.</CardDescription>
+        </CardHeader>
+        <CardContent><LeagueStatGrid stats={history.careerWithCurrent} /></CardContent>
+      </Card>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        {(["ML", "LL"] as LeagueCode[]).map((code) => {
+          const current = history.current[code];
+          const total = history.totalsByLeague[code];
+          const seasons = history.pastSeasons.filter((item) => item.league === code);
+          const awards = history.awards.filter((item) => item.league === code);
+          const rewards = history.rewards.filter((item) => item.league === code);
+          const cards = history.cards.filter((item) => item.league === code || item.league === "GLOBAL");
 
           return (
-            <Card
-              key={league.leagueId}
-              className="border-border bg-card/70"
-            >
+            <Card key={code} className="border-border bg-card/70">
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <CardTitle className="font-display text-2xl uppercase tracking-wider">
-                      {league.leagueName}
-                    </CardTitle>
-
-                    <CardDescription className="mt-2">
-                      League ID: {league.leagueId}
-                    </CardDescription>
-                  </div>
-
-                  <Trophy
-                    className="h-6 w-6"
-                    style={{ color: PROFILE_ACCENT }}
-                  />
+                  <div><CardTitle className="font-display text-2xl uppercase tracking-wider">{labels[code]}</CardTitle><CardDescription className="mt-2">Current + all finalized past seasons.</CardDescription></div>
+                  <Badge variant="outline">{code}</Badge>
                 </div>
               </CardHeader>
+              <CardContent className="space-y-7">
+                <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">League total</p><LeagueStatGrid stats={total} /></div>
 
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <CompactStat
-                    label="Matches"
-                    value={statistics.matchesPlayed}
-                  />
+                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
+                  <div className="mb-4 flex items-center justify-between"><div><p className="font-display text-lg font-bold uppercase">Current</p><p className="text-xs text-muted-foreground">Live from player_stats</p></div><Badge style={{ borderColor: `${PROFILE_ACCENT}55`, color: PROFILE_ACCENT }} variant="outline">Live</Badge></div>
+                  {current ? <LeagueStatGrid stats={current} /> : <p className="text-sm text-muted-foreground">No current {labels[code]} statistics.</p>}
+                </div>
 
-                  <CompactStat
-                    label="Goals"
-                    value={statistics.goals}
-                  />
+                <div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Past seasons</p>
+                  <div className="space-y-3">
+                    {seasons.length ? seasons.map((season) => (
+                      <div key={`${code}-${season.season}`} className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
+                        <div className="mb-4 flex items-center justify-between"><b className="font-display uppercase">Season {season.season}</b><Badge variant="secondary">Past season</Badge></div>
+                        <LeagueStatGrid stats={season} />
+                      </div>
+                    )) : <p className="text-sm text-muted-foreground">No finalized past seasons for this league.</p>}
+                  </div>
+                </div>
 
-                  <CompactStat
-                    label="Assists"
-                    value={statistics.assists}
-                  />
+                <div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Awards</p>
+                  <div className="flex flex-wrap gap-2">{awards.length ? awards.map((award) => <Badge key={award.id} variant="outline">{award.season} · {prettyLeagueValue(award.awardType)}{award.amount > 1 ? ` ×${award.amount}` : ""}</Badge>) : <span className="text-sm text-muted-foreground">No awards recorded.</span>}</div>
+                </div>
 
-                  <CompactStat
-                    label="Passes"
-                    value={statistics.passes}
-                  />
+                <div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Rewards</p>
+                  <div className="space-y-2">{rewards.length ? rewards.map((reward) => <div key={reward.id} className="rounded-xl border border-white/8 px-3 py-2 text-sm"><b>{reward.season} · {prettyLeagueValue(reward.rewardType)} ×{reward.amount}</b>{reward.details ? <p className="mt-1 text-xs text-muted-foreground">{reward.details}</p> : null}</div>) : <span className="text-sm text-muted-foreground">No rewards recorded.</span>}</div>
+                </div>
 
-                  <CompactStat
-                    label="Shots"
-                    value={statistics.shotsOnNet}
-                  />
-
-                  <CompactStat
-                    label="Saves"
-                    value={statistics.saves}
-                  />
+                <div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">UT cards</p>
+                  <div className="grid gap-3 sm:grid-cols-2">{cards.length ? cards.map((card) => <div key={card.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><div className="flex items-start justify-between"><div><b className="font-display uppercase">{prettyLeagueValue(card.cardType)} · {card.position}</b><p className="text-xs text-muted-foreground">{card.league} · {card.season}</p></div><span className="font-display text-3xl font-bold" style={{ color: PROFILE_ACCENT }}>{card.overall}</span></div><div className="mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground"><span>PAC <b className="text-foreground">{card.pace}</b></span><span>SHO <b className="text-foreground">{card.shooting}</b></span><span>PAS <b className="text-foreground">{card.passing}</b></span><span>DRI <b className="text-foreground">{card.dribbling}</b></span><span>DEF <b className="text-foreground">{card.defending}</b></span><span>PHY <b className="text-foreground">{card.physical}</b></span></div></div>) : <span className="text-sm text-muted-foreground">No UT cards recorded.</span>}</div>
                 </div>
               </CardContent>
             </Card>

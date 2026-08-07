@@ -4,6 +4,7 @@ import type { CasinoPlayerStats } from "./casino";
 import type { PlayerCosmetics } from "./cosmetics";
 import type { LeaguePlayerStatistics } from "./leagues";
 import type { RankedProfile } from "./ranked";
+import type { PlayerLeagueHistoryView } from "./league-history";
 
 /*
  * Valori salvati dal plugin Java tramite Enum.name().
@@ -173,6 +174,7 @@ export interface NextFootballPlayerPage {
     leagues: PlayerLeagueProfile[];
     casino: CasinoPlayerStats | null;
     cosmetics: PlayerCosmetics;
+    leagueHistory: PlayerLeagueHistoryView;
 }
 
 /*

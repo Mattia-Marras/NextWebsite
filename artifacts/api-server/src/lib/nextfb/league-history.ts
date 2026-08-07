@@ -1,9 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { queryFb } from "./db";
-<<<<<<< HEAD
-=======
 import { resolveMinecraftPlayersByUuids } from "./mojang";
->>>>>>> a1e1a08 (league support for nextfb)
+
 
 export type LeagueCode = "ML" | "LL";
 
@@ -89,8 +87,7 @@ export interface LeagueHistoryOverview {
   cards: LeagueCardRecord[];
 }
 
-<<<<<<< HEAD
-=======
+
 export interface LeagueSeasonPlayer extends HistoricalStatLine {
   playerUuid: string;
   username: string | null;
@@ -265,8 +262,7 @@ export async function getLeagueHistoryOverview(rawLeague: string): Promise<Leagu
   const finalizedTotal = pastSeasons.reduce((a, s) => plus(a, s), { ...ZERO });
   return { league: code, current, pastSeasons, finalizedTotal, totalWithCurrent: plus(finalizedTotal, current), awards: awardRows.map(mapAward), rewards: rewardRows.map(mapReward), cards: cardRows.map(mapCard) };
 }
-<<<<<<< HEAD
-=======
+
 
 
 /** Full, read-only detail for one finalized NextFootball past season. */
@@ -320,4 +316,4 @@ export async function getLeagueSeasonDetail(rawLeague: string, rawSeason: string
     }),
   };
 }
->>>>>>> a1e1a08 (league support for nextfb)
+

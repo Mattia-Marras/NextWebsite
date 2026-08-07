@@ -17,11 +17,11 @@ import {
   type CosmeticType,
 } from "../lib/nextfb/cosmetics";
 
-<<<<<<< HEAD
+
 import { getLeagueHistoryOverview, normalizeLeagueCode } from "../lib/nextfb/league-history";
-=======
+
 import { getLeagueHistoryOverview, getLeagueSeasonDetail, normalizeLeagueCode } from "../lib/nextfb/league-history";
->>>>>>> a1e1a08 (league support for nextfb)
+
 
 import {
   getLeagueById,
@@ -715,8 +715,7 @@ nextFootballRouter.get(
   }),
 );
 
-<<<<<<< HEAD
-=======
+
 /* Full read-only page for one finalized historical season. */
 nextFootballRouter.get(
   "/league-history/:league/:season",
@@ -733,12 +732,7 @@ nextFootballRouter.get(
   }),
 );
 
->>>>>>> a1e1a08 (league support for nextfb)
-/*
- * Lista delle leghe.
- *
- * GET /api/nextfb/leagues
- */
+
 
 nextFootballRouter.get(
   "/leagues",

@@ -98,11 +98,19 @@ export function Home() {
                 const awards = history.data.awards.filter((a) => a.season === season.season);
                 const rewards = history.data.rewards.filter((r) => r.season === season.season);
                 const cards = history.data.cards.filter((c) => c.season === season.season);
+<<<<<<< HEAD
                 return <div key={season.season} className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
                   <div className="flex items-center justify-between gap-3"><div><b className="font-display text-xl uppercase">Season {season.season}</b><p className="text-xs text-muted-foreground">{season.players} players · finalized</p></div><span className="rounded-full border border-white/10 px-2.5 py-1 text-xs text-muted-foreground">Past season</span></div>
                   <div className="mt-4"><MiniLeagueStats stats={season} /></div>
                   <div className="mt-4 flex flex-wrap gap-2 text-xs"><span className="rounded-full border border-white/8 px-2.5 py-1">Awards {awards.reduce((n,a)=>n+a.amount,0)}</span><span className="rounded-full border border-white/8 px-2.5 py-1">Rewards {rewards.reduce((n,r)=>n+r.amount,0)}</span><span className="rounded-full border border-white/8 px-2.5 py-1">UT cards {cards.length}</span></div>
                 </div>;
+=======
+                return <Link key={season.season} href={`/football/${league}/history/${season.season}`} className="group block rounded-2xl border border-white/8 bg-white/[0.02] p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.04]">
+                  <div className="flex items-center justify-between gap-3"><div><b className="font-display text-xl uppercase">Season {season.season}</b><p className="text-xs text-muted-foreground">{season.players} players · finalized</p></div><span className="rounded-full border border-white/10 px-2.5 py-1 text-xs text-muted-foreground transition group-hover:text-foreground">Open season →</span></div>
+                  <div className="mt-4"><MiniLeagueStats stats={season} /></div>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs"><span className="rounded-full border border-white/8 px-2.5 py-1">Awards {awards.reduce((n,a)=>n+a.amount,0)}</span><span className="rounded-full border border-white/8 px-2.5 py-1">Rewards {rewards.reduce((n,r)=>n+r.amount,0)}</span><span className="rounded-full border border-white/8 px-2.5 py-1">UT cards {cards.length}</span></div>
+                </Link>;
+>>>>>>> a1e1a08 (league support for nextfb)
               }) : <p className="text-sm text-muted-foreground">No finalized past seasons imported yet.</p>}</div>
             </div>
           </div> : <p className="text-sm text-muted-foreground">League history is not available.</p>}

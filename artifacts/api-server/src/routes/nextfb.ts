@@ -17,7 +17,11 @@ import {
   type CosmeticType,
 } from "../lib/nextfb/cosmetics";
 
+<<<<<<< HEAD
 import { getLeagueHistoryOverview, normalizeLeagueCode } from "../lib/nextfb/league-history";
+=======
+import { getLeagueHistoryOverview, getLeagueSeasonDetail, normalizeLeagueCode } from "../lib/nextfb/league-history";
+>>>>>>> a1e1a08 (league support for nextfb)
 
 import {
   getLeagueById,
@@ -711,6 +715,25 @@ nextFootballRouter.get(
   }),
 );
 
+<<<<<<< HEAD
+=======
+/* Full read-only page for one finalized historical season. */
+nextFootballRouter.get(
+  "/league-history/:league/:season",
+  asyncRoute(async (request, response) => {
+    const rawLeague = getRouteParameter(request.params.league, "league");
+    const season = getRouteParameter(request.params.season, "season");
+    let league;
+    try { league = normalizeLeagueCode(rawLeague); }
+    catch { throw new InvalidRequestError(`Invalid league: ${rawLeague}`); }
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(season)) throw new InvalidRequestError(`Invalid season: ${season}`);
+    const result = await getLeagueSeasonDetail(league, season);
+    if (!result) return response.status(404).json({ error: "SEASON_NOT_FOUND", message: "Finalized NextFootball season not found" });
+    return response.status(200).json(result);
+  }),
+);
+
+>>>>>>> a1e1a08 (league support for nextfb)
 /*
  * Lista delle leghe.
  *

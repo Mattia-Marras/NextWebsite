@@ -13,6 +13,7 @@ import NotFound from "@/pages/not-found";
 // Pages
 import { Landing } from "@/pages/landing";
 import { Home } from "@/pages/home";
+import { LeagueSeasonHistory } from "@/pages/league-season-history";
 import { Results } from "@/pages/results";
 import { Fixtures } from "@/pages/fixtures";
 import { Standings } from "@/pages/standings";
@@ -57,6 +58,11 @@ function Router() {
         <Route
           path="/football/leaderboards"
           component={FootballLeaderboards}
+        />
+
+        <Route
+          path="/football/:league/history/:season"
+          component={LeagueSeasonHistory}
         />
 
         <Route path="/blockball/ranked" component={BlockballRanked} />

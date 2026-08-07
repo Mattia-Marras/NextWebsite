@@ -1,5 +1,9 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { queryFb } from "./db";
+<<<<<<< HEAD
+=======
+import { resolveMinecraftPlayersByUuids } from "./mojang";
+>>>>>>> a1e1a08 (league support for nextfb)
 
 export type LeagueCode = "ML" | "LL";
 
@@ -85,6 +89,37 @@ export interface LeagueHistoryOverview {
   cards: LeagueCardRecord[];
 }
 
+<<<<<<< HEAD
+=======
+export interface LeagueSeasonPlayer extends HistoricalStatLine {
+  playerUuid: string;
+  username: string | null;
+}
+
+export interface LeagueSeasonAward extends LeagueAwardRecord {
+  username: string | null;
+}
+
+export interface LeagueSeasonReward extends LeagueRewardRecord {
+  username: string | null;
+}
+
+export interface LeagueSeasonCard extends LeagueCardRecord {
+  username: string | null;
+}
+
+export interface LeagueSeasonDetail {
+  league: LeagueCode;
+  season: string;
+  finalized: boolean;
+  totals: HistoricalStatLine;
+  players: LeagueSeasonPlayer[];
+  awards: LeagueSeasonAward[];
+  rewards: LeagueSeasonReward[];
+  cards: LeagueSeasonCard[];
+}
+
+>>>>>>> a1e1a08 (league support for nextfb)
 interface AnyRow extends RowDataPacket { [key: string]: any }
 
 const ZERO: HistoricalStatLine = {
@@ -230,3 +265,59 @@ export async function getLeagueHistoryOverview(rawLeague: string): Promise<Leagu
   const finalizedTotal = pastSeasons.reduce((a, s) => plus(a, s), { ...ZERO });
   return { league: code, current, pastSeasons, finalizedTotal, totalWithCurrent: plus(finalizedTotal, current), awards: awardRows.map(mapAward), rewards: rewardRows.map(mapReward), cards: cardRows.map(mapCard) };
 }
+<<<<<<< HEAD
+=======
+
+
+/** Full, read-only detail for one finalized NextFootball past season. */
+export async function getLeagueSeasonDetail(rawLeague: string, rawSeason: string): Promise<LeagueSeasonDetail | null> {
+  const code = normalizeLeagueCode(rawLeague);
+  const season = rawSeason.trim();
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(season)) throw new Error(`Invalid season: ${rawSeason}`);
+
+  const [playerRows, awardRows, rewardRows, cardRows] = await Promise.all([
+    optional<AnyRow[]>(`SELECT player_uuid,matches,goals,assists,passes,shots_on_net,saves,clean_sheets,wins,draws,losses,finalized
+      FROM nf_league_season_history WHERE league_name=? AND season_id=? AND finalized=TRUE`, [code, season]),
+    optional<AnyRow[]>(`SELECT * FROM nf_league_awards WHERE league_name=? AND season_id=? ORDER BY award_type,amount DESC,player_uuid`, [code, season]),
+    optional<AnyRow[]>(`SELECT * FROM nf_league_rewards WHERE league_name=? AND season_id=? ORDER BY reward_type,amount DESC,id`, [code, season]),
+    optional<AnyRow[]>(`SELECT * FROM nf_ut_cards WHERE league_name=? AND season_id=? ORDER BY overall DESC,card_type,player_uuid`, [code, season]),
+  ]);
+
+  if (playerRows.length === 0) return null;
+
+  const uuids = [...new Set([
+    ...playerRows.map((row) => String(row.player_uuid)),
+    ...awardRows.map((row) => String(row.player_uuid)),
+    ...rewardRows.map((row) => String(row.player_uuid)),
+    ...cardRows.map((row) => String(row.player_uuid)),
+  ])];
+  const identities = await resolveMinecraftPlayersByUuids(uuids);
+  const usernameFor = (uuid: string) => identities.get(uuid.toLowerCase())?.username ?? null;
+
+  const players: LeagueSeasonPlayer[] = playerRows.map((row) => {
+    const playerUuid = String(row.player_uuid);
+    return { playerUuid, username: usernameFor(playerUuid), ...stats(row) };
+  });
+  const totals = players.reduce((total, player) => plus(total, player), { ...ZERO });
+
+  return {
+    league: code,
+    season,
+    finalized: true,
+    totals,
+    players,
+    awards: awardRows.map((row) => {
+      const value = mapAward(row);
+      return { ...value, username: usernameFor(value.playerUuid) };
+    }),
+    rewards: rewardRows.map((row) => {
+      const value = mapReward(row);
+      return { ...value, username: usernameFor(value.playerUuid) };
+    }),
+    cards: cardRows.map((row) => {
+      const value = mapCard(row);
+      return { ...value, username: usernameFor(value.playerUuid) };
+    }),
+  };
+}
+>>>>>>> a1e1a08 (league support for nextfb)

@@ -327,14 +327,11 @@ export interface PlayerLeagueHistoryView {
 }
 export interface LeagueSeasonOverview extends HistoricalStatLine { season: string; players: number; finalized: boolean; }
 export interface LeagueHistoryOverview { league: LeagueCode; current: LeagueSeasonOverview; pastSeasons: LeagueSeasonOverview[]; finalizedTotal: HistoricalStatLine; totalWithCurrent: HistoricalStatLine; awards: LeagueAwardRecord[]; rewards: LeagueRewardRecord[]; cards: LeagueCardRecord[]; }
-<<<<<<< HEAD
-=======
 export interface LeagueSeasonPlayer extends HistoricalStatLine { playerUuid: string; username: string | null; }
 export interface LeagueSeasonAward extends LeagueAwardRecord { username: string | null; }
 export interface LeagueSeasonReward extends LeagueRewardRecord { username: string | null; }
 export interface LeagueSeasonCard extends LeagueCardRecord { username: string | null; }
 export interface LeagueSeasonDetail { league: LeagueCode; season: string; finalized: boolean; totals: HistoricalStatLine; players: LeagueSeasonPlayer[]; awards: LeagueSeasonAward[]; rewards: LeagueSeasonReward[]; cards: LeagueSeasonCard[]; }
->>>>>>> a1e1a08 (league support for nextfb)
 
 /*
  * Casino
@@ -717,13 +714,10 @@ export async function getNextFootballLeagueHistory(league: LeagueCode): Promise<
   return requestNextFootball<LeagueHistoryOverview>(`/league-history/${league}`);
 }
 
-<<<<<<< HEAD
-=======
 export async function getNextFootballLeagueSeason(league: LeagueCode, season: string): Promise<LeagueSeasonDetail> {
   return requestNextFootball<LeagueSeasonDetail>(`/league-history/${league}/${encodeURIComponent(season)}`);
 }
 
->>>>>>> a1e1a08 (league support for nextfb)
 export async function getNextFootballLeagues():
   Promise<LeagueSummary[]> {
   return requestNextFootball<

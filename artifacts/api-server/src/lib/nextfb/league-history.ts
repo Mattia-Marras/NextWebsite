@@ -116,7 +116,6 @@ export interface LeagueSeasonDetail {
   cards: LeagueSeasonCard[];
 }
 
->>>>>>> a1e1a08 (league support for nextfb)
 interface AnyRow extends RowDataPacket { [key: string]: any }
 
 const ZERO: HistoricalStatLine = {

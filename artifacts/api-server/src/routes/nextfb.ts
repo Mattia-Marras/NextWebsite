@@ -18,8 +18,6 @@ import {
 } from "../lib/nextfb/cosmetics";
 
 
-import { getLeagueHistoryOverview, normalizeLeagueCode } from "../lib/nextfb/league-history";
-
 import { getLeagueHistoryOverview, getLeagueSeasonDetail, normalizeLeagueCode } from "../lib/nextfb/league-history";
 
 

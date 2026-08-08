@@ -32,7 +32,7 @@ export const GAME_MODES: GameModeDefinition[] = [
     available: true,
     landingHref: "/football/main",
     sections: [
-      { label: "Ranked", href: "/football/leaderboards?tab=ranked", icon: BarChart3, available: true },
+      { label: "Ranked", href: "/football/ranked", icon: BarChart3, available: true },
       { label: "League", href: "/football/main", icon: Trophy, available: true },
       { label: "Player search", href: "/football/players", icon: Search, available: true },
       { label: "Leaderboards", href: "/football/leaderboards", icon: Users, available: true },

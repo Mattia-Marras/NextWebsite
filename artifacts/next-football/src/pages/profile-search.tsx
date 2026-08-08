@@ -94,7 +94,7 @@ export function ProfileSearch() {
       normalizeSearchValue(searchValue);
 
     if (!normalizedValue) {
-      setError("Enter a Minecraft username or UUID.");
+      setError("Enter a Minecraft username.");
       return;
     }
 
@@ -112,7 +112,7 @@ export function ProfileSearch() {
 
     if (!isValidMinecraftUsername(normalizedValue)) {
       setError(
-        "Enter a valid Minecraft username or UUID. Usernames must contain 3–16 letters, numbers or underscores.",
+        "Enter a valid Minecraft username. Usernames must contain 3–16 letters, numbers or underscores.",
       );
       return;
     }
@@ -167,8 +167,8 @@ export function ProfileSearch() {
 
         <p className="mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">
           Search the NextFootball player database by Minecraft
-          username or UUID and explore statistics, ranked
-          progress, leagues, casino activity and cosmetics.
+          username and explore statistics, ranked progress,
+          leagues, casino activity and cosmetics.
         </p>
 
         <form
@@ -194,8 +194,8 @@ export function ProfileSearch() {
                       setError(null);
                     }
                   }}
-                  placeholder="NextFootball username or Minecraft UUID"
-                  aria-label="NextFootball username or Minecraft UUID"
+                  placeholder="Minecraft username"
+                  aria-label="Minecraft username"
                   aria-invalid={Boolean(error)}
                   aria-describedby={
                     error

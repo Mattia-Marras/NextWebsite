@@ -42,7 +42,7 @@ export function BlockballRanked() {
         <div className="relative mt-4 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="font-display text-4xl font-bold uppercase md:text-6xl">Ranked Arena</h1>
-            <p className="mt-3 max-w-2xl text-muted-foreground">Live MMR standings, complete competitive statistics, win rates and rank progression from the BlockBall database.</p>
+            <p className="mt-3 max-w-2xl text-muted-foreground">Live MMR standings, complete competitive statistics, win rates and rank progression across BlockBall Ranked.</p>
           </div>
           {top && (
             <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 backdrop-blur">
@@ -73,7 +73,7 @@ export function BlockballRanked() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><BarChart3 className="text-sky-400" /> Top 10 overview</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Compare the leading players using the statistics persisted by the BlockBall Ranked system.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Compare the leading players across every tracked competitive statistic.</p>
           </div>
           <select value={stat} onChange={(event) => setStat(event.target.value)} className="rounded-xl border border-white/10 bg-[#0b1017] px-4 py-2.5 text-sm outline-none focus:border-sky-400">
             {filters.map((item: string) => <option key={item} value={item}>{pretty(item)}</option>)}

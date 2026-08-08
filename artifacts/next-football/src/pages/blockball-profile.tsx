@@ -39,7 +39,6 @@ export function BlockballProfile() {
           <div>
             <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-sky-400">NEXT BlockBall Player Profile</p>
             <h1 className="mt-3 font-display text-4xl font-bold uppercase md:text-6xl">{player.name}</h1>
-            <p className="mt-2 break-all font-mono text-xs text-muted-foreground">Offline UUID · {player.uuid}</p>
           </div>
           {ranked && <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Current competitive rank</p><p className="mt-1 text-2xl font-bold text-sky-400">{ranked.rank.displayName}</p><p className="text-sm">{N(ranked.mmr)} MMR</p></div>}
         </div>

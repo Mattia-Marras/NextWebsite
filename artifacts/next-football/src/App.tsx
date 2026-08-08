@@ -21,6 +21,7 @@ import { Admin } from "@/pages/admin";
 import { ProfileSearch } from "@/pages/profile-search";
 import { Profile } from "@/pages/profile";
 import { FootballLeaderboards } from "@/pages/football-leaderboards";
+import { FootballRanked } from "@/pages/football-ranked";
 import { BlockballHome } from "@/pages/blockball-home";
 import { BlockballPlayers } from "@/pages/blockball-players";
 import { BlockballProfile } from "@/pages/blockball-profile";
@@ -53,6 +54,11 @@ function Router() {
         <Route
           path="/football/profile/:uuid"
           component={Profile}
+        />
+
+        <Route
+          path="/football/ranked"
+          component={FootballRanked}
         />
 
         <Route

@@ -406,7 +406,19 @@ nextFootballRouter.get(
       });
     }
 
-    return response.status(200).json(player);
+    const identities = await resolveMinecraftPlayersByUuids([uuid]);
+    const username = identities.get(uuid)?.username ?? null;
+
+    return response.status(200).json({
+      ...player,
+      profile: {
+        ...player.profile,
+        username,
+      },
+      ranked: player.ranked
+        ? { ...player.ranked, username }
+        : null,
+    });
   }),
 );
 

@@ -146,14 +146,6 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function shortenUuid(uuid: string): string {
-  if (uuid.length <= 20) {
-    return uuid;
-  }
-
-  return `${uuid.slice(0, 8)}...${uuid.slice(-8)}`;
-}
-
 function normalizeUsername(
   username: string | null | undefined,
 ): string | null {
@@ -694,8 +686,7 @@ function LeaderboardEntry({
   const positionStyle =
     getPositionStyle(row.position);
 
-  const displayName =
-    row.username ?? shortenUuid(row.uuid);
+  const displayName = row.username?.trim() || "Unknown player";
   const rankTheme = row.rankName ? getRankTheme(row.rankName) : null;
 
   return (
@@ -723,10 +714,7 @@ function LeaderboardEntry({
           <div className="flex flex-wrap items-center gap-2">
             <p
               className="truncate font-display text-base font-semibold text-foreground transition-colors group-hover:text-[#39ff14]"
-              title={
-                row.username ??
-                row.uuid
-              }
+              title={displayName}
             >
               {displayName}
             </p>
@@ -749,14 +737,6 @@ function LeaderboardEntry({
             )}
           </div>
 
-          {row.username && (
-            <p
-              className="mt-1 truncate font-mono text-xs text-muted-foreground"
-              title={row.uuid}
-            >
-              {shortenUuid(row.uuid)}
-            </p>
-          )}
 
           {row.secondaryLabel &&
             row.secondaryValue !==

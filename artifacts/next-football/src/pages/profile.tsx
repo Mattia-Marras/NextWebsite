@@ -102,14 +102,6 @@ function calculatePercentage(
   return (numerator / denominator) * 100;
 }
 
-function shortenUuid(uuid: string): string {
-  if (uuid.length <= 18) {
-    return uuid;
-  }
-
-  return `${uuid.slice(0, 8)}...${uuid.slice(-8)}`;
-}
-
 function mergePlayerStats(
   stats: Partial<PlayerStats> | undefined,
 ): PlayerStats {
@@ -245,14 +237,11 @@ function ProfileContent({
                 </div>
 
                 <h1 className="font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">
-                  NextFootball Player Profile
+                  {profile.username?.trim() || "NextFootball Player"}
                 </h1>
 
-                <p
-                  className="mt-3 break-all font-mono text-sm text-muted-foreground"
-                  title={profile.uuid}
-                >
-                  {shortenUuid(profile.uuid)}
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Complete NextFootball player profile
                 </p>
               </div>
             </div>
@@ -1202,7 +1191,6 @@ function ProfileLoading() {
 }
 
 function ProfileError({
-  uuid,
   error,
   onRetry,
 }: {
@@ -1222,7 +1210,7 @@ function ProfileError({
   ) {
     title = "Player not found";
     description =
-      "No NextFootball profile exists for the requested UUID.";
+      "No NextFootball profile exists for this player.";
   }
 
   return (
@@ -1241,9 +1229,6 @@ function ProfileError({
             {description}
           </p>
 
-          <p className="mt-3 break-all font-mono text-xs text-muted-foreground">
-            {uuid}
-          </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/football/players">

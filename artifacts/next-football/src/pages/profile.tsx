@@ -861,12 +861,16 @@ function LeagueStatGrid({ stats }: { stats: HistoricalStatLine }) {
 
 function LeagueCardTile({
   card,
+  uuid,
+  username,
 }: {
   card: NextFootballPlayerPage["leagueHistory"]["cards"][number];
+  uuid: string;
+  username?: string | null;
 }) {
   const goalkeeper = card.position.toUpperCase() === "GK";
 
-  const stats = goalkeeper
+  const stats: Array<[string, number | null | undefined]> = goalkeeper
     ? [
         ["REF", card.reflexes],
         ["PRE", card.predicting],
@@ -884,104 +888,345 @@ function LeagueCardTile({
         ["CON", card.ballControl],
       ];
 
-  const normalizedType = card.cardType.trim().toUpperCase();
-  const special = normalizedType !== "" && normalizedType !== "BASE";
+  /*
+   * CARD TEMPLATE
+   *
+   * TOTW -> black/gold special card
+   *
+   * Base:
+   * 85+ -> gold
+   * 75+ -> silver
+   * <75 -> bronze
+   */
+  const normalizedType = (card.cardType ?? "").trim().toUpperCase();
 
-  const palette = special
-    ? {
-        border: "rgba(250, 204, 21, .55)",
-        top: "rgba(10, 10, 10, .98)",
-        bottom: "rgba(120, 53, 15, .92)",
-        glow: "rgba(250, 204, 21, .16)",
-      }
-    : card.overall >= 85
-      ? {
-          border: "rgba(245, 158, 11, .5)",
-          top: "rgba(120, 53, 15, .94)",
-          bottom: "rgba(245, 158, 11, .28)",
-          glow: "rgba(245, 158, 11, .14)",
-        }
-      : card.overall >= 75
-        ? {
-            border: "rgba(203, 213, 225, .45)",
-            top: "rgba(51, 65, 85, .95)",
-            bottom: "rgba(148, 163, 184, .25)",
-            glow: "rgba(203, 213, 225, .11)",
-          }
-        : {
-            border: "rgba(180, 83, 9, .5)",
-            top: "rgba(69, 26, 3, .96)",
-            bottom: "rgba(180, 83, 9, .3)",
-            glow: "rgba(180, 83, 9, .12)",
-          };
+  let template = "/cards/bronzecard.png";
+
+  if (
+    normalizedType === "TOTW" ||
+    normalizedType === "TEAM_OF_THE_WEEK"
+  ) {
+    template = "/cards/totw_card.png";
+  } else if (card.overall >= 85) {
+    template = "/cards/goldcard.png";
+  } else if (card.overall >= 75) {
+    template = "/cards/silvercard.png";
+  }
+
+  /*
+   * Remove "-" because render services are happier
+   * with compact Minecraft UUIDs.
+   */
+  const cleanUuid = uuid.replace(/-/g, "");
+
+  /*
+   * Transparent Minecraft 3D body render.
+   *
+   * scale=10 gives us enough resolution to avoid
+   * the player becoming blurry when displayed
+   * over the high-resolution card template.
+   *
+   * overlay enables second-layer skin elements:
+   * hats, jackets, sleeves, etc.
+   */
+  const skinRenderUrl =
+    `https://crafatar.com/renders/body/${cleanUuid}?scale=10&overlay`;
+
+  const displayName =
+    username?.trim() ||
+    "PLAYER";
+
+  /*
+   * Text color.
+   *
+   * TOTW is dark, therefore gold-ish text works well.
+   * Normal cards use a dark charcoal.
+   */
+  const isTotw =
+    normalizedType === "TOTW" ||
+    normalizedType === "TEAM_OF_THE_WEEK";
+
+  const primaryText = isTotw
+    ? "#f4d06f"
+    : "#161616";
+
+  const secondaryText = isTotw
+    ? "#d8b855"
+    : "#282828";
 
   return (
-    <article
-      className="relative overflow-hidden rounded-[1.75rem] border p-4 shadow-xl"
-      style={{
-        borderColor: palette.border,
-        background: `linear-gradient(155deg, ${palette.top}, ${palette.bottom})`,
-        boxShadow: `0 18px 50px ${palette.glow}`,
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 opacity-30">
-        <div className="absolute -right-8 top-8 h-24 w-40 rotate-[-28deg] border-y border-white/30" />
-        <div className="absolute -right-5 top-14 h-14 w-32 rotate-[-28deg] border-y border-white/20" />
-      </div>
+    <article className="group relative mx-auto w-full max-w-[270px]">
+      {/*
+       * Main card canvas.
+       *
+       * Original PNG ratio ≈ 753 / 1054.
+       * Everything inside is positioned using percentages,
+       * therefore it scales together with the image.
+       */}
+      <div
+        className="
+          relative
+          w-full
+          overflow-visible
+          transition-transform
+          duration-300
+          ease-out
+          group-hover:-translate-y-1
+          group-hover:scale-[1.015]
+        "
+        style={{
+          aspectRatio: "753 / 1054",
+          filter: "drop-shadow(0 18px 28px rgba(0,0,0,.38))",
+        }}
+      >
+        {/* ====================================================== */}
+        {/* CARD TEMPLATE                                         */}
+        {/* ====================================================== */}
 
-      <div className="relative">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="font-display text-4xl font-black leading-none text-white">
-              {card.overall}
-            </div>
-            <div className="mt-1 font-display text-sm font-bold uppercase tracking-[0.16em] text-white/90">
-              {card.position}
-            </div>
-          </div>
+        <img
+          src={template}
+          alt=""
+          draggable={false}
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            z-0
+            h-full
+            w-full
+            select-none
+            object-contain
+          "
+        />
 
-          <Badge
-            variant="outline"
-            className="border-white/25 bg-black/20 text-[10px] uppercase tracking-widest text-white"
-          >
-            {prettyLeagueValue(card.cardType || "Base")}
-          </Badge>
+        {/* ====================================================== */}
+        {/* OVERALL                                                */}
+        {/* ====================================================== */}
+
+        <div
+          className="
+            absolute
+            z-30
+            flex
+            items-center
+            justify-center
+            font-display
+            font-black
+            leading-none
+          "
+          style={{
+            left: "15%",
+            top: "20%",
+            width: "20%",
+            fontSize: "clamp(30px, 4.2vw, 50px)",
+            color: primaryText,
+            textShadow: isTotw
+              ? "0 2px 3px rgba(0,0,0,.65)"
+              : "0 1px 1px rgba(255,255,255,.15)",
+          }}
+        >
+          {card.overall}
         </div>
 
-        <div className="mt-12 border-b border-white/20 pb-3 text-center">
-          <div className="font-display text-lg font-black uppercase tracking-wide text-white">
-            {card.season}
-          </div>
-          <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/65">
-            {card.league === "GLOBAL" ? "NextFootball League" : card.league}
-          </div>
+        {/* ====================================================== */}
+        {/* POSITION                                               */}
+        {/* ====================================================== */}
+
+        <div
+          className="
+            absolute
+            z-30
+            text-center
+            font-display
+            font-black
+            uppercase
+          "
+          style={{
+            left: "15%",
+            top: "27%",
+            width: "20%",
+            fontSize: "clamp(14px, 1.8vw, 22px)",
+            color: secondaryText,
+            letterSpacing: ".04em",
+          }}
+        >
+          {card.position}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2">
+        {/* ====================================================== */}
+        {/* PLAYER SKIN                                            */}
+        {/* ====================================================== */}
+
+        {/*
+         * This is intentionally much larger than the card itself.
+         * The actual PNG returned by Crafatar contains transparent
+         * space around the model.
+         *
+         * We position it roughly like an EA player portrait:
+         * head in upper-middle area, torso ending above player name.
+         */}
+        <img
+          src={skinRenderUrl}
+          alt={displayName}
+          draggable={false}
+          loading="lazy"
+          className="
+            pointer-events-none
+            absolute
+            z-20
+            select-none
+            object-contain
+          "
+          style={{
+            left: "27%",
+            top: "12%",
+            width: "58%",
+            height: "51%",
+            objectPosition: "center bottom",
+            filter: isTotw
+              ? "drop-shadow(0 6px 7px rgba(0,0,0,.7))"
+              : "drop-shadow(0 6px 6px rgba(0,0,0,.32))",
+          }}
+        />
+
+        {/* ====================================================== */}
+        {/* PLAYER NAME                                            */}
+        {/* ====================================================== */}
+
+        <div
+          className="
+            absolute
+            z-30
+            overflow-hidden
+            whitespace-nowrap
+            text-center
+            font-display
+            font-black
+            uppercase
+          "
+          style={{
+            left: "14%",
+            top: "57%",
+            width: "72%",
+            fontSize:
+              displayName.length > 14
+                ? "clamp(12px, 1.65vw, 19px)"
+                : displayName.length > 10
+                  ? "clamp(14px, 1.85vw, 22px)"
+                  : "clamp(16px, 2.1vw, 25px)",
+            letterSpacing: ".025em",
+            color: primaryText,
+            textOverflow: "ellipsis",
+            textShadow: isTotw
+              ? "0 2px 3px rgba(0,0,0,.7)"
+              : "0 1px 1px rgba(255,255,255,.12)",
+          }}
+        >
+          {displayName}
+        </div>
+
+        {/* ====================================================== */}
+        {/* DIVIDER                                                */}
+        {/* ====================================================== */}
+
+        <div
+          className="absolute z-30"
+          style={{
+            left: "20%",
+            top: "62%",
+            width: "60%",
+            height: "1px",
+            background: isTotw
+              ? "rgba(231,196,87,.55)"
+              : "rgba(20,20,20,.28)",
+          }}
+        />
+
+        {/* ====================================================== */}
+        {/* STATS                                                  */}
+        {/* ====================================================== */}
+
+        <div
+          className="absolute z-30 grid grid-cols-2"
+          style={{
+            left: "20%",
+            top: "65%",
+            width: "60%",
+            rowGap: "1.2%",
+            columnGap: "13%",
+          }}
+        >
           {stats.map(([label, value]) => (
             <div
-              key={String(label)}
-              className="flex items-baseline justify-between gap-2 text-xs"
+              key={label}
+              className="
+                flex
+                items-baseline
+                justify-center
+                gap-[7%]
+                font-display
+                uppercase
+              "
             >
-              <span className="font-display font-bold text-white/65">
-                {label}
-              </span>
-              <span className="font-display text-base font-black text-white">
+              <span
+                className="font-black"
+                style={{
+                  fontSize: "clamp(15px, 1.8vw, 21px)",
+                  color: primaryText,
+                  minWidth: "1.7em",
+                  textAlign: "right",
+                }}
+              >
                 {value ?? "—"}
+              </span>
+
+              <span
+                className="font-bold"
+                style={{
+                  fontSize: "clamp(9px, 1vw, 12px)",
+                  color: secondaryText,
+                  minWidth: "2.3em",
+                }}
+              >
+                {label}
               </span>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 text-center text-[9px] uppercase tracking-[0.24em] text-white/45">
-          Card #{card.id}
+        {/* ====================================================== */}
+        {/* SEASON / LEAGUE                                        */}
+        {/* ====================================================== */}
+
+        <div
+          className="
+            absolute
+            z-30
+            text-center
+            font-display
+            font-bold
+            uppercase
+          "
+          style={{
+            left: "20%",
+            top: "82%",
+            width: "60%",
+            fontSize: "clamp(7px, .75vw, 10px)",
+            letterSpacing: ".13em",
+            color: secondaryText,
+            opacity: 0.72,
+          }}
+        >
+          {card.league === "GLOBAL"
+            ? "NEXTFOOTBALL"
+            : card.league}
+          {" · "}
+          S{card.season}
         </div>
       </div>
     </article>
   );
-}
-
-function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
+}function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
   const history = player.leagueHistory;
   const hasAnything = player.leagues.length > 0 || history.pastSeasons.length > 0 || history.cards.length > 0 || history.current.ML || history.current.LL;
 

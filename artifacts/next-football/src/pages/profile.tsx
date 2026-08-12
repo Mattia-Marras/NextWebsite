@@ -861,7 +861,6 @@ function LeagueStatGrid({ stats }: { stats: HistoricalStatLine }) {
 
 function LeagueCardTile({
   card,
-  uuid,
   username,
 }: {
   card: NextFootballPlayerPage["leagueHistory"]["cards"][number];
@@ -869,7 +868,7 @@ function LeagueCardTile({
   username?: string | null;
 }) {
   const goalkeeper = card.position.toUpperCase() === "GK";
-
+  const cleanUuid = card.playerUuid.replace(/-/g, "");
   const stats: Array<[string, number | null | undefined]> = goalkeeper
     ? [
         ["REF", card.reflexes],

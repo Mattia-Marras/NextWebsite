@@ -864,7 +864,6 @@ function LeagueCardTile({
   username,
 }: {
   card: NextFootballPlayerPage["leagueHistory"]["cards"][number];
-  uuid: string;
   username?: string | null;
 }) {
   const goalkeeper = card.position.toUpperCase() === "GK";
@@ -911,12 +910,6 @@ function LeagueCardTile({
   } else if (card.overall >= 75) {
     template = "/cards/silvercard.png";
   }
-
-  /*
-   * Remove "-" because render services are happier
-   * with compact Minecraft UUIDs.
-   */
-  const cleanUuid = uuid.replace(/-/g, "");
 
   /*
    * Transparent Minecraft 3D body render.
@@ -1225,7 +1218,9 @@ function LeagueCardTile({
       </div>
     </article>
   );
-}function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
+}
+
+function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
   const history = player.leagueHistory;
   const hasAnything = player.leagues.length > 0 || history.pastSeasons.length > 0 || history.cards.length > 0 || history.current.ML || history.current.LL;
 
@@ -1263,7 +1258,11 @@ function LeagueCardTile({
           {history.cards.length ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {history.cards.map((card) => (
-                <LeagueCardTile key={card.id} card={card} />
+                <LeagueCardTile
+                  key={card.id}
+                  card={card}
+                  username={player.profile.username}
+                />
               ))}
             </div>
           ) : (

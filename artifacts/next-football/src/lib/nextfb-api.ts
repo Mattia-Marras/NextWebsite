@@ -316,7 +316,25 @@ export type LeagueCode = "ML" | "LL";
 export interface PlayerLeagueSeasonRecord extends HistoricalStatLine { league: LeagueCode; season: string; finalized: boolean; }
 export interface LeagueAwardRecord { id: number; league: LeagueCode; season: string; playerUuid: string; awardType: string; amount: number; }
 export interface LeagueRewardRecord { id: number; league: LeagueCode; season: string; playerUuid: string; rewardType: string; amount: number; details: string | null; }
-export interface LeagueCardRecord { id: number; league: string; season: string; playerUuid: string; cardType: string; position: string; overall: number; pace: number; shooting: number; passing: number; dribbling: number; defending: number; physical: number; }
+export interface LeagueCardRecord {
+  id: number;
+  league: string;
+  season: string;
+  playerUuid: string;
+  cardType: string;
+  position: string;
+  overall: number;
+  positioning: number | null;
+  shooting: number | null;
+  passing: number | null;
+  dribbling: number | null;
+  defending: number | null;
+  ballControl: number | null;
+  reflexes: number | null;
+  predicting: number | null;
+  shotStopping: number | null;
+  composure: number | null;
+}
 export interface PlayerLeagueHistoryView {
   current: Record<LeagueCode, HistoricalStatLine | null>;
   pastSeasons: PlayerLeagueSeasonRecord[];

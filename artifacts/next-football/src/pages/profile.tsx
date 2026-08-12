@@ -858,9 +858,132 @@ function LeagueStatGrid({ stats }: { stats: HistoricalStatLine }) {
   );
 }
 
+
+function LeagueCardTile({
+  card,
+}: {
+  card: NextFootballPlayerPage["leagueHistory"]["cards"][number];
+}) {
+  const goalkeeper = card.position.toUpperCase() === "GK";
+
+  const stats = goalkeeper
+    ? [
+        ["REF", card.reflexes],
+        ["PRE", card.predicting],
+        ["STP", card.shotStopping],
+        ["POS", card.positioning],
+        ["PAS", card.passing],
+        ["COM", card.composure],
+      ]
+    : [
+        ["POS", card.positioning],
+        ["SHO", card.shooting],
+        ["PAS", card.passing],
+        ["DRI", card.dribbling],
+        ["DEF", card.defending],
+        ["CON", card.ballControl],
+      ];
+
+  const normalizedType = card.cardType.trim().toUpperCase();
+  const special = normalizedType !== "" && normalizedType !== "BASE";
+
+  const palette = special
+    ? {
+        border: "rgba(250, 204, 21, .55)",
+        top: "rgba(10, 10, 10, .98)",
+        bottom: "rgba(120, 53, 15, .92)",
+        glow: "rgba(250, 204, 21, .16)",
+      }
+    : card.overall >= 85
+      ? {
+          border: "rgba(245, 158, 11, .5)",
+          top: "rgba(120, 53, 15, .94)",
+          bottom: "rgba(245, 158, 11, .28)",
+          glow: "rgba(245, 158, 11, .14)",
+        }
+      : card.overall >= 75
+        ? {
+            border: "rgba(203, 213, 225, .45)",
+            top: "rgba(51, 65, 85, .95)",
+            bottom: "rgba(148, 163, 184, .25)",
+            glow: "rgba(203, 213, 225, .11)",
+          }
+        : {
+            border: "rgba(180, 83, 9, .5)",
+            top: "rgba(69, 26, 3, .96)",
+            bottom: "rgba(180, 83, 9, .3)",
+            glow: "rgba(180, 83, 9, .12)",
+          };
+
+  return (
+    <article
+      className="relative overflow-hidden rounded-[1.75rem] border p-4 shadow-xl"
+      style={{
+        borderColor: palette.border,
+        background: `linear-gradient(155deg, ${palette.top}, ${palette.bottom})`,
+        boxShadow: `0 18px 50px ${palette.glow}`,
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-30">
+        <div className="absolute -right-8 top-8 h-24 w-40 rotate-[-28deg] border-y border-white/30" />
+        <div className="absolute -right-5 top-14 h-14 w-32 rotate-[-28deg] border-y border-white/20" />
+      </div>
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="font-display text-4xl font-black leading-none text-white">
+              {card.overall}
+            </div>
+            <div className="mt-1 font-display text-sm font-bold uppercase tracking-[0.16em] text-white/90">
+              {card.position}
+            </div>
+          </div>
+
+          <Badge
+            variant="outline"
+            className="border-white/25 bg-black/20 text-[10px] uppercase tracking-widest text-white"
+          >
+            {prettyLeagueValue(card.cardType || "Base")}
+          </Badge>
+        </div>
+
+        <div className="mt-12 border-b border-white/20 pb-3 text-center">
+          <div className="font-display text-lg font-black uppercase tracking-wide text-white">
+            {card.season}
+          </div>
+          <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/65">
+            {card.league === "GLOBAL" ? "NextFootball League" : card.league}
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2">
+          {stats.map(([label, value]) => (
+            <div
+              key={String(label)}
+              className="flex items-baseline justify-between gap-2 text-xs"
+            >
+              <span className="font-display font-bold text-white/65">
+                {label}
+              </span>
+              <span className="font-display text-base font-black text-white">
+                {value ?? "—"}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 text-center text-[9px] uppercase tracking-[0.24em] text-white/45">
+          Card #{card.id}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
   const history = player.leagueHistory;
-  const hasAnything = player.leagues.length > 0 || history.pastSeasons.length > 0 || history.current.ML || history.current.LL;
+  const hasAnything = player.leagues.length > 0 || history.pastSeasons.length > 0 || history.cards.length > 0 || history.current.ML || history.current.LL;
 
   if (!hasAnything) {
     return <EmptySection title="No league statistics" description="This player has no current or historical NextFootball league statistics." icon={<Crown className="h-8 w-8" />} />;
@@ -880,6 +1003,31 @@ function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
         <CardContent><LeagueStatGrid stats={history.careerWithCurrent} /></CardContent>
       </Card>
 
+      <Card className="border-border bg-card/70">
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="font-display text-2xl uppercase tracking-wider">League cards</CardTitle>
+              <CardDescription className="mt-2">
+                Official player cards earned across NextFootball league seasons. These are separate from Ultimate Team ownership.
+              </CardDescription>
+            </div>
+            <Badge variant="outline">{history.cards.length}</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {history.cards.length ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {history.cards.map((card) => (
+                <LeagueCardTile key={card.id} card={card} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No league cards recorded for this player.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 xl:grid-cols-2">
         {(["ML", "LL"] as LeagueCode[]).map((code) => {
           const current = history.current[code];
@@ -887,7 +1035,6 @@ function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
           const seasons = history.pastSeasons.filter((item) => item.league === code);
           const awards = history.awards.filter((item) => item.league === code);
           const rewards = history.rewards.filter((item) => item.league === code);
-          const cards = history.cards.filter((item) => item.league === code || item.league === "GLOBAL");
 
           return (
             <Card key={code} className="border-border bg-card/70">
@@ -927,10 +1074,6 @@ function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
                   <div className="space-y-2">{rewards.length ? rewards.map((reward) => <div key={reward.id} className="rounded-xl border border-white/8 px-3 py-2 text-sm"><b>{reward.season} · {prettyLeagueValue(reward.rewardType)} ×{reward.amount}</b>{reward.details ? <p className="mt-1 text-xs text-muted-foreground">{reward.details}</p> : null}</div>) : <span className="text-sm text-muted-foreground">No rewards recorded.</span>}</div>
                 </div>
 
-                <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">UT cards</p>
-                  <div className="grid gap-3 sm:grid-cols-2">{cards.length ? cards.map((card) => <div key={card.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><div className="flex items-start justify-between"><div><b className="font-display uppercase">{prettyLeagueValue(card.cardType)} · {card.position}</b><p className="text-xs text-muted-foreground">{card.league} · {card.season}</p></div><span className="font-display text-3xl font-bold" style={{ color: PROFILE_ACCENT }}>{card.overall}</span></div><div className="mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground"><span>PAC <b className="text-foreground">{card.pace}</b></span><span>SHO <b className="text-foreground">{card.shooting}</b></span><span>PAS <b className="text-foreground">{card.passing}</b></span><span>DRI <b className="text-foreground">{card.dribbling}</b></span><span>DEF <b className="text-foreground">{card.defending}</b></span><span>PHY <b className="text-foreground">{card.physical}</b></span></div></div>) : <span className="text-sm text-muted-foreground">No UT cards recorded.</span>}</div>
-                </div>
               </CardContent>
             </Card>
           );

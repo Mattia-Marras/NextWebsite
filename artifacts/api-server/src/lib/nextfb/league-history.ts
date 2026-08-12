@@ -45,12 +45,16 @@ export interface LeagueCardRecord {
   cardType: string;
   position: string;
   overall: number;
-  pace: number;
-  shooting: number;
-  passing: number;
-  dribbling: number;
-  defending: number;
-  physical: number;
+  positioning: number | null;
+  shooting: number | null;
+  passing: number | null;
+  dribbling: number | null;
+  defending: number | null;
+  ballControl: number | null;
+  reflexes: number | null;
+  predicting: number | null;
+  shotStopping: number | null;
+  composure: number | null;
 }
 
 export interface PlayerLeagueSeasonRecord extends HistoricalStatLine {
@@ -126,6 +130,12 @@ const ZERO: HistoricalStatLine = {
 function n(value: unknown): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
+}
+
+function nullableStat(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : null;
 }
 
 function stats(row?: Record<string, any> | null): HistoricalStatLine {
@@ -210,9 +220,23 @@ function mapReward(row: AnyRow): LeagueRewardRecord {
 }
 function mapCard(row: AnyRow): LeagueCardRecord {
   return {
-    id: n(row.id), league: String(row.league_name ?? "GLOBAL"), season: String(row.season_id ?? ""), playerUuid: String(row.player_uuid),
-    cardType: String(row.card_type ?? ""), position: String(row.position ?? ""), overall: n(row.overall), pace: n(row.pace), shooting: n(row.shooting),
-    passing: n(row.passing), dribbling: n(row.dribbling), defending: n(row.defending), physical: n(row.physical),
+    id: n(row.id),
+    league: String(row.league_name ?? "GLOBAL"),
+    season: String(row.season_id ?? ""),
+    playerUuid: String(row.player_uuid),
+    cardType: String(row.card_type ?? ""),
+    position: String(row.position ?? ""),
+    overall: n(row.overall),
+    positioning: nullableStat(row.positioning),
+    shooting: nullableStat(row.shooting),
+    passing: nullableStat(row.passing),
+    dribbling: nullableStat(row.dribbling),
+    defending: nullableStat(row.defending),
+    ballControl: nullableStat(row.ball_control),
+    reflexes: nullableStat(row.reflexes),
+    predicting: nullableStat(row.predicting),
+    shotStopping: nullableStat(row.shot_stopping),
+    composure: nullableStat(row.composure),
   };
 }
 

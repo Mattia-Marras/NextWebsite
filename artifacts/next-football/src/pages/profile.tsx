@@ -866,8 +866,19 @@ function LeagueCardTile({
   card: NextFootballPlayerPage["leagueHistory"]["cards"][number];
   username?: string | null;
 }) {
-  const goalkeeper = card.position.toUpperCase() === "GK";
-  const cleanUuid = card.playerUuid.replace(/-/g, "");
+  const rawPosition = (card.position ?? "").trim().toUpperCase();
+  const goalkeeper = rawPosition === "GK";
+
+  /*
+   * The league database currently also contains the generic value
+   * "OUTFIELD". It is too long for the small position slot on the card,
+   * so render it as "OF" until a real ST/CM/CB/etc. position is stored.
+   */
+  const displayPosition =
+    rawPosition === "OUTFIELD"
+      ? "OF"
+      : rawPosition || (goalkeeper ? "GK" : "OF");
+
   const stats: Array<[string, number | null | undefined]> = goalkeeper
     ? [
         ["REF", card.reflexes],
@@ -886,24 +897,15 @@ function LeagueCardTile({
         ["CON", card.ballControl],
       ];
 
-  /*
-   * CARD TEMPLATE
-   *
-   * TOTW -> black/gold special card
-   *
-   * Base:
-   * 85+ -> gold
-   * 75+ -> silver
-   * <75 -> bronze
-   */
   const normalizedType = (card.cardType ?? "").trim().toUpperCase();
+
+  const isTotw =
+    normalizedType === "TOTW" ||
+    normalizedType === "TEAM_OF_THE_WEEK";
 
   let template = "/cards/bronzecard.png";
 
-  if (
-    normalizedType === "TOTW" ||
-    normalizedType === "TEAM_OF_THE_WEEK"
-  ) {
+  if (isTotw) {
     template = "/cards/totw_card.png";
   } else if (card.overall >= 85) {
     template = "/cards/goldcard.png";
@@ -911,50 +913,32 @@ function LeagueCardTile({
     template = "/cards/silvercard.png";
   }
 
+  const cleanUuid = (card.playerUuid ?? "").replace(/-/g, "");
+
   /*
-   * Transparent Minecraft 3D body render.
+   * Crafatar-compatible renderer.
    *
-   * scale=10 gives us enough resolution to avoid
-   * the player becoming blurry when displayed
-   * over the high-resolution card template.
+   * The old crafatar.com URL was returning a broken image in the browser.
+   * skins.manacube.com exposes the same Crafatar API and accepts:
+   *   /renders/body/<uuid>?scale=10&overlay
    *
-   * overlay enables second-layer skin elements:
-   * hats, jackets, sleeves, etc.
+   * The onError handler below automatically tries a second compatible
+   * renderer and finally hides the image instead of displaying broken
+   * alt text over the card.
    */
   const skinRenderUrl =
-    `https://crafatar.com/renders/body/${cleanUuid}?scale=10&overlay`;
+    `https://skins.manacube.com/renders/body/${cleanUuid}?scale=10&overlay`;
 
-  const displayName =
-    username?.trim() ||
-    "PLAYER";
+  const fallbackSkinRenderUrl =
+    `https://nitrocraft.uk/renders/body/${cleanUuid}?scale=10&overlay`;
 
-  /*
-   * Text color.
-   *
-   * TOTW is dark, therefore gold-ish text works well.
-   * Normal cards use a dark charcoal.
-   */
-  const isTotw =
-    normalizedType === "TOTW" ||
-    normalizedType === "TEAM_OF_THE_WEEK";
+  const displayName = username?.trim() || "PLAYER";
 
-  const primaryText = isTotw
-    ? "#f4d06f"
-    : "#161616";
-
-  const secondaryText = isTotw
-    ? "#d8b855"
-    : "#282828";
+  const primaryText = isTotw ? "#f4d06f" : "#161616";
+  const secondaryText = isTotw ? "#d8b855" : "#282828";
 
   return (
     <article className="group relative mx-auto w-full max-w-[270px]">
-      {/*
-       * Main card canvas.
-       *
-       * Original PNG ratio ≈ 753 / 1054.
-       * Everything inside is positioned using percentages,
-       * therefore it scales together with the image.
-       */}
       <div
         className="
           relative
@@ -971,10 +955,7 @@ function LeagueCardTile({
           filter: "drop-shadow(0 18px 28px rgba(0,0,0,.38))",
         }}
       >
-        {/* ====================================================== */}
-        {/* CARD TEMPLATE                                         */}
-        {/* ====================================================== */}
-
+        {/* Card template */}
         <img
           src={template}
           alt=""
@@ -991,10 +972,47 @@ function LeagueCardTile({
           "
         />
 
-        {/* ====================================================== */}
-        {/* OVERALL                                                */}
-        {/* ====================================================== */}
+        {/* Player skin / bust */}
+        {cleanUuid ? (
+          <img
+            src={skinRenderUrl}
+            alt=""
+            draggable={false}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            className="
+              pointer-events-none
+              absolute
+              z-20
+              select-none
+              object-contain
+            "
+            style={{
+              left: "30%",
+              top: "12.5%",
+              width: "56%",
+              height: "46%",
+              objectPosition: "center bottom",
+              filter: isTotw
+                ? "drop-shadow(0 6px 7px rgba(0,0,0,.72))"
+                : "drop-shadow(0 6px 6px rgba(0,0,0,.34))",
+            }}
+            onError={(event) => {
+              const image = event.currentTarget;
+              const fallbackStep = image.dataset.fallbackStep ?? "0";
 
+              if (fallbackStep === "0") {
+                image.dataset.fallbackStep = "1";
+                image.src = fallbackSkinRenderUrl;
+                return;
+              }
+
+              image.style.display = "none";
+            }}
+          />
+        ) : null}
+
+        {/* Overall */}
         <div
           className="
             absolute
@@ -1007,10 +1025,10 @@ function LeagueCardTile({
             leading-none
           "
           style={{
-            left: "15%",
-            top: "20%",
-            width: "20%",
-            fontSize: "clamp(30px, 4.2vw, 50px)",
+            left: "14.2%",
+            top: "20.5%",
+            width: "19%",
+            fontSize: "clamp(28px, 4vw, 48px)",
             color: primaryText,
             textShadow: isTotw
               ? "0 2px 3px rgba(0,0,0,.65)"
@@ -1020,10 +1038,7 @@ function LeagueCardTile({
           {card.overall}
         </div>
 
-        {/* ====================================================== */}
-        {/* POSITION                                               */}
-        {/* ====================================================== */}
-
+        {/* Position */}
         <div
           className="
             absolute
@@ -1034,57 +1049,19 @@ function LeagueCardTile({
             uppercase
           "
           style={{
-            left: "15%",
-            top: "27%",
-            width: "20%",
-            fontSize: "clamp(14px, 1.8vw, 22px)",
+            left: "14.2%",
+            top: "28.5%",
+            width: "19%",
+            fontSize: "clamp(11px, 1.35vw, 16px)",
+            lineHeight: 1,
             color: secondaryText,
-            letterSpacing: ".04em",
+            letterSpacing: ".035em",
           }}
         >
-          {card.position}
+          {displayPosition}
         </div>
 
-        {/* ====================================================== */}
-        {/* PLAYER SKIN                                            */}
-        {/* ====================================================== */}
-
-        {/*
-         * This is intentionally much larger than the card itself.
-         * The actual PNG returned by Crafatar contains transparent
-         * space around the model.
-         *
-         * We position it roughly like an EA player portrait:
-         * head in upper-middle area, torso ending above player name.
-         */}
-        <img
-          src={skinRenderUrl}
-          alt={displayName}
-          draggable={false}
-          loading="lazy"
-          className="
-            pointer-events-none
-            absolute
-            z-20
-            select-none
-            object-contain
-          "
-          style={{
-            left: "27%",
-            top: "12%",
-            width: "58%",
-            height: "51%",
-            objectPosition: "center bottom",
-            filter: isTotw
-              ? "drop-shadow(0 6px 7px rgba(0,0,0,.7))"
-              : "drop-shadow(0 6px 6px rgba(0,0,0,.32))",
-          }}
-        />
-
-        {/* ====================================================== */}
-        {/* PLAYER NAME                                            */}
-        {/* ====================================================== */}
-
+        {/* Player name */}
         <div
           className="
             absolute
@@ -1097,16 +1074,17 @@ function LeagueCardTile({
             uppercase
           "
           style={{
-            left: "14%",
-            top: "57%",
-            width: "72%",
+            left: "15%",
+            top: "58.2%",
+            width: "70%",
             fontSize:
               displayName.length > 14
-                ? "clamp(12px, 1.65vw, 19px)"
+                ? "clamp(11px, 1.45vw, 17px)"
                 : displayName.length > 10
-                  ? "clamp(14px, 1.85vw, 22px)"
-                  : "clamp(16px, 2.1vw, 25px)",
-            letterSpacing: ".025em",
+                  ? "clamp(12px, 1.6vw, 19px)"
+                  : "clamp(14px, 1.8vw, 21px)",
+            letterSpacing: ".02em",
+            lineHeight: 1,
             color: primaryText,
             textOverflow: "ellipsis",
             textShadow: isTotw
@@ -1117,16 +1095,13 @@ function LeagueCardTile({
           {displayName}
         </div>
 
-        {/* ====================================================== */}
-        {/* DIVIDER                                                */}
-        {/* ====================================================== */}
-
+        {/* Divider */}
         <div
           className="absolute z-30"
           style={{
-            left: "20%",
-            top: "62%",
-            width: "60%",
+            left: "19%",
+            top: "62.3%",
+            width: "62%",
             height: "1px",
             background: isTotw
               ? "rgba(231,196,87,.55)"
@@ -1134,18 +1109,15 @@ function LeagueCardTile({
           }}
         />
 
-        {/* ====================================================== */}
-        {/* STATS                                                  */}
-        {/* ====================================================== */}
-
+        {/* Stats */}
         <div
           className="absolute z-30 grid grid-cols-2"
           style={{
-            left: "20%",
+            left: "19%",
             top: "65%",
-            width: "60%",
-            rowGap: "1.2%",
-            columnGap: "13%",
+            width: "62%",
+            rowGap: "4px",
+            columnGap: "11%",
           }}
         >
           {stats.map(([label, value]) => (
@@ -1163,7 +1135,8 @@ function LeagueCardTile({
               <span
                 className="font-black"
                 style={{
-                  fontSize: "clamp(15px, 1.8vw, 21px)",
+                  fontSize: "clamp(14px, 1.65vw, 19px)",
+                  lineHeight: 1.15,
                   color: primaryText,
                   minWidth: "1.7em",
                   textAlign: "right",
@@ -1175,7 +1148,8 @@ function LeagueCardTile({
               <span
                 className="font-bold"
                 style={{
-                  fontSize: "clamp(9px, 1vw, 12px)",
+                  fontSize: "clamp(8px, .9vw, 11px)",
+                  lineHeight: 1,
                   color: secondaryText,
                   minWidth: "2.3em",
                 }}
@@ -1186,10 +1160,7 @@ function LeagueCardTile({
           ))}
         </div>
 
-        {/* ====================================================== */}
-        {/* SEASON / LEAGUE                                        */}
-        {/* ====================================================== */}
-
+        {/* Season / league */}
         <div
           className="
             absolute
@@ -1200,18 +1171,17 @@ function LeagueCardTile({
             uppercase
           "
           style={{
-            left: "20%",
-            top: "82%",
-            width: "60%",
-            fontSize: "clamp(7px, .75vw, 10px)",
-            letterSpacing: ".13em",
+            left: "19%",
+            top: "80.8%",
+            width: "62%",
+            fontSize: "clamp(6px, .68vw, 9px)",
+            lineHeight: 1,
+            letterSpacing: ".11em",
             color: secondaryText,
-            opacity: 0.72,
+            opacity: 0.7,
           }}
         >
-          {card.league === "GLOBAL"
-            ? "NEXTFOOTBALL"
-            : card.league}
+          {card.league === "GLOBAL" ? "NEXTFOOTBALL" : card.league}
           {" · "}
           S{card.season}
         </div>

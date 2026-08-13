@@ -870,9 +870,8 @@ function LeagueCardTile({
   const goalkeeper = rawPosition === "GK";
 
   /*
-   * The league database currently also contains the generic value
-   * "OUTFIELD". It is too long for the small position slot on the card,
-   * so render it as "OF" until a real ST/CM/CB/etc. position is stored.
+   * The league database can contain the generic value "OUTFIELD".
+   * Keep the compact "OF" label until a real ST/CM/CB/etc. value exists.
    */
   const displayPosition =
     rawPosition === "OUTFIELD"
@@ -898,7 +897,6 @@ function LeagueCardTile({
       ];
 
   const normalizedType = (card.cardType ?? "").trim().toUpperCase();
-
   const isTotw =
     normalizedType === "TOTW" ||
     normalizedType === "TEAM_OF_THE_WEEK";
@@ -914,28 +912,28 @@ function LeagueCardTile({
   }
 
   const cleanUuid = (card.playerUuid ?? "").replace(/-/g, "");
+  const displayName = username?.trim() || "PLAYER";
+  const encodedName = encodeURIComponent(displayName);
 
   /*
-   * Crafatar-compatible renderer.
+   * Use a bust renderer instead of the old full-body render. This keeps the
+   * face + torso visible, removes the legs entirely and gives the card a much
+   * cleaner football-card composition.
    *
-   * The old crafatar.com URL was returning a broken image in the browser.
-   * skins.manacube.com exposes the same Crafatar API and accepts:
-   *   /renders/body/<uuid>?scale=10&overlay
-   *
-   * The onError handler below automatically tries a second compatible
-   * renderer and finally hides the image instead of displaying broken
-   * alt text over the card.
+   * Crafty's 3D bust is the primary renderer. Visage is kept as UUID-based
+   * fallback, followed by the previous full-body API only as a last resort.
    */
-  const skinRenderUrl =
+  const skinRenderUrl = `https://render.crafty.gg/3d/bust/${encodedName}`;
+  const fallbackBustRenderUrl =
+    `https://visage.surgeplay.com/bust/512/${cleanUuid}`;
+  const fallbackBodyRenderUrl =
     `https://skins.manacube.com/renders/body/${cleanUuid}?scale=10&overlay`;
-
-  const fallbackSkinRenderUrl =
-    `https://nitrocraft.uk/renders/body/${cleanUuid}?scale=10&overlay`;
-
-  const displayName = username?.trim() || "PLAYER";
 
   const primaryText = isTotw ? "#f4d06f" : "#161616";
   const secondaryText = isTotw ? "#d8b855" : "#282828";
+  const dividerColor = isTotw
+    ? "rgba(231,196,87,.62)"
+    : "rgba(20,20,20,.32)";
 
   return (
     <article className="group relative mx-auto w-full max-w-[270px]">
@@ -972,44 +970,59 @@ function LeagueCardTile({
           "
         />
 
-        {/* Player skin / bust */}
+        {/*
+         * Player bust.
+         * The wrapper acts as a hard crop so even the last-resort full-body
+         * renderer can never leak legs into the lower half of the card.
+         */}
         {cleanUuid ? (
-          <img
-            src={skinRenderUrl}
-            alt=""
-            draggable={false}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="
-              pointer-events-none
-              absolute
-              z-20
-              select-none
-              object-contain
-            "
+          <div
+            className="pointer-events-none absolute z-20 overflow-hidden"
             style={{
-              left: "30%",
+              left: "31%",
               top: "12.5%",
-              width: "56%",
-              height: "46%",
-              objectPosition: "center bottom",
-              filter: isTotw
-                ? "drop-shadow(0 6px 7px rgba(0,0,0,.72))"
-                : "drop-shadow(0 6px 6px rgba(0,0,0,.34))",
+              width: "57%",
+              height: "43%",
             }}
-            onError={(event) => {
-              const image = event.currentTarget;
-              const fallbackStep = image.dataset.fallbackStep ?? "0";
+          >
+            <img
+              src={skinRenderUrl}
+              alt=""
+              draggable={false}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              className="h-full w-full select-none object-contain"
+              style={{
+                objectPosition: "center bottom",
+                imageRendering: "pixelated",
+                transform: "scale(1.08)",
+                transformOrigin: "center bottom",
+                filter: isTotw
+                  ? "drop-shadow(0 7px 8px rgba(0,0,0,.78))"
+                  : "drop-shadow(0 7px 7px rgba(0,0,0,.42))",
+              }}
+              onError={(event) => {
+                const image = event.currentTarget;
+                const fallbackStep = image.dataset.fallbackStep ?? "0";
 
-              if (fallbackStep === "0") {
-                image.dataset.fallbackStep = "1";
-                image.src = fallbackSkinRenderUrl;
-                return;
-              }
+                if (fallbackStep === "0") {
+                  image.dataset.fallbackStep = "1";
+                  image.src = fallbackBustRenderUrl;
+                  return;
+                }
 
-              image.style.display = "none";
-            }}
-          />
+                if (fallbackStep === "1") {
+                  image.dataset.fallbackStep = "2";
+                  image.src = fallbackBodyRenderUrl;
+                  image.style.transform = "scale(1.42) translateY(11%)";
+                  image.style.transformOrigin = "center top";
+                  return;
+                }
+
+                image.style.display = "none";
+              }}
+            />
+          </div>
         ) : null}
 
         {/* Overall */}
@@ -1025,13 +1038,13 @@ function LeagueCardTile({
             leading-none
           "
           style={{
-            left: "14.2%",
-            top: "20.5%",
-            width: "19%",
-            fontSize: "clamp(28px, 4vw, 48px)",
+            left: "13.6%",
+            top: "19.8%",
+            width: "20%",
+            fontSize: "clamp(30px, 4.2vw, 50px)",
             color: primaryText,
             textShadow: isTotw
-              ? "0 2px 3px rgba(0,0,0,.65)"
+              ? "0 2px 3px rgba(0,0,0,.7)"
               : "0 1px 1px rgba(255,255,255,.15)",
           }}
         >
@@ -1049,13 +1062,13 @@ function LeagueCardTile({
             uppercase
           "
           style={{
-            left: "14.2%",
-            top: "28.5%",
-            width: "19%",
-            fontSize: "clamp(11px, 1.35vw, 16px)",
+            left: "13.6%",
+            top: "28.3%",
+            width: "20%",
+            fontSize: "clamp(12px, 1.45vw, 17px)",
             lineHeight: 1,
             color: secondaryText,
-            letterSpacing: ".035em",
+            letterSpacing: ".045em",
           }}
         >
           {displayPosition}
@@ -1074,21 +1087,21 @@ function LeagueCardTile({
             uppercase
           "
           style={{
-            left: "15%",
-            top: "58.2%",
-            width: "70%",
+            left: "12.5%",
+            top: "55.4%",
+            width: "75%",
             fontSize:
               displayName.length > 14
-                ? "clamp(11px, 1.45vw, 17px)"
+                ? "clamp(12px, 1.55vw, 18px)"
                 : displayName.length > 10
-                  ? "clamp(12px, 1.6vw, 19px)"
-                  : "clamp(14px, 1.8vw, 21px)",
-            letterSpacing: ".02em",
+                  ? "clamp(13px, 1.72vw, 20px)"
+                  : "clamp(15px, 1.95vw, 23px)",
+            letterSpacing: ".025em",
             lineHeight: 1,
             color: primaryText,
             textOverflow: "ellipsis",
             textShadow: isTotw
-              ? "0 2px 3px rgba(0,0,0,.7)"
+              ? "0 2px 3px rgba(0,0,0,.72)"
               : "0 1px 1px rgba(255,255,255,.12)",
           }}
         >
@@ -1099,59 +1112,55 @@ function LeagueCardTile({
         <div
           className="absolute z-30"
           style={{
-            left: "19%",
-            top: "62.3%",
-            width: "62%",
+            left: "16.5%",
+            top: "59.6%",
+            width: "67%",
             height: "1px",
-            background: isTotw
-              ? "rgba(231,196,87,.55)"
-              : "rgba(20,20,20,.28)",
+            background: dividerColor,
           }}
         />
 
-        {/* Stats */}
+        {/* Stats — deliberately wider, larger and evenly spaced */}
         <div
           className="absolute z-30 grid grid-cols-2"
           style={{
-            left: "19%",
-            top: "65%",
-            width: "62%",
-            rowGap: "4px",
-            columnGap: "11%",
+            left: "15%",
+            top: "62.2%",
+            width: "70%",
+            rowGap: "8px",
+            columnGap: "9%",
           }}
         >
           {stats.map(([label, value]) => (
             <div
               key={label}
-              className="
-                flex
-                items-baseline
-                justify-center
-                gap-[7%]
-                font-display
-                uppercase
-              "
+              className="flex items-baseline justify-center font-display uppercase"
+              style={{ gap: "8%" }}
             >
               <span
                 className="font-black"
                 style={{
-                  fontSize: "clamp(14px, 1.65vw, 19px)",
-                  lineHeight: 1.15,
+                  fontSize: "clamp(18px, 2.1vw, 24px)",
+                  lineHeight: 1,
                   color: primaryText,
-                  minWidth: "1.7em",
+                  minWidth: "1.62em",
                   textAlign: "right",
+                  textShadow: isTotw
+                    ? "0 1px 2px rgba(0,0,0,.5)"
+                    : "none",
                 }}
               >
                 {value ?? "—"}
               </span>
 
               <span
-                className="font-bold"
+                className="font-black"
                 style={{
-                  fontSize: "clamp(8px, .9vw, 11px)",
+                  fontSize: "clamp(9px, 1.02vw, 12px)",
                   lineHeight: 1,
                   color: secondaryText,
-                  minWidth: "2.3em",
+                  minWidth: "2.4em",
+                  letterSpacing: ".02em",
                 }}
               >
                 {label}
@@ -1160,7 +1169,7 @@ function LeagueCardTile({
           ))}
         </div>
 
-        {/* Season / league */}
+        {/* Branding / season — kept clearly below the statistics */}
         <div
           className="
             absolute
@@ -1171,19 +1180,18 @@ function LeagueCardTile({
             uppercase
           "
           style={{
-            left: "19%",
-            top: "80.8%",
-            width: "62%",
-            fontSize: "clamp(6px, .68vw, 9px)",
+            left: "17%",
+            top: "84.3%",
+            width: "66%",
+            fontSize: "clamp(7px, .78vw, 10px)",
             lineHeight: 1,
-            letterSpacing: ".11em",
+            letterSpacing: ".14em",
             color: secondaryText,
-            opacity: 0.7,
+            opacity: isTotw ? 0.82 : 0.64,
           }}
         >
-          {card.league === "GLOBAL" ? "NEXTFOOTBALL" : card.league}
-          {" · "}
-          S{card.season}
+          <span>{card.league === "GLOBAL" ? "NEXTFOOTBALL" : card.league}</span>
+          <span style={{ opacity: 0.72 }}> · S{card.season}</span>
         </div>
       </div>
     </article>

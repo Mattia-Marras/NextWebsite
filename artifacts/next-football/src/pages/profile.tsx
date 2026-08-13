@@ -1169,29 +1169,53 @@ function LeagueCardTile({
           ))}
         </div>
 
-        {/* Branding / season — kept clearly below the statistics */}
+        {/* League / season signature — intentionally clear and separated */}
         <div
           className="
             absolute
             z-30
+            flex
+            flex-col
+            items-center
+            justify-center
             text-center
             font-display
-            font-bold
             uppercase
           "
           style={{
             left: "17%",
-            top: "87%",
+            top: "88.4%",
             width: "66%",
-            fontSize: "clamp(7px, .78vw, 10px)",
             lineHeight: 1,
-            letterSpacing: ".14em",
             color: secondaryText,
-            opacity: isTotw ? 0.82 : 0.64,
           }}
         >
-          <span>{card.league === "GLOBAL" ? "NEXTFOOTBALL" : card.league}</span>
-          <span style={{ opacity: 0.72 }}> · S{card.season}</span>
+          <span
+            className="font-bold"
+            style={{
+              fontSize: "clamp(6px, .66vw, 8px)",
+              letterSpacing: ".18em",
+              opacity: isTotw ? 0.72 : 0.52,
+              marginBottom: "4px",
+            }}
+          >
+            {card.league === "GLOBAL" ? "NEXTFOOTBALL" : card.league}
+          </span>
+
+          <span
+            className="font-black"
+            style={{
+              fontSize: "clamp(11px, 1.18vw, 15px)",
+              letterSpacing: ".11em",
+              color: primaryText,
+              opacity: isTotw ? 0.98 : 0.92,
+              textShadow: isTotw
+                ? "0 1px 2px rgba(0,0,0,.55)"
+                : "0 1px 1px rgba(255,255,255,.12)",
+            }}
+          >
+            SEASON {card.season}
+          </span>
         </div>
       </div>
     </article>

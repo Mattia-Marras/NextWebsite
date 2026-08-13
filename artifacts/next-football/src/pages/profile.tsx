@@ -979,10 +979,10 @@ function LeagueCardTile({
           <div
             className="pointer-events-none absolute z-20 overflow-hidden"
             style={{
-              left: "31%",
-              top: "12.5%",
-              width: "57%",
-              height: "43%",
+              left: "33%",
+              top: "14.2%",
+              width: "54.2%",
+              height: "40.9%",
             }}
           >
             <img
@@ -995,7 +995,7 @@ function LeagueCardTile({
               style={{
                 objectPosition: "center bottom",
                 imageRendering: "pixelated",
-                transform: "scale(1.08)",
+                transform: "scale(1.025)",
                 transformOrigin: "center bottom",
                 filter: isTotw
                   ? "drop-shadow(0 7px 8px rgba(0,0,0,.78))"
@@ -1063,7 +1063,7 @@ function LeagueCardTile({
           "
           style={{
             left: "13.6%",
-            top: "28.3%",
+            top: "30.2%",
             width: "20%",
             fontSize: "clamp(12px, 1.45vw, 17px)",
             lineHeight: 1,
@@ -1088,7 +1088,7 @@ function LeagueCardTile({
           "
           style={{
             left: "12.5%",
-            top: "55.4%",
+            top: "57.3%",
             width: "75%",
             fontSize:
               displayName.length > 14
@@ -1113,7 +1113,7 @@ function LeagueCardTile({
           className="absolute z-30"
           style={{
             left: "16.5%",
-            top: "59.6%",
+            top: "61.5%",
             width: "67%",
             height: "1px",
             background: dividerColor,
@@ -1125,10 +1125,10 @@ function LeagueCardTile({
           className="absolute z-30 grid grid-cols-2"
           style={{
             left: "15%",
-            top: "62.2%",
+            top: "64.5%",
             width: "70%",
-            rowGap: "8px",
-            columnGap: "9%",
+            rowGap: "10px",
+            columnGap: "10%",
           }}
         >
           {stats.map(([label, value]) => (
@@ -1181,7 +1181,7 @@ function LeagueCardTile({
           "
           style={{
             left: "17%",
-            top: "84.3%",
+            top: "87%",
             width: "66%",
             fontSize: "clamp(7px, .78vw, 10px)",
             lineHeight: 1,

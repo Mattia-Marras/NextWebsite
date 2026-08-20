@@ -1,4 +1,4 @@
-import { BarChart3, Search, Trophy, Users } from "lucide-react";
+import { BarChart3, Search, Trophy, Users, WalletCards } from "lucide-react";
 
 export type GameModeId = "football" | "blockball";
 
@@ -36,6 +36,7 @@ export const GAME_MODES: GameModeDefinition[] = [
       { label: "League", href: "/football/main", icon: Trophy, available: true },
       { label: "Player search", href: "/football/players", icon: Search, available: true },
       { label: "Leaderboards", href: "/football/leaderboards", icon: Users, available: true },
+      { label: "UT Global", href: "/football/ultimate-team", icon: WalletCards, available: true },
     ],
   },
   {

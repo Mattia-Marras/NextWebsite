@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/tabs";
 
 import { getRankTheme } from "@/lib/rank-colors";
+import { UltimateTeamCard } from "@/components/ultimate-team-card";
 
 import {
   GAME_MODES,
@@ -44,6 +45,7 @@ import {
   type NextFootballPlayerPage,
   getNextFootballPlayer,
   getPlayerMmrHistory,
+  getPlayerUltimateTeamCards,
   type HistoricalStatLine,
   type LeagueCode,
 } from "@/lib/nextfb-api";
@@ -332,6 +334,13 @@ function ProfileContent({
               >
                 Cosmetics
               </TabsTrigger>
+
+              <TabsTrigger
+                value="ultimate-team"
+                className="font-display uppercase tracking-wider"
+              >
+                Ultimate Team
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -363,6 +372,10 @@ function ProfileContent({
 
           <TabsContent value="cosmetics" className="mt-8">
             <CosmeticsSection player={player} />
+          </TabsContent>
+
+          <TabsContent value="ultimate-team" className="mt-8">
+            <UltimateTeamSection uuid={profile.uuid} />
           </TabsContent>
         </Tabs>
       </main>
@@ -1546,6 +1559,75 @@ function CosmeticsSection({
         </div>
       )}
     </div>
+  );
+}
+
+function UltimateTeamSection({ uuid }: { uuid: string }) {
+  const collectionQuery = useQuery({
+    queryKey: ["nextfootball-player-ut", uuid],
+    queryFn: () => getPlayerUltimateTeamCards(uuid),
+    enabled: uuid.length > 0,
+  });
+
+  if (collectionQuery.isLoading) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-[315px] rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (collectionQuery.isError) {
+    return (
+      <Card className="border-destructive/30 bg-destructive/5">
+        <CardContent className="p-6 text-sm text-destructive">
+          Could not load this player's Ultimate Team collection.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const cards = collectionQuery.data?.data ?? [];
+  const totalCopies = cards.reduce((sum, card) => sum + (card.quantity ?? 0), 0);
+
+  return (
+    <section>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-display text-xs uppercase tracking-[0.25em] text-[#39ff14]">
+            Ultimate Team
+          </p>
+          <h2 className="mt-1 font-display text-2xl font-bold uppercase">Owned cards</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {cards.length} unique cards · {totalCopies} total copies
+          </p>
+        </div>
+
+        <Link href="/football/ultimate-team">
+          <Button variant="outline" className="gap-2">
+            <WalletCards className="h-4 w-4" /> Global collection
+          </Button>
+        </Link>
+      </div>
+
+      {cards.length ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {cards.map((card) => (
+            <UltimateTeamCard key={card.id} card={card} showOwnership />
+          ))}
+        </div>
+      ) : (
+        <Card className="border-white/8 bg-white/[0.02]">
+          <CardContent className="flex min-h-40 flex-col items-center justify-center p-8 text-center">
+            <WalletCards className="mb-3 h-8 w-8 text-muted-foreground" />
+            <p className="font-display font-bold uppercase">No cards owned yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">This player has no cards in nf_ut_collection.</p>
+          </CardContent>
+        </Card>
+      )}
+    </section>
   );
 }
 

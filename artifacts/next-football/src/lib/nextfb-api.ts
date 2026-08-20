@@ -439,6 +439,40 @@ export interface CosmeticPopularityEntry {
 }
 
 /*
+ * Ultimate Team
+ */
+
+export interface UltimateTeamCard {
+  id: number;
+  playerUuid: string;
+  username: string | null;
+  leagueName: string;
+  seasonId: string;
+  cardType: string;
+  position: string;
+  overall: number;
+  positioning: number | null;
+  shooting: number | null;
+  passing: number | null;
+  dribbling: number | null;
+  defending: number | null;
+  ballControl: number | null;
+  reflexes: number | null;
+  predicting: number | null;
+  shotStopping: number | null;
+  composure: number | null;
+  totalCopies?: number;
+  owners?: number;
+  quantity?: number;
+  firstObtainedAt?: string | null;
+}
+
+export interface UltimateTeamCardsResponse {
+  data: UltimateTeamCard[];
+  total: number;
+}
+
+/*
  * Pagina aggregata del singolo giocatore.
  */
 
@@ -449,6 +483,16 @@ export interface NextFootballPlayerPage {
   casino: CasinoPlayerStats | null;
   cosmetics: PlayerCosmetics;
   leagueHistory: PlayerLeagueHistoryView;
+}
+
+export async function getGlobalUltimateTeamCards(): Promise<UltimateTeamCardsResponse> {
+  return requestNextFootball<UltimateTeamCardsResponse>("/ut/cards");
+}
+
+export async function getPlayerUltimateTeamCards(uuid: string): Promise<UltimateTeamCardsResponse> {
+  return requestNextFootball<UltimateTeamCardsResponse>(
+    `/players/${encodeURIComponent(uuid)}/ut`,
+  );
 }
 
 /*

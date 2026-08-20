@@ -22,6 +22,7 @@ import { ProfileSearch } from "@/pages/profile-search";
 import { Profile } from "@/pages/profile";
 import { FootballLeaderboards } from "@/pages/football-leaderboards";
 import { FootballRanked } from "@/pages/football-ranked";
+import { UltimateTeam } from "@/pages/ultimate-team";
 import { BlockballHome } from "@/pages/blockball-home";
 import { BlockballPlayers } from "@/pages/blockball-players";
 import { BlockballProfile } from "@/pages/blockball-profile";
@@ -64,6 +65,11 @@ function Router() {
         <Route
           path="/football/leaderboards"
           component={FootballLeaderboards}
+        />
+
+        <Route
+          path="/football/ultimate-team"
+          component={UltimateTeam}
         />
 
         <Route

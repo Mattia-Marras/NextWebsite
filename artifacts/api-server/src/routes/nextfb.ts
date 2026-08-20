@@ -52,6 +52,11 @@ import {
 } from "../lib/nextfb/ranked";
 
 import {
+  getGlobalUltimateTeamCards,
+  getPlayerUltimateTeamCollection,
+} from "../lib/nextfb/ultimate-team";
+
+import {
   isGameMode,
   isPlayerStat,
   type PaginationOptions,
@@ -419,6 +424,38 @@ nextFootballRouter.get(
         ? { ...player.ranked, username }
         : null,
     });
+  }),
+);
+
+/*
+ * Ultimate Team collection del singolo giocatore.
+ *
+ * GET /api/nextfb/players/:uuid/ut
+ */
+
+nextFootballRouter.get(
+  "/players/:uuid/ut",
+  asyncRoute(async (request, response) => {
+    const uuid = normalizeUuid(
+      getRouteParameter(request.params.uuid, "uuid"),
+    );
+
+    const cards = await getPlayerUltimateTeamCollection(uuid);
+    return response.status(200).json({ data: cards, total: cards.length });
+  }),
+);
+
+/*
+ * Catalogo globale Ultimate Team.
+ *
+ * GET /api/nextfb/ut/cards
+ */
+
+nextFootballRouter.get(
+  "/ut/cards",
+  asyncRoute(async (_request, response) => {
+    const cards = await getGlobalUltimateTeamCards();
+    return response.status(200).json({ data: cards, total: cards.length });
   }),
 );
 

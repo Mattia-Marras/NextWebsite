@@ -53,6 +53,7 @@ export const GAME_MODES: GameModeDefinition[] = [
       { label: "Ranked", href: "/blockball/ranked", icon: BarChart3, available: true },
       { label: "Player search", href: "/blockball/players", icon: Search, available: true },
       { label: "Leaderboards", href: "/blockball/leaderboards", icon: Users, available: true },
+      { label: "UT Global", href: "/blockball/ultimate-team", icon: WalletCards, available: true },
     ],
   },
 ];

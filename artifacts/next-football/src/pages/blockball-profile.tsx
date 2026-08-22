@@ -3,6 +3,8 @@ import { Link, useParams } from "wouter";
 import { Activity, Award, Coins, Crown, History, Package, Shield, Swords, Trophy, WalletCards } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { getBlockballPlayer } from "@/lib/blockball-api";
+import { getBlockballUltimateTeamCollection } from "@/lib/blockball-api";
+import { BlockballUltimateTeamCard } from "@/components/blockball-ultimate-team-card";
 
 const N = (value: unknown) => new Intl.NumberFormat("en-US").format(Number(value) || 0);
 const pretty = (value: string) => value.toLowerCase().replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -10,6 +12,7 @@ const pretty = (value: string) => value.toLowerCase().replaceAll("_", " ").repla
 export function BlockballProfile() {
   const { uuid = "" } = useParams<{ uuid: string }>();
   const query = useQuery({ queryKey: ["bb-player", uuid], queryFn: () => getBlockballPlayer(uuid) });
+  const utQuery = useQuery({ queryKey: ["bb-player-ut", uuid], queryFn: () => getBlockballUltimateTeamCollection(uuid), enabled: Boolean(uuid) });
   if (query.isLoading) return <div className="container mx-auto p-10">Loading player profile...</div>;
   if (query.isError) return <div className="container mx-auto p-10 text-destructive">BlockBall player not found.</div>;
 
@@ -71,6 +74,12 @@ export function BlockballProfile() {
         <section className="surface-panel p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><WalletCards className="text-sky-400"/> Casino activity</h2>{player.casino ? <div className="mt-5 grid grid-cols-2 gap-3">{Object.entries(player.casino).map(([key,value]) => <div key={key} className="rounded-xl border border-white/8 bg-white/[0.02] p-3"><p className="text-xs text-muted-foreground">{pretty(key)}</p><b className="mt-1 block text-lg">{N(value)}</b></div>)}</div> : <p className="mt-4 text-muted-foreground">No casino activity recorded.</p>}</section>
         <section className="surface-panel p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Package className="text-sky-400"/> Cosmetics</h2><div className="mt-5 grid grid-cols-2 gap-3"><div className="rounded-xl border border-white/8 p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Owned</p><b className="mt-1 block text-2xl">{player.cosmetics.length}</b></div><div className="rounded-xl border border-white/8 p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Active</p><b className="mt-1 block text-2xl">{player.activeCosmetics.length}</b></div></div><div className="mt-4 flex flex-wrap gap-2">{player.cosmetics.map((item:string) => <span key={item} className="rounded-full border border-sky-400/25 bg-sky-400/5 px-3 py-1 text-xs">{item}</span>)}</div></section>
       </div>
+
+      <section className="surface-panel p-5 md:p-7">
+        <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><WalletCards className="text-sky-400"/> Ultimate Team collection</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Cards and duplicate quantities owned by this player across S1 and S2.</p>
+        {utQuery.isLoading ? <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({length:3}).map((_,i)=><div key={i} className="h-72 animate-pulse rounded-2xl bg-white/5"/>)}</div> : utQuery.isError ? <p className="mt-5 text-destructive">Could not load this collection.</p> : utQuery.data?.data.length ? <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{utQuery.data.data.map(card=><BlockballUltimateTeamCard key={card.id} card={card} showOwnership/>)}</div> : <p className="mt-5 text-muted-foreground">This player does not own any BlockBall UT cards yet.</p>}
+      </section>
 
       <section className="surface-panel p-5 md:p-7">
         <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><History className="text-sky-400"/> League career</h2>

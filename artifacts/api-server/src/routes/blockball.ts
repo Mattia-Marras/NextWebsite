@@ -1,10 +1,30 @@
 import { Router } from "express";
 import type { RowDataPacket } from "mysql2/promise";
 import { queryBlockball } from "../lib/blockball-db";
+import {
+  getBlockballUltimateTeamCollection,
+  getGlobalBlockballUltimateTeamCards,
+} from "../lib/nextbb/ultimate-team";
 
 const router = Router();
 const leagues = new Set(["ML", "LL"]);
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+router.get("/ultimate-team/cards", async (_req, res, next) => {
+  try {
+    const data = await getGlobalBlockballUltimateTeamCards();
+    res.json({ data, total: data.length });
+  } catch (error) { next(error); }
+});
+
+router.get("/ultimate-team/players/:uuid", async (req, res, next) => {
+  try {
+    const uuid = String(req.params.uuid || "").toLowerCase();
+    if (!uuidPattern.test(uuid)) return res.status(400).json({ error: "Invalid player UUID" });
+    const data = await getBlockballUltimateTeamCollection(uuid);
+    res.json({ data, total: data.length });
+  } catch (error) { next(error); }
+});
 
 const RANKS = [
   { name: "BRONZE_1", displayName: "Bronze 1", minimumMmr: 0, maximumMmr: 874 },

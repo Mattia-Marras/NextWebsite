@@ -13,8 +13,10 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 router.get("/ultimate-team/cards", async (_req, res, next) => {
   try {
     const data = await getGlobalBlockballUltimateTeamCards();
-    res.json({ data, total: data.length });
-  } catch (error) { next(error); }
+    return res.json({ data, total: data.length });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 router.get("/ultimate-team/players/:uuid", async (req, res, next) => {
@@ -22,8 +24,10 @@ router.get("/ultimate-team/players/:uuid", async (req, res, next) => {
     const uuid = String(req.params.uuid || "").toLowerCase();
     if (!uuidPattern.test(uuid)) return res.status(400).json({ error: "Invalid player UUID" });
     const data = await getBlockballUltimateTeamCollection(uuid);
-    res.json({ data, total: data.length });
-  } catch (error) { next(error); }
+    return res.json({ data, total: data.length });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 const RANKS = [

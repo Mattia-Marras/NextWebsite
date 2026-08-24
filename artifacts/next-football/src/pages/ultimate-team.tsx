@@ -60,15 +60,15 @@ export function UltimateTeam() {
       </div>
 
       {query.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => <Skeleton key={index} className="h-[315px] rounded-2xl" />)}
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => <Skeleton key={index} className="mx-auto h-[410px] w-full max-w-[285px] rounded-2xl" />)}
         </div>
       ) : query.isError ? (
         <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
           Could not load the NextFootball Ultimate Team catalogue.
         </div>
       ) : cards.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {cards.map((card) => <UltimateTeamCard key={card.id} card={card} showOwnership />)}
         </div>
       ) : (

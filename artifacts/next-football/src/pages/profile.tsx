@@ -7,6 +7,7 @@ import {
   Crown,
   Gamepad2,
   Goal,
+  History,
   Package,
   Shield,
   Sparkles,
@@ -45,8 +46,10 @@ import {
   type NextFootballPlayerPage,
   getNextFootballPlayer,
   getPlayerMmrHistory,
+  getRankedPlayerSeasonHistory,
   getPlayerUltimateTeamCards,
   type HistoricalStatLine,
+  type RankedPlayerSeasonRecord,
   type LeagueCode,
 } from "@/lib/nextfb-api";
 
@@ -614,6 +617,11 @@ function RankedSection({
     queryFn: () => getPlayerMmrHistory(player.profile.uuid, { limit: 30, offset: 0 }),
     enabled: Boolean(ranked),
   });
+  const seasonHistoryQuery = useQuery({
+    queryKey: ["nextfootball-ranked-season-history", player.profile.uuid],
+    queryFn: () => getRankedPlayerSeasonHistory(player.profile.uuid),
+    retry: false,
+  });
 
   if (!ranked) {
     return (
@@ -721,6 +729,12 @@ function RankedSection({
         loading={historyQuery.isLoading}
       />
 
+      <RankedSeasonHistoryCard
+        seasons={seasonHistoryQuery.data?.data ?? []}
+        loading={seasonHistoryQuery.isLoading}
+        unavailable={seasonHistoryQuery.isError}
+      />
+
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="MMR" value={ranked.mmr} />
         <StatCard label="Wins" value={ranked.wins} />
@@ -743,6 +757,68 @@ function RankedSection({
         />
       </div>
     </div>
+  );
+}
+
+function RankedSeasonHistoryCard({
+  seasons,
+  loading,
+  unavailable,
+}: {
+  seasons: RankedPlayerSeasonRecord[];
+  loading: boolean;
+  unavailable: boolean;
+}) {
+  return (
+    <Card className="overflow-hidden border-border bg-card/70 transition hover:border-white/15">
+      <CardHeader>
+        <div className="flex items-start gap-3">
+          <div className="rounded-xl border border-[#39ff14]/20 bg-[#39ff14]/[0.055] p-2.5 text-[#39ff14]">
+            <History className="h-5 w-5" />
+          </div>
+          <div>
+            <CardTitle className="font-display text-2xl uppercase tracking-wider">Ranked season history</CardTitle>
+            <CardDescription className="mt-1">Final results preserved from completed Ranked seasons.</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <Skeleton className="h-40 w-full rounded-xl" />
+        ) : unavailable ? (
+          <p className="text-sm text-muted-foreground">Archived Ranked seasons are currently unavailable.</p>
+        ) : seasons.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No completed Ranked season has been archived for this player yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-border">
+            <div className="min-w-[940px]">
+              <div className="grid grid-cols-[90px_150px_100px_100px_85px_85px_85px_85px_85px_85px] gap-3 border-b border-border bg-background/45 px-4 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                <span>Season</span><span>Final rank</span><span>Final MMR</span><span>Peak MMR</span><span>Place</span><span>MP</span><span>W-L-D</span><span>Goals</span><span>Assists</span><span>Saves</span>
+              </div>
+              {seasons.map((season) => {
+                const theme = getRankTheme(season.rank.name);
+                return (
+                  <div key={season.seasonId} className="grid grid-cols-[90px_150px_100px_100px_85px_85px_85px_85px_85px_85px] items-center gap-3 border-b border-border/60 px-4 py-3.5 text-sm last:border-b-0">
+                    <b>Season {season.seasonId}</b>
+                    <span className="w-fit rounded-full border px-2.5 py-1 text-xs font-semibold" style={{ color: theme.text, borderColor: theme.border, backgroundColor: theme.background }}>
+                      {season.rank.displayWithDivision}
+                    </span>
+                    <b>{formatNumber(season.finalMmr)}</b>
+                    <span>{formatNumber(season.peakMmr)}</span>
+                    <span>{season.finalPosition ? `#${season.finalPosition}` : "—"}</span>
+                    <span>{formatNumber(season.stats.MATCHES_PLAYED)}</span>
+                    <span>{season.stats.WINS}-{season.stats.LOSSES}-{season.stats.DRAWS}</span>
+                    <span>{formatNumber(season.stats.GOALS)}</span>
+                    <span>{formatNumber(season.stats.ASSISTS)}</span>
+                    <span>{formatNumber(season.stats.SAVES)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

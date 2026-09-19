@@ -75,6 +75,39 @@ export interface RankedLeaderboardEntry extends RankedProfile {
   position: number;
 }
 
+export interface RankedSeasonSummary {
+  seasonId: number;
+  startedAt: Date | null;
+  endedAt: Date;
+  playerCount: number;
+  eligiblePlayerCount: number;
+}
+
+export interface RankedSeasonOverview {
+  currentSeason: number;
+  currentSeasonStartedAt: Date | null;
+  archivedSeasons: RankedSeasonSummary[];
+}
+
+export interface RankedSeasonLeaderboardEntry extends RankedLeaderboardEntry {
+  seasonId: number;
+  peakMmr: number;
+  officialPosition: number | null;
+  allTimeMatchesAtEnd: number;
+}
+
+export interface RankedPlayerSeasonRecord {
+  seasonId: number;
+  startedAt: Date | null;
+  endedAt: Date;
+  finalMmr: number;
+  peakMmr: number;
+  finalPosition: number | null;
+  allTimeMatchesAtEnd: number;
+  rank: RankedRank;
+  stats: RankedStats;
+}
+
 export interface RankedStatLeaderboardEntry {
   position: number;
   uuid: string;
@@ -111,6 +144,42 @@ interface RankedStatLeaderboardRow extends RowDataPacket {
   uuid: string;
   value: number;
   mmr: number;
+}
+
+interface RankedSeasonStateRow extends RowDataPacket {
+  current_season: number;
+  started_at: Date | string | null;
+}
+
+interface RankedSeasonRow extends RowDataPacket {
+  season_id: number;
+  started_at: Date | string | null;
+  ended_at: Date | string;
+  player_count: number;
+  eligible_player_count: number;
+}
+
+interface RankedSeasonPlayerRow extends RowDataPacket {
+  season_id: number;
+  uuid: string;
+  final_mmr: number;
+  peak_mmr: number;
+  final_position: number | null;
+  all_time_matches_at_end: number;
+  matches_played: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  goals: number;
+  assists: number;
+  saves: number;
+  passes: number;
+  shots_on_net: number;
+}
+
+interface RankedPlayerSeasonRow extends RankedSeasonPlayerRow {
+  started_at: Date | string | null;
+  ended_at: Date | string;
 }
 
 interface MmrHistoryRow extends RowDataPacket {
@@ -386,6 +455,173 @@ export async function getRankedLeaderboard(
     limit,
     offset,
   };
+}
+
+export async function getRankedSeasonOverview(): Promise<RankedSeasonOverview> {
+  const [stateRows, seasonRows] = await Promise.all([
+    queryFb<RankedSeasonStateRow[]>(
+      `SELECT current_season, started_at FROM ranked_season_state WHERE id = 1 LIMIT 1`,
+    ),
+    queryFb<RankedSeasonRow[]>(
+      `
+        SELECT season_id, started_at, ended_at, player_count, eligible_player_count
+        FROM ranked_seasons
+        ORDER BY season_id DESC
+      `,
+    ),
+  ]);
+
+  const state = stateRows[0];
+
+  return {
+    currentSeason: Math.max(1, normalizeNonNegative(state?.current_season) || 1),
+    currentSeasonStartedAt: state?.started_at
+      ? state.started_at instanceof Date
+        ? state.started_at
+        : new Date(state.started_at)
+      : null,
+    archivedSeasons: seasonRows.map((row) => ({
+      seasonId: normalizeNonNegative(row.season_id),
+      startedAt: row.started_at
+        ? row.started_at instanceof Date
+          ? row.started_at
+          : new Date(row.started_at)
+        : null,
+      endedAt: row.ended_at instanceof Date ? row.ended_at : new Date(row.ended_at),
+      playerCount: normalizeNonNegative(row.player_count),
+      eligiblePlayerCount: normalizeNonNegative(row.eligible_player_count),
+    })),
+  };
+}
+
+export async function getRankedSeasonLeaderboard(
+  seasonId: number,
+  options: PaginationOptions = {},
+): Promise<PaginatedResult<RankedSeasonLeaderboardEntry>> {
+  if (!Number.isInteger(seasonId) || seasonId <= 0) {
+    throw new Error(`Invalid ranked season: ${seasonId}`);
+  }
+
+  const { limit, offset } = normalizePagination(options);
+  const [rows, countRows] = await Promise.all([
+    queryFb<RankedSeasonPlayerRow[]>(
+      `
+        SELECT
+          season_id, uuid, final_mmr, peak_mmr, final_position,
+          all_time_matches_at_end, matches_played, wins, losses, draws,
+          goals, assists, saves, passes, shots_on_net
+        FROM ranked_season_players
+        WHERE season_id = ?
+        ORDER BY
+          CASE WHEN final_position IS NULL THEN 1 ELSE 0 END,
+          final_position ASC,
+          final_mmr DESC,
+          wins DESC,
+          uuid ASC
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `,
+      [seasonId],
+    ),
+    queryFb<CountRow[]>(
+      `SELECT COUNT(*) AS total FROM ranked_season_players WHERE season_id = ?`,
+      [seasonId],
+    ),
+  ]);
+
+  return {
+    data: rows.map((row, index) => {
+      const mmr = normalizeNonNegative(row.final_mmr);
+      const stats: RankedStats = {
+        GOALS: normalizeNonNegative(row.goals),
+        ASSISTS: normalizeNonNegative(row.assists),
+        SAVES: normalizeNonNegative(row.saves),
+        MATCHES_PLAYED: normalizeNonNegative(row.matches_played),
+        PASSES: normalizeNonNegative(row.passes),
+        SHOTS_ON_NET: normalizeNonNegative(row.shots_on_net),
+        WINS: normalizeNonNegative(row.wins),
+        LOSSES: normalizeNonNegative(row.losses),
+        DRAWS: normalizeNonNegative(row.draws),
+      };
+
+      const officialPosition = row.final_position == null
+        ? null
+        : normalizeNonNegative(row.final_position) || null;
+
+      return {
+        seasonId: normalizeNonNegative(row.season_id),
+        uuid: row.uuid,
+        mmr,
+        peakMmr: Math.max(mmr, normalizeNonNegative(row.peak_mmr)),
+        wins: stats.WINS,
+        losses: stats.LOSSES,
+        banned: false,
+        permanentBan: false,
+        rankedBanUntil: null,
+        rank: getRankFromMmr(mmr),
+        stats,
+        position: officialPosition ?? offset + index + 1,
+        officialPosition,
+        allTimeMatchesAtEnd: normalizeNonNegative(row.all_time_matches_at_end),
+      };
+    }),
+    total: normalizeNonNegative(countRows[0]?.total),
+    limit,
+    offset,
+  };
+}
+
+export async function getRankedPlayerSeasonHistory(
+  uuid: string,
+): Promise<RankedPlayerSeasonRecord[]> {
+  const normalizedUuid = normalizeUuid(uuid);
+  const rows = await queryFb<RankedPlayerSeasonRow[]>(
+    `
+      SELECT
+        sp.season_id, sp.uuid, sp.final_mmr, sp.peak_mmr, sp.final_position,
+        sp.all_time_matches_at_end, sp.matches_played, sp.wins, sp.losses,
+        sp.draws, sp.goals, sp.assists, sp.saves, sp.passes, sp.shots_on_net,
+        s.started_at, s.ended_at
+      FROM ranked_season_players AS sp
+      INNER JOIN ranked_seasons AS s ON s.season_id = sp.season_id
+      WHERE sp.uuid = ?
+      ORDER BY sp.season_id DESC
+    `,
+    [normalizedUuid],
+  );
+
+  return rows.map((row) => {
+    const finalMmr = normalizeNonNegative(row.final_mmr);
+    const stats: RankedStats = {
+      GOALS: normalizeNonNegative(row.goals),
+      ASSISTS: normalizeNonNegative(row.assists),
+      SAVES: normalizeNonNegative(row.saves),
+      MATCHES_PLAYED: normalizeNonNegative(row.matches_played),
+      PASSES: normalizeNonNegative(row.passes),
+      SHOTS_ON_NET: normalizeNonNegative(row.shots_on_net),
+      WINS: normalizeNonNegative(row.wins),
+      LOSSES: normalizeNonNegative(row.losses),
+      DRAWS: normalizeNonNegative(row.draws),
+    };
+
+    return {
+      seasonId: normalizeNonNegative(row.season_id),
+      startedAt: row.started_at
+        ? row.started_at instanceof Date
+          ? row.started_at
+          : new Date(row.started_at)
+        : null,
+      endedAt: row.ended_at instanceof Date ? row.ended_at : new Date(row.ended_at),
+      finalMmr,
+      peakMmr: Math.max(finalMmr, normalizeNonNegative(row.peak_mmr)),
+      finalPosition: row.final_position == null
+        ? null
+        : normalizeNonNegative(row.final_position) || null,
+      allTimeMatchesAtEnd: normalizeNonNegative(row.all_time_matches_at_end),
+      rank: getRankFromMmr(finalMmr),
+      stats,
+    };
+  });
 }
 
 export async function getRankedStatLeaderboard(

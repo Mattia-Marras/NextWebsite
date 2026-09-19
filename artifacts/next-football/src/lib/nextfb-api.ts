@@ -224,6 +224,40 @@ export interface RankedLeaderboardEntry
   position: number;
 }
 
+export interface RankedSeasonSummary {
+  seasonId: number;
+  startedAt: string | null;
+  endedAt: string;
+  playerCount: number;
+  eligiblePlayerCount: number;
+}
+
+export interface RankedSeasonOverview {
+  currentSeason: number;
+  currentSeasonStartedAt: string | null;
+  archivedSeasons: RankedSeasonSummary[];
+}
+
+export interface RankedSeasonLeaderboardEntry
+  extends RankedLeaderboardEntry {
+  seasonId: number;
+  peakMmr: number;
+  officialPosition: number | null;
+  allTimeMatchesAtEnd: number;
+}
+
+export interface RankedPlayerSeasonRecord {
+  seasonId: number;
+  startedAt: string | null;
+  endedAt: string;
+  finalMmr: number;
+  peakMmr: number;
+  finalPosition: number | null;
+  allTimeMatchesAtEnd: number;
+  rank: RankedRank;
+  stats: RankedStats;
+}
+
 export interface RankedStatLeaderboardEntry
   extends MinecraftPlayerIdentity {
   position: number;
@@ -742,6 +776,32 @@ export async function getRankedLeaderboard(
   return requestNextFootball<
     PaginatedResult<RankedLeaderboardEntry>
   >(`/leaderboards/ranked${query}`);
+}
+
+export async function getRankedPlayerSeasonHistory(
+  uuid: string,
+): Promise<{ data: RankedPlayerSeasonRecord[]; total: number }> {
+  return requestNextFootball<{ data: RankedPlayerSeasonRecord[]; total: number }>(
+    `/players/${encodeURIComponent(uuid)}/ranked-seasons`,
+  );
+}
+
+export async function getRankedSeasonOverview(): Promise<RankedSeasonOverview> {
+  return requestNextFootball<RankedSeasonOverview>("/ranked/seasons");
+}
+
+export async function getRankedSeasonLeaderboard(
+  seasonId: number,
+  options: PaginationOptions = {},
+): Promise<PaginatedResult<RankedSeasonLeaderboardEntry>> {
+  const query = createQueryString({
+    limit: options.limit,
+    offset: options.offset,
+  });
+
+  return requestNextFootball<PaginatedResult<RankedSeasonLeaderboardEntry>>(
+    `/leaderboards/ranked/seasons/${encodeURIComponent(String(seasonId))}${query}`,
+  );
 }
 
 export async function getRankedStatLeaderboard(

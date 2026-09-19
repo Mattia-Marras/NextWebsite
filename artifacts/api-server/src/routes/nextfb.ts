@@ -47,6 +47,9 @@ import {
 import {
   getPlayerMmrHistory,
   getRankedLeaderboard,
+  getRankedPlayerSeasonHistory,
+  getRankedSeasonLeaderboard,
+  getRankedSeasonOverview,
   getRankedStatLeaderboard,
   isRankedStat,
 } from "../lib/nextfb/ranked";
@@ -487,6 +490,24 @@ nextFootballRouter.get(
 );
 
 /*
+ * Storico delle stagioni Ranked concluse per un giocatore.
+ *
+ * GET /api/nextfb/players/:uuid/ranked-seasons
+ */
+
+nextFootballRouter.get(
+  "/players/:uuid/ranked-seasons",
+  asyncRoute(async (request, response) => {
+    const uuid = normalizeUuid(
+      getRouteParameter(request.params.uuid, "uuid"),
+    );
+
+    const seasons = await getRankedPlayerSeasonHistory(uuid);
+    return response.status(200).json({ data: seasons, total: seasons.length });
+  }),
+);
+
+/*
  * Lista generale dei profili.
  *
  * GET /api/nextfb/players
@@ -662,6 +683,45 @@ nextFootballRouter.get(
     return response.status(200).json(
       enrichedResult,
     );
+  }),
+);
+
+/*
+ * Storico stagioni Ranked.
+ *
+ * GET /api/nextfb/ranked/seasons
+ */
+
+nextFootballRouter.get(
+  "/ranked/seasons",
+  asyncRoute(async (_request, response) => {
+    const result = await getRankedSeasonOverview();
+    return response.status(200).json(result);
+  }),
+);
+
+/*
+ * Classifica finale di una stagione Ranked archiviata.
+ *
+ * GET /api/nextfb/leaderboards/ranked/seasons/:seasonId
+ */
+
+nextFootballRouter.get(
+  "/leaderboards/ranked/seasons/:seasonId",
+  asyncRoute(async (request, response) => {
+    const seasonId = parsePositiveId(
+      getRouteParameter(request.params.seasonId, "seasonId"),
+    );
+
+    const result = await getRankedSeasonLeaderboard(
+      seasonId,
+      parsePagination(request),
+    );
+
+    const enrichedResult =
+      await addUsernamesToPaginatedResult(result);
+
+    return response.status(200).json(enrichedResult);
   }),
 );
 

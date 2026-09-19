@@ -6,6 +6,7 @@ import {
   BarChart3,
   Crosshair,
   Goal,
+  History,
   Medal,
   Shield,
   Swords,
@@ -28,6 +29,8 @@ import { getRankTheme } from "@/lib/rank-colors";
 import {
   RANKED_STATS,
   getRankedLeaderboard,
+  getRankedSeasonLeaderboard,
+  getRankedSeasonOverview,
   type RankedLeaderboardEntry,
   type RankedStat,
 } from "@/lib/nextfb-api";
@@ -84,13 +87,40 @@ function rate(numerator: number, denominator: number) {
   return denominator > 0 ? numerator / denominator : 0;
 }
 
+function formatSeasonDate(value: string | null | undefined) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
 export function FootballRanked() {
   const [metric, setMetric] = useState<RankedMetric>("MMR");
-  const query = useQuery({
-    queryKey: ["nextfootball-ranked-page"],
-    queryFn: () => getRankedLeaderboard({ limit: 100, offset: 0 }),
+  const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null);
+
+  const seasonsQuery = useQuery({
+    queryKey: ["nextfootball-ranked-seasons"],
+    queryFn: getRankedSeasonOverview,
+    retry: false,
   });
 
+  const query = useQuery({
+    queryKey: ["nextfootball-ranked-page", selectedSeasonId ?? "current"],
+    queryFn: () =>
+      selectedSeasonId == null
+        ? getRankedLeaderboard({ limit: 200, offset: 0 })
+        : getRankedSeasonLeaderboard(selectedSeasonId, { limit: 200, offset: 0 }),
+  });
+
+  const isArchivedSeason = selectedSeasonId != null;
+  const currentSeasonNumber = seasonsQuery.data?.currentSeason;
+  const selectedSeasonSummary = seasonsQuery.data?.archivedSeasons.find(
+    (season) => season.seasonId === selectedSeasonId,
+  );
   const players = (query.data?.data ?? []) as RankedEntryWithUsername[];
 
   const sorted = useMemo(
@@ -141,6 +171,7 @@ export function FootballRanked() {
   }));
 
   const top = players[0];
+  const topMmr = [...players].sort((a, b) => b.mmr - a.mmr)[0];
   const topGoals = [...players].sort((a, b) => (b.stats?.GOALS ?? 0) - (a.stats?.GOALS ?? 0))[0];
   const topAssists = [...players].sort((a, b) => (b.stats?.ASSISTS ?? 0) - (a.stats?.ASSISTS ?? 0))[0];
   const topSaves = [...players].sort((a, b) => (b.stats?.SAVES ?? 0) - (a.stats?.SAVES ?? 0))[0];
@@ -169,12 +200,14 @@ export function FootballRanked() {
             <div>
               <h1 className="font-display text-5xl font-bold uppercase tracking-tight md:text-7xl">Ranked</h1>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-                Competitive standings, rank distribution, performance leaders and detailed Ranked statistics in one place.
+                {isArchivedSeason
+                  ? `Final standings and complete statistics preserved from Ranked Season ${selectedSeasonId}.`
+                  : "Competitive standings, rank distribution, performance leaders and detailed Ranked statistics in one place."}
               </p>
             </div>
             {top ? (
               <Link href={`/football/profile/${encodeURIComponent(top.uuid)}`} className="rounded-2xl border border-[#39ff14]/25 bg-[#39ff14]/[0.055] px-5 py-4 transition hover:bg-[#39ff14]/10">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Ranked leader</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{isArchivedSeason ? `Season ${selectedSeasonId} leader` : "Ranked leader"}</p>
                 <p className="mt-1 font-display text-2xl font-bold">{playerName(top)}</p>
                 <p className="mt-1 text-sm text-[#39ff14]">{top.rank.displayWithDivision} · {n(top.mmr)} MMR</p>
               </Link>
@@ -184,6 +217,59 @@ export function FootballRanked() {
       </section>
 
       <main className="container mx-auto space-y-7 px-4 pt-8">
+        <section className="surface-panel p-5 md:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl border border-[#39ff14]/20 bg-[#39ff14]/[0.055] p-2.5 text-[#39ff14]">
+                <History className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold uppercase">Ranked seasons</h2>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                  Browse the live season or any completed Ranked season preserved in the permanent archive.
+                </p>
+                {isArchivedSeason && selectedSeasonSummary ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {formatSeasonDate(selectedSeasonSummary.startedAt) ?? "Unknown start"} – {formatSeasonDate(selectedSeasonSummary.endedAt) ?? "Unknown end"}
+                    {` · ${n(selectedSeasonSummary.playerCount)} players · ${n(selectedSeasonSummary.eligiblePlayerCount)} eligible for final placement`}
+                  </p>
+                ) : !isArchivedSeason && seasonsQuery.data ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Season {currentSeasonNumber}
+                    {formatSeasonDate(seasonsQuery.data.currentSeasonStartedAt)
+                      ? ` · started ${formatSeasonDate(seasonsQuery.data.currentSeasonStartedAt)}`
+                      : ""}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <label className="flex min-w-[220px] flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Season
+              <select
+                value={selectedSeasonId == null ? "current" : String(selectedSeasonId)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setSelectedSeasonId(value === "current" ? null : Number(value));
+                }}
+                className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-[#39ff14]"
+              >
+                <option value="current">
+                  {currentSeasonNumber ? `Season ${currentSeasonNumber} · Current` : "Current season"}
+                </option>
+                {(seasonsQuery.data?.archivedSeasons ?? []).map((season) => (
+                  <option key={season.seasonId} value={season.seasonId}>
+                    Season {season.seasonId} · Final
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {seasonsQuery.isError ? (
+            <p className="mt-4 text-xs text-muted-foreground">Season archive metadata is unavailable; the current Ranked season remains accessible.</p>
+          ) : null}
+        </section>
+
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
             [Users, "Ranked players", query.data?.total ?? players.length],
@@ -200,7 +286,7 @@ export function FootballRanked() {
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <LeaderCard icon={<Trophy className="h-5 w-5" />} title="Highest MMR" player={top} value={top ? `${n(top.mmr)} MMR` : "—"} />
+          <LeaderCard icon={<Trophy className="h-5 w-5" />} title="Highest MMR" player={topMmr} value={topMmr ? `${n(topMmr.mmr)} MMR` : "—"} />
           <LeaderCard icon={<Goal className="h-5 w-5" />} title="Top scorer" player={topGoals} value={topGoals ? `${n(topGoals.stats.GOALS)} goals` : "—"} />
           <LeaderCard icon={<Crosshair className="h-5 w-5" />} title="Top assister" player={topAssists} value={topAssists ? `${n(topAssists.stats.ASSISTS)} assists` : "—"} />
           <LeaderCard icon={<Shield className="h-5 w-5" />} title="Top saver" player={topSaves} value={topSaves ? `${n(topSaves.stats.SAVES)} saves` : "—"} />
@@ -232,7 +318,7 @@ export function FootballRanked() {
 
           <div className="surface-panel p-5 md:p-7">
             <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Medal className="h-5 w-5 text-[#39ff14]" /> Rank distribution</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Current competitive population by rank.</p>
+            <p className="mt-1 text-sm text-muted-foreground">{isArchivedSeason ? `Final rank distribution for Season ${selectedSeasonId}.` : "Current competitive population by rank."}</p>
             <div className="mt-6 space-y-3">
               {rankDistribution.length ? rankDistribution.map((item) => {
                 const theme = getRankTheme(item.rank as RankedLeaderboardEntry["rank"]["name"]);
@@ -266,8 +352,8 @@ export function FootballRanked() {
           <div className="border-b border-border p-5 md:p-7">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Activity className="h-5 w-5 text-[#39ff14]" /> Competitive standings</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Full Ranked record, ordered by {label(metric)}.</p>
+                <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Activity className="h-5 w-5 text-[#39ff14]" /> {isArchivedSeason ? `Season ${selectedSeasonId} standings` : "Competitive standings"}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{isArchivedSeason ? "Archived final player records" : "Full Ranked record"}, ordered by {label(metric)}.</p>
               </div>
               <Badge variant="outline">{players.length} loaded players</Badge>
             </div>

@@ -255,3 +255,18 @@ html { scroll-behavior: smooth; scroll-padding-top: 110px; }
 @media (max-width:767px) { .next-mode-panel-0,.next-blockball .next-mode-panel-1 { grid-column: auto; }.next-blockball .next-mode-panel-1 { grid-row: auto; } }
 
 .next-editorial { --font-display: var(--app-font-display); }
+<<<<<<< HEAD
+=======
+
+.next-section-nav { display: flex; gap: 4px; overflow-x: auto; border-top: 1px solid #ffffff24; border-bottom: 1px solid #ffffff24; padding: 6px 0; scrollbar-width: thin; }
+.next-section-nav a { flex-shrink: 0; padding: 13px 16px; color: #a6b0a8; font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }
+.next-section-nav a[aria-current="page"] { color: var(--next-accent); border-color: var(--next-accent); background: #ffffff04; }
+.next-section-nav a:hover { color: white; background: #ffffff08; }
+.next-overview-links { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 10px; }
+.next-overview-links a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px; border: 1px solid #ffffff20; font-size: 13px; font-weight: 600; }
+.next-overview-links a:hover { border-color: var(--next-accent); }
+.next-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #ffffff15; font-size: 12px; color: #a6b0a8; }
+.next-pagination button { min-height: 42px; padding: 8px 15px; border: 1px solid #ffffff20; color: white; }
+.next-pagination button:disabled { opacity: .35; cursor: not-allowed; }
+.next-mode-panel { min-width: 0; }
+>>>>>>> 5f078c1 (New website rewwork)

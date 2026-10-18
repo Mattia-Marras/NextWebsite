@@ -85,9 +85,11 @@ function Router() {
         <Route path="/blockball" component={BlockballOverview} />
         <Route path="/blockball/ranked" component={BlockballRanked} />
         <Route path="/blockball/players" component={BlockballPlayers} />
+        <Route path="/blockball/profile/:uuid/:section" component={BlockballProfile} />
         <Route path="/blockball/profile/:uuid" component={BlockballProfile} />
         <Route path="/blockball/leaderboards" component={BlockballLeaderboards} />
         <Route path="/blockball/ultimate-team" component={BlockballUltimateTeam} />
+        <Route path="/blockball/:league/:section" component={BlockballHome} />
         <Route path="/blockball/:league" component={BlockballHome} />
 
         {/* Temporary compatibility routes */}

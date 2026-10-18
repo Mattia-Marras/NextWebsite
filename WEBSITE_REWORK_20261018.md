@@ -74,3 +74,28 @@
 - Kept the original logo. The other site's reference screenshot is not used as NEXT content.
 
 Validation: frontend TypeScript check passed and production build passed (2,800 modules). Existing shared UI sourcemap warnings and large-bundle advisory remain. Browser visual verification was attempted but could not complete in this environment. Live database integration was not exercised.
+<<<<<<< HEAD
+=======
+
+
+## Navigation and content organization revision
+
+BlockBall profiles now show one page section at a time, retaining the shared player header:
+- `/blockball/profile/:uuid`: compact overview and links.
+- `/blockball/profile/:uuid/ranked`: record and MMR chart.
+- `/blockball/profile/:uuid/league`: league career, seasons and awards.
+- `/blockball/profile/:uuid/ultimate-team`: on-demand collection, search, season filter and 12 cards per page.
+- `/blockball/profile/:uuid/cosmetics`: owned and active cosmetics.
+- `/blockball/profile/:uuid/gamebet`: GameBet activity.
+
+BlockBall League has separate overview, standings, results, players, archive and awards pages under `/blockball/main` and `/blockball/lower`. Overview contains standings and three latest results. The results page supports club search and 12 matches per page. Archive and awards share a season selector; past season selection does not affect current standings.
+
+Additional refinements:
+- Player names link to profiles in homepage Ranked previews and mode Ranked/economy previews.
+- Mode overviews have a shorter header and compact navigation instead of repeated promotional panels.
+- Profile overview reduces repeated rank information.
+- Navigation exposes the active page and supports direct URLs and browser history.
+- Wider tables remain within horizontal scrolling containers; match names can wrap on small screens.
+
+Validation: frontend TypeScript passed; production Vite build passed. Server-rendered fixture checks passed for all 12 profile/league sections, including overview isolation, three-result preview and 12-result pagination. Live database integration and browser/mobile visual checks remain unverified. Existing shared UI source-map warnings and bundle-size advisory remain.
+>>>>>>> 5f078c1 (New website rewwork)

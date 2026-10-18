@@ -18,7 +18,8 @@ function parseLeagueFromPath(path: string) {
 }
 
 function isSectionActive(location: string, href: string, label: string) {
-  if (label === "Ranked") return location === "/blockball/ranked" || (location.includes("/leaderboards") && window.location.search.includes("tab=ranked"));
+  if (label === "Overview") return location === href;
+  if (label === "Ranked") return location.endsWith("/ranked") || (location.includes("/leaderboards") && window.location.search.includes("tab=ranked"));
   if (label === "Leaderboards") return location.includes("/leaderboards") && !window.location.search.includes("tab=ranked");
   if (label === "League") return /^\/(football|blockball)\/(main|lower)/.test(location);
   return location.startsWith(href);

@@ -6,6 +6,7 @@ import {
 
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PageMotion } from "@/components/page-motion";
 import { Layout } from "@/components/layout";
 
 import NotFound from "@/pages/not-found";
@@ -13,6 +14,7 @@ import NotFound from "@/pages/not-found";
 // Pages
 import { Landing } from "@/pages/landing";
 import { Home } from "@/pages/home";
+import { FootballOverview, BlockballOverview } from "@/pages/mode-overview";
 import { LeagueSeasonHistory } from "@/pages/league-season-history";
 import { Results } from "@/pages/results";
 import { Fixtures } from "@/pages/fixtures";
@@ -41,13 +43,15 @@ const queryClient = new QueryClient({
 
 function Router() {
   return (
-    <Layout>
+    <Layout><PageMotion>
       <Switch>
         {/* Static routes */}
         <Route path="/" component={Landing} />
         <Route path="/admin" component={Admin} />
 
         {/* NextFootball player routes */}
+        <Route path="/football" component={FootballOverview} />
+
         <Route
           path="/football/players"
           component={ProfileSearch}
@@ -78,6 +82,7 @@ function Router() {
           component={LeagueSeasonHistory}
         />
 
+        <Route path="/blockball" component={BlockballOverview} />
         <Route path="/blockball/ranked" component={BlockballRanked} />
         <Route path="/blockball/players" component={BlockballPlayers} />
         <Route path="/blockball/profile/:uuid" component={BlockballProfile} />
@@ -120,7 +125,7 @@ function Router() {
         {/* Fallback */}
         <Route component={NotFound} />
       </Switch>
-    </Layout>
+    </PageMotion></Layout>
   );
 }
 

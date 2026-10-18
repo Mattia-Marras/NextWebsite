@@ -10,6 +10,14 @@ async function get<T>(url: string): Promise<T> {
 
 export type BBLeague = "ML" | "LL";
 export const getBlockballLeague = (league: BBLeague, season?: string) => get<any>(`/league/${league}${season ? `?season=${encodeURIComponent(season)}` : ""}`);
+export interface BlockballEconomyOverview {
+  playerCount: number;
+  totalCoins: number;
+  averageCoins: number;
+  maxCoins: number;
+  richest: { uuid: string; name: string; coins: number }[];
+}
+export const getBlockballEconomy = () => get<BlockballEconomyOverview>("/economy");
 export const getBlockballRanked = () => get<any>("/ranked");
 export const getBlockballPlayers = () => get<any[]>("/players");
 export const getBlockballPlayer = (uuid: string) => get<any>(`/players/${encodeURIComponent(uuid)}`);

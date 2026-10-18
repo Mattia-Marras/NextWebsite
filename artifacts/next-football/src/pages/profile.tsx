@@ -1,3 +1,4 @@
+import { PitchArt } from "@/components/pitch-art";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
@@ -165,31 +166,15 @@ function ProfileContent({
 }: {
   player: NextFootballPlayerPage;
 }) {
-  const { profile, ranked, leagues, casino, cosmetics } = player;
-
-  const globalStats = mergePlayerStats(profile.globalStats);
-  const winRate = calculatePercentage(
-    globalStats.WINS,
-    globalStats.MATCHES_PLAYED,
-  );
+  const { profile } = player;
 
   const xpProgress = Math.max(0, profile.xp % 1000);
   const xpProgressPercentage = Math.min(100, xpProgress / 10);
 
   return (
-    <div className="flex flex-col pb-16">
+    <div className="next-editorial next-player next-football flex flex-col pb-16">
       <section className="relative overflow-hidden border-b border-border bg-background py-14 md:py-20">
-        <div className="pointer-events-none absolute inset-0">
-          <div
-            className="absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/3 rounded-full blur-[140px]"
-            style={{
-              backgroundColor: `${PROFILE_ACCENT}18`,
-            }}
-          />
-
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.025] mix-blend-overlay" />
-        </div>
-
+        <div className="next-mode-art"><PitchArt /></div>
         <div className="container relative z-10 mx-auto px-4">
           <div className="mb-8">
             <Link href="/football/players">
@@ -246,7 +231,7 @@ function ProfileContent({
                 </h1>
 
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Complete NextFootball player profile
+                  Football / Player record
                 </p>
               </div>
             </div>
@@ -348,13 +333,7 @@ function ProfileContent({
           </div>
 
           <TabsContent value="overview" className="mt-8">
-            <OverviewSection
-              stats={globalStats}
-              winRate={winRate}
-              ranked={ranked}
-              leagueCount={leagues.length}
-              cosmeticsCount={cosmetics.availableCount}
-            />
+            <OverviewSection player={player} />
           </TabsContent>
 
           <TabsContent value="modes" className="mt-8">
@@ -386,116 +365,90 @@ function ProfileContent({
   );
 }
 
-function OverviewSection({
-  stats,
-  winRate,
-  ranked,
-  leagueCount,
-  cosmeticsCount,
-}: {
-  stats: PlayerStats;
-  winRate: number | null;
-  ranked: NextFootballPlayerPage["ranked"];
-  leagueCount: number;
-  cosmeticsCount: number;
-}) {
+function OverviewSection({ player }: { player: NextFootballPlayerPage }) {
+  const { profile, ranked, leagues, casino, cosmetics, leagueHistory } = player;
+  const stats = mergePlayerStats(profile.globalStats);
+  const matches = stats.MATCHES_PLAYED;
+  const winRate = calculatePercentage(stats.WINS, matches);
+  const goalsPerMatch = matches > 0 ? stats.GOALS / matches : null;
+  const assistsPerMatch = matches > 0 ? stats.ASSISTS / matches : null;
+  const savesPerMatch = matches > 0 ? stats.SAVES / matches : null;
+  const activeLeagues = (["ML", "LL"] as LeagueCode[]).filter(
+    (code) => leagueHistory.current[code] && (leagueHistory.current[code]?.matches ?? 0) > 0,
+  );
+  const casinoNet = casino?.totalNet ?? null;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 page-reveal">
       <SectionHeading
-        title="Career overview"
-        description="Combined player statistics across NextFootball."
+        title="Player record"
+        description="Rank, league career, match performance and rewards at a glance."
         icon={<Activity className="h-6 w-6" />}
       />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard
-          label="Matches"
-          value={stats.MATCHES_PLAYED}
-          icon={<Gamepad2 className="h-5 w-5" />}
-        />
+      <div className="grid gap-4 xl:grid-cols-4">
+        <div className="hover-lift relative overflow-hidden rounded-2xl border border-[#39ff14]/20 bg-[#39ff14]/[0.045] p-5">
+          <div className="shine-line absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#39ff14] to-transparent" />
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-[#39ff14]/20 bg-[#39ff14]/10 p-2 text-[#39ff14]"><Crown className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Competitive status</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{ranked?.rank.displayWithDivision ?? "Unranked"}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{ranked ? `${formatNumber(ranked.mmr)} MMR · ${formatNumber(ranked.wins)}W / ${formatNumber(ranked.losses)}L` : "No Ranked profile yet"}</p>
+        </div>
 
-        <StatCard
-          label="Wins"
-          value={stats.WINS}
-          icon={<Trophy className="h-5 w-5" />}
-        />
+        <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Trophy className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">League career</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{activeLeagues.length ? activeLeagues.join(" + ") : leagues.length ? `${leagues.length} league${leagues.length === 1 ? "" : "s"}` : "No active league"}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{formatNumber(leagueHistory.careerWithCurrent.matches)} matches · {formatNumber(leagueHistory.careerWithCurrent.goals)} goals · {formatNumber(leagueHistory.awards.reduce((sum, award) => sum + award.amount, 0))} awards</p>
+        </div>
 
-        <StatCard
-          label="Draws"
-          value={stats.DRAWS}
-          icon={<Shield className="h-5 w-5" />}
-        />
+        <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Coins className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Economy</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{formatNumber(profile.coins)} coins</p>
+          <p className="mt-1 text-sm text-muted-foreground">{casinoNet == null ? "No GameBet activity recorded" : `${casinoNet >= 0 ? "+" : ""}${formatNumber(casinoNet)} lifetime GameBet net`}</p>
+        </div>
 
-        <StatCard
-          label="Losses"
-          value={stats.LOSSES}
-          icon={<Ban className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="Win rate"
-          value={formatPercentage(winRate)}
-          icon={<Target className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="Rank"
-          value={ranked?.rank.displayWithDivision ?? "Unranked"}
-          icon={<Crown className="h-5 w-5" />}
-        />
+        <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Sparkles className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Account progression</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">Level {formatNumber(profile.level)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{formatNumber(profile.xp)} XP · {formatNumber(cosmetics.activeCount)} active / {formatNumber(cosmetics.availableCount)} cosmetics</p>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Goals"
-          value={stats.GOALS}
-          icon={<Goal className="h-5 w-5" />}
-        />
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+        <div className="surface-panel p-5 md:p-6">
+          <div className="mb-5">
+            <p className="font-display text-xs uppercase tracking-[0.22em] text-muted-foreground">Performance</p>
+            <h3 className="mt-1 font-display text-2xl font-bold uppercase">Match record</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard label="Matches" value={stats.MATCHES_PLAYED} icon={<Gamepad2 className="h-5 w-5" />} />
+            <StatCard label="Win rate" value={formatPercentage(winRate)} icon={<Trophy className="h-5 w-5" />} />
+            <StatCard label="Goals" value={stats.GOALS} icon={<Goal className="h-5 w-5" />} />
+            <StatCard label="Assists" value={stats.ASSISTS} icon={<Activity className="h-5 w-5" />} />
+            <StatCard label="Goals / match" value={goalsPerMatch == null ? "—" : goalsPerMatch.toFixed(2)} icon={<Target className="h-5 w-5" />} />
+            <StatCard label="Assists / match" value={assistsPerMatch == null ? "—" : assistsPerMatch.toFixed(2)} icon={<ArrowLeft className="h-5 w-5 rotate-180" />} />
+            <StatCard label="Saves / match" value={savesPerMatch == null ? "—" : savesPerMatch.toFixed(2)} icon={<Shield className="h-5 w-5" />} />
+            <StatCard label="Shots on net" value={stats.SHOTS_ON_NET} icon={<Target className="h-5 w-5" />} />
+          </div>
+        </div>
 
-        <StatCard
-          label="Assists"
-          value={stats.ASSISTS}
-          icon={<Activity className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="Passes"
-          value={stats.PASSES}
-          icon={<ArrowLeft className="h-5 w-5 rotate-180" />}
-        />
-
-        <StatCard
-          label="Shots on net"
-          value={stats.SHOTS_ON_NET}
-          icon={<Target className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="Saves"
-          value={stats.SAVES}
-          icon={<Shield className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="MMR"
-          value={ranked?.mmr ?? "—"}
-          icon={<Trophy className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="Leagues"
-          value={leagueCount}
-          icon={<Crown className="h-5 w-5" />}
-        />
-
-        <StatCard
-          label="Cosmetics"
-          value={cosmeticsCount}
-          icon={<Sparkles className="h-5 w-5" />}
-        />
+        <div className="surface-panel p-5 md:p-6">
+          <p className="font-display text-xs uppercase tracking-[0.22em] text-muted-foreground">Career highlights</p>
+          <h3 className="mt-1 font-display text-2xl font-bold uppercase">Competition record</h3>
+          <div className="mt-5 space-y-3">
+            <OverviewLine label="Ranked" value={ranked ? `${ranked.rank.displayWithDivision} · ${formatNumber(ranked.mmr)} MMR` : "Not ranked"} />
+            <OverviewLine label="Main League" value={leagueHistory.current.ML ? `${formatNumber(leagueHistory.current.ML.matches)} MP · ${formatNumber(leagueHistory.current.ML.goals)} G · ${formatNumber(leagueHistory.current.ML.assists)} A` : "No current stats"} />
+            <OverviewLine label="Lower League" value={leagueHistory.current.LL ? `${formatNumber(leagueHistory.current.LL.matches)} MP · ${formatNumber(leagueHistory.current.LL.goals)} G · ${formatNumber(leagueHistory.current.LL.assists)} A` : "No current stats"} />
+            <OverviewLine label="League cards" value={formatNumber(leagueHistory.cards.length)} />
+            <OverviewLine label="Cosmetics" value={`${formatNumber(cosmetics.availableCount)} cosmetics owned`} />
+          </div>
+        </div>
       </div>
     </div>
   );
+}
+
+function OverviewLine({ label, value }: { label: string; value: string }) {
+  return <div className="flex items-center justify-between gap-4 rounded-xl border border-white/7 bg-white/[0.02] px-4 py-3"><span className="text-sm text-muted-foreground">{label}</span><b className="text-right text-sm">{value}</b></div>;
 }
 
 function ModesSection({

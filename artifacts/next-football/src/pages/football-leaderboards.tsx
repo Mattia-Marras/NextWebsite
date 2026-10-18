@@ -411,10 +411,12 @@ function getPositionStyle(position: number): {
 }
 
 export function FootballLeaderboards() {
-  const initialLeaderboard: LeaderboardType =
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "ranked"
-      ? "ranked"
-      : "level";
+  const requestedTab = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("tab")
+    : null;
+  const initialLeaderboard: LeaderboardType = LEADERBOARD_OPTIONS.some((option) => option.id === requestedTab)
+    ? (requestedTab as LeaderboardType)
+    : "level";
 
   const [activeLeaderboard, setActiveLeaderboard] =
     useState<LeaderboardType>(initialLeaderboard);
@@ -489,7 +491,7 @@ export function FootballLeaderboards() {
 
         <div className="container relative z-10 mx-auto">
           <Link
-            href="/football/main"
+            href="/football"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[#39ff14]"
           >
             <ArrowLeft className="h-4 w-4" />

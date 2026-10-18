@@ -302,6 +302,42 @@ router.get("/league/:league", async (req, res, next) => {
   }
 });
 
+router.get("/economy", async (_req, res, next) => {
+  try {
+    const [summaryRows, richestRows] = await Promise.all([
+      queryBlockball<(RowDataPacket & any)[]>(
+        `SELECT COUNT(*) playerCount,
+                COALESCE(SUM(GREATEST(coins,0)),0) totalCoins,
+                COALESCE(AVG(GREATEST(coins,0)),0) averageCoins,
+                COALESCE(MAX(GREATEST(coins,0)),0) maxCoins
+         FROM players`,
+      ),
+      queryBlockball<(RowDataPacket & any)[]>(
+        `SELECT p.uuid,COALESCE(n.name,p.name,p.uuid) name,p.coins
+         FROM players p
+         LEFT JOIN player_names n ON n.uuid=p.uuid
+         ORDER BY p.coins DESC,p.uuid ASC
+         LIMIT 5`,
+      ),
+    ]);
+
+    const summary = summaryRows[0] || {};
+    return res.json({
+      playerCount: number(summary.playerCount),
+      totalCoins: number(summary.totalCoins),
+      averageCoins: number(summary.averageCoins),
+      maxCoins: number(summary.maxCoins),
+      richest: richestRows.map((row) => ({
+        uuid: String(row.uuid).toLowerCase(),
+        name: row.name,
+        coins: number(row.coins),
+      })),
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get("/ranked", async (_req, res, next) => {
   try {
     const players = await queryBlockball<(RowDataPacket & any)[]>(

@@ -1,4 +1,4 @@
-import { BarChart3, Search, Trophy, Users, WalletCards } from "lucide-react";
+import { BarChart3, House, Search, Trophy, Users, WalletCards } from "lucide-react";
 
 export type GameModeId = "football" | "blockball";
 
@@ -30,8 +30,9 @@ export const GAME_MODES: GameModeDefinition[] = [
     accent: "#39ff14",
     accentSoft: "rgba(57,255,20,.12)",
     available: true,
-    landingHref: "/football/main",
+    landingHref: "/football",
     sections: [
+      { label: "Overview", href: "/football", icon: House, available: true },
       { label: "Ranked", href: "/football/ranked", icon: BarChart3, available: true },
       { label: "League", href: "/football/main", icon: Trophy, available: true },
       { label: "Player search", href: "/football/players", icon: Search, available: true },
@@ -47,8 +48,9 @@ export const GAME_MODES: GameModeDefinition[] = [
     accent: "#38bdf8",
     accentSoft: "rgba(56,189,248,.12)",
     available: true,
-    landingHref: "/blockball/main",
+    landingHref: "/blockball",
     sections: [
+      { label: "Overview", href: "/blockball", icon: House, available: true },
       { label: "League", href: "/blockball/main", icon: Trophy, available: true },
       { label: "Ranked", href: "/blockball/ranked", icon: BarChart3, available: true },
       { label: "Player search", href: "/blockball/players", icon: Search, available: true },

@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { FormEvent, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
@@ -75,6 +76,7 @@ function getSearchErrorMessage(error: unknown): string {
 }
 
 export function ProfileSearch() {
+  useLanguage();
   const [, navigate] = useLocation();
 
   const [searchValue, setSearchValue] = useState("");
@@ -148,28 +150,18 @@ export function ProfileSearch() {
             href="/football/main"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[#39ff14]"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to NextFootball
-          </Link>
+            <ArrowLeft className="h-4 w-4" />{translate("Back to NextFootball")}</Link>
         </div>
 
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#39ff14]/30 bg-[#39ff14]/10 shadow-[0_0_30px_#39ff1420]">
           <UserRound className="h-8 w-8 text-[#39ff14]" />
         </div>
 
-        <p className="mb-3 font-display text-xs uppercase tracking-[0.35em] text-[#39ff14]">
-          NextFootball Player Database
-        </p>
+        <p className="mb-3 font-display text-xs uppercase tracking-[0.35em] text-[#39ff14]">{translate("NextFootball Player Database")}</p>
 
-        <h1 className="text-center font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">
-          Football Players
-        </h1>
+        <h1 className="text-center font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">{translate("Football Players")}</h1>
 
-        <p className="mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">
-          Search the NextFootball player database by Minecraft
-          username and explore statistics, ranked progress,
-          leagues, casino activity and cosmetics.
-        </p>
+        <p className="mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">{translate("Search the NextFootball player database by Minecraft username and explore statistics, ranked progress, leagues, casino activity and cosmetics.")}</p>
 
         <form
           onSubmit={handleSubmit}
@@ -194,8 +186,8 @@ export function ProfileSearch() {
                       setError(null);
                     }
                   }}
-                  placeholder="Minecraft username"
-                  aria-label="Minecraft username"
+                  placeholder={translate("Minecraft username")}
+                  aria-label={translate("Minecraft username")}
                   aria-invalid={Boolean(error)}
                   aria-describedby={
                     error
@@ -218,13 +210,9 @@ export function ProfileSearch() {
               >
                 {isSearching ? (
                   <>
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                    Searching
-                  </>
+                    <LoaderCircle className="h-4 w-4 animate-spin" />{translate("Searching")}</>
                 ) : (
-                  <>
-                    View profile
-                    <ArrowRight className="h-4 w-4" />
+                  <>{translate("View profile")}<ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </Button>
@@ -238,16 +226,13 @@ export function ProfileSearch() {
                 role="alert"
                 className="text-sm text-destructive"
               >
-                {error}
+                {translate(error)}
               </p>
             ) : (
               <p
                 id="profile-search-help"
                 className="text-sm text-muted-foreground"
-              >
-                Search is limited to Minecraft Java Edition
-                accounts registered on NextFootball.
-              </p>
+              >{translate("Search is limited to Minecraft Java Edition accounts registered on NextFootball.")}</p>
             )}
           </div>
         </form>
@@ -258,19 +243,11 @@ export function ProfileSearch() {
               <UserRound className="h-5 w-5 text-[#39ff14]" />
             </div>
 
-            <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-[#39ff14]">
-              NextFootball
-            </p>
+            <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-[#39ff14]">{translate("NextFootball")}</p>
 
-            <h2 className="font-display text-lg font-bold uppercase">
-              Football profiles
-            </h2>
+            <h2 className="font-display text-lg font-bold uppercase">{translate("Football profiles")}</h2>
 
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              View level, coins, match statistics, ranked
-              progress, league performance, casino activity
-              and cosmetics.
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{translate("View level, coins, match statistics, ranked progress, league performance, casino activity and cosmetics.")}</p>
           </article>
 
           <Link href="/football/leaderboards" className="rounded-2xl border border-amber-400/20 bg-card/50 p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/50 hover:bg-card/80">
@@ -278,19 +255,11 @@ export function ProfileSearch() {
               <Trophy className="h-5 w-5 text-amber-400" />
             </div>
 
-            <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-amber-400">
-              Available now
-            </p>
+            <p className="mb-2 font-display text-[10px] uppercase tracking-[0.25em] text-amber-400">{translate("Available now")}</p>
 
-            <h2 className="font-display text-lg font-bold uppercase">
-              Football leaderboards
-            </h2>
+            <h2 className="font-display text-lg font-bold uppercase">{translate("Football leaderboards")}</h2>
 
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Compare NextFootball players by level, coins,
-              ranked MMR, goals, assists, saves and other
-              statistics.
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{translate("Compare NextFootball players by level, coins, ranked MMR, goals, assists, saves and other statistics.")}</p>
           </Link>
         </section>
       </main>

@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useState } from "react";
 import { useListTeams } from "@workspace/api-client-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,6 +8,7 @@ import { Database, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function TeamsAdmin() {
+  useLanguage();
   const [league, setLeague] = useState<"main" | "lower">("main");
   const { data: teams = [], isLoading } = useListTeams({ server: "football", league });
 
@@ -14,31 +16,31 @@ export function TeamsAdmin() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-display font-bold uppercase tracking-widest text-foreground">Official League Teams</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Read directly from the NEXT Football plugin database.</p>
+          <h2 className="text-2xl font-display font-bold uppercase tracking-widest text-foreground">{translate("Official League Teams")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{translate("Read directly from the NEXT Football plugin database.")}</p>
         </div>
         <Select value={league} onValueChange={(value) => setLeague(value as "main" | "lower")}>
           <SelectTrigger className="w-[190px]"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="main">Main League</SelectItem>
-            <SelectItem value="lower">Lower League</SelectItem>
+            <SelectItem value="main">{translate("Main League")}</SelectItem>
+            <SelectItem value="lower">{translate("Lower League")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-        <p>Teams are managed by the Minecraft plugin. This panel is intentionally read-only, while fixtures and results can still be entered manually from the Matches tab.</p>
+        <p>{translate("Teams are managed by the Minecraft plugin. This panel is intentionally read-only, while fixtures and results can still be entered manually from the Matches tab.")}</p>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-20">Badge</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Team</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Short name</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Source</TableHead>
+              <TableHead className="w-20">{translate("Badge")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Team")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Short name")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Source")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -56,12 +58,11 @@ export function TeamsAdmin() {
                 <TableCell className="font-mono text-muted-foreground">{team.shortName}</TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs text-primary">
-                    <Database className="h-3.5 w-3.5" /> NEXTFB DB
-                  </span>
+                    <Database className="h-3.5 w-3.5" />{translate(" NEXTFB DB")}</span>
                 </TableCell>
               </TableRow>
             )) : (
-              <TableRow><TableCell colSpan={4} className="h-32 text-center text-muted-foreground">No official teams found for this league.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="h-32 text-center text-muted-foreground">{translate("No official teams found for this league.")}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -68,10 +69,11 @@ function playerName(
   username: string | null,
   uuid: string,
 ) {
-  return username?.trim() || "Unknown player";
+  return username?.trim() || translate("Unknown player");
 }
 
 export function LeagueSeasonHistory() {
+  useLanguage();
   const {
     league = "main",
     season = "",
@@ -193,14 +195,9 @@ export function LeagueSeasonHistory() {
     return (
       <main className="container mx-auto px-4 py-14">
         <div className="surface-panel p-8 text-center">
-          <h1 className="font-display text-3xl font-bold uppercase">
-            Season unavailable
-          </h1>
+          <h1 className="font-display text-3xl font-bold uppercase">{translate("Season unavailable")}</h1>
 
-          <p className="mt-3 text-muted-foreground">
-            This finalized season could
-            not be loaded.
-          </p>
+          <p className="mt-3 text-muted-foreground">{translate("This finalized season could not be loaded.")}</p>
 
           <Link
             href={`/football/${
@@ -209,9 +206,7 @@ export function LeagueSeasonHistory() {
                 : "main"
             }`}
           >
-            <Button className="mt-6">
-              Back to league
-            </Button>
+            <Button className="mt-6">{translate("Back to league")}</Button>
           </Link>
         </div>
       </main>
@@ -232,8 +227,7 @@ export function LeagueSeasonHistory() {
             }`}
             className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to {leagueName}
+            <ArrowLeft className="h-4 w-4" />{translate("Back to ")}{leagueName}
           </Link>
 
           <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -244,25 +238,18 @@ export function LeagueSeasonHistory() {
                   color: theme.hex,
                 }}
               >
-                {leagueName} archive
-              </p>
+                {leagueName}{translate(" archive")}</p>
 
-              <h1 className="mt-2 font-display text-4xl font-bold uppercase md:text-5xl">
-                Season {data.season}
+              <h1 className="mt-2 font-display text-4xl font-bold uppercase md:text-5xl">{translate("Season ")}{data.season}
               </h1>
 
-              <p className="mt-3 text-muted-foreground">
-                Finalized historical
-                season ·{" "}
-                {data.players.length}{" "}
-                players · {leagueCode}
+              <p className="mt-3 text-muted-foreground">{translate("Finalized historical season ·")}{" "}
+                {data.players.length}{" "}{translate("players · ")}{leagueCode}
               </p>
             </div>
 
             <span className="w-fit rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider">
-              <ShieldCheck className="mr-1.5 inline h-3.5 w-3.5" />
-              Finalized
-            </span>
+              <ShieldCheck className="mr-1.5 inline h-3.5 w-3.5" />{translate("Finalized")}</span>
           </div>
         </div>
       </section>
@@ -270,13 +257,9 @@ export function LeagueSeasonHistory() {
       <main className="container mx-auto space-y-7 px-4 pt-7">
         <section className="surface-panel p-5 md:p-6">
           <div className="mb-5">
-            <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Season overview
-            </p>
+            <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("Season overview")}</p>
 
-            <h2 className="mt-1 font-display text-2xl font-bold uppercase">
-              Totals
-            </h2>
+            <h2 className="mt-1 font-display text-2xl font-bold uppercase">{translate("Totals")}</h2>
           </div>
 
           <SeasonTotals
@@ -294,13 +277,9 @@ export function LeagueSeasonHistory() {
             />
 
             <div>
-              <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                Official recognition
-              </p>
+              <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("Official recognition")}</p>
 
-              <h2 className="font-display text-2xl font-bold uppercase">
-                Awards
-              </h2>
+              <h2 className="font-display text-2xl font-bold uppercase">{translate("Awards")}</h2>
             </div>
           </div>
 
@@ -319,7 +298,7 @@ export function LeagueSeasonHistory() {
                           theme.hex,
                       }}
                     >
-                      {pretty(type)}
+                      {translate(pretty(type))}
                     </p>
 
                     <div className="mt-3 space-y-2">
@@ -372,10 +351,7 @@ export function LeagueSeasonHistory() {
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              No awards recorded for
-              this season.
-            </p>
+            <p className="text-sm text-muted-foreground">{translate("No awards recorded for this season.")}</p>
           )}
         </section>
 
@@ -391,13 +367,9 @@ export function LeagueSeasonHistory() {
               />
 
               <div>
-                <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                  All players
-                </p>
+                <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("All players")}</p>
 
-                <h2 className="font-display text-2xl font-bold uppercase">
-                  Season statistics
-                </h2>
+                <h2 className="font-display text-2xl font-bold uppercase">{translate("Season statistics")}</h2>
               </div>
             </div>
 
@@ -419,7 +391,7 @@ export function LeagueSeasonHistory() {
                       )
                     }
                   >
-                    {sort.label}
+                    {translate(sort.label)}
                   </Button>
                 ),
               )}
@@ -445,13 +417,9 @@ export function LeagueSeasonHistory() {
               />
 
               <div>
-                <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                  Season rewards
-                </p>
+                <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("Season rewards")}</p>
 
-                <h2 className="font-display text-2xl font-bold uppercase">
-                  Rewards
-                </h2>
+                <h2 className="font-display text-2xl font-bold uppercase">{translate("Rewards")}</h2>
               </div>
             </div>
 
@@ -486,9 +454,9 @@ export function LeagueSeasonHistory() {
                           theme.hex,
                       }}
                     >
-                      {pretty(
+                      {translate(pretty(
                         reward.rewardType,
-                      )}
+                      ))}
                     </p>
 
                     {reward.details ? (
@@ -508,13 +476,9 @@ export function LeagueSeasonHistory() {
         {data.cards.length ? (
           <section className="surface-panel p-5 md:p-6">
             <div className="mb-5">
-              <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                League Cards
-              </p>
+              <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("League Cards")}</p>
 
-              <h2 className="font-display text-2xl font-bold uppercase">
-                Season cards
-              </h2>
+              <h2 className="font-display text-2xl font-bold uppercase">{translate("Season cards")}</h2>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -631,7 +595,7 @@ export function LeagueSeasonHistory() {
                             >
                               <span className="text-muted-foreground">
                                 {
-                                  label
+                                  translate(label)
                                 }
                               </span>{" "}
                               <b>
@@ -659,6 +623,7 @@ function SeasonTotals({
 }: {
   stats: HistoricalStatLine;
 }) {
+  useLanguage();
   const entries = [
     ["Matches", stats.matches],
     ["Goals", stats.goals],
@@ -684,7 +649,7 @@ function SeasonTotals({
             className="rounded-xl border border-white/8 bg-white/[0.02] p-3"
           >
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              {label}
+              {translate(label)}
             </p>
 
             <b className="mt-1 block font-display text-2xl">
@@ -706,6 +671,7 @@ function PlayerTable({
   sortKey: SortKey;
   accent: string;
 }) {
+  useLanguage();
   const columns: Array<
     [SortKey, string]
   > = [
@@ -726,7 +692,7 @@ function PlayerTable({
       <div className="min-w-[920px]">
         <div className="grid grid-cols-[56px_minmax(180px,1fr)_repeat(10,62px)] border-b border-border px-3 pb-3 text-xs uppercase tracking-wider text-muted-foreground">
           <span>#</span>
-          <span>Player</span>
+          <span>{translate("Player")}</span>
 
           {columns.map(
             ([key, label]) => (
@@ -740,7 +706,7 @@ function PlayerTable({
                       : undefined,
                 }}
               >
-                {label}
+                {translate(label)}
               </span>
             ),
           )}

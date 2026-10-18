@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { FormEvent, useState } from "react";
 import { useLocation } from "wouter";
 import { Search, UserRoundSearch } from "lucide-react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { resolveBlockballPlayer } from "@/lib/blockball-api";
 
 export function BlockballPlayers() {
+  useLanguage();
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [, navigate] = useLocation();
@@ -29,14 +31,14 @@ export function BlockballPlayers() {
       <section className="relative overflow-hidden rounded-[28px] border border-sky-400/20 bg-gradient-to-br from-sky-400/12 via-white/[0.035] to-transparent p-8 text-center md:p-14">
         <div className="absolute left-1/2 top-0 h-48 w-96 -translate-x-1/2 rounded-full bg-sky-400/10 blur-3xl" />
         <UserRoundSearch className="relative mx-auto h-12 w-12 text-sky-400" />
-        <p className="relative mt-5 font-display text-xs font-semibold uppercase tracking-[0.3em] text-sky-400">NEXT BlockBall Database</p>
-        <h1 className="relative mt-3 font-display text-4xl font-bold uppercase md:text-6xl">Player Search</h1>
-        <p className="relative mx-auto mt-4 max-w-xl text-muted-foreground">Find a player profile using the exact in-game username.</p>
+        <p className="relative mt-5 font-display text-xs font-semibold uppercase tracking-[0.3em] text-sky-400">{translate("NEXT BlockBall Database")}</p>
+        <h1 className="relative mt-3 font-display text-4xl font-bold uppercase md:text-6xl">{translate("Player Search")}</h1>
+        <p className="relative mx-auto mt-4 max-w-xl text-muted-foreground">{translate("Find a player profile using the exact in-game username.")}</p>
         <form onSubmit={submit} className="relative mx-auto mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row">
-          <Input value={value} onChange={(event) => setValue(event.target.value)} placeholder="In-game username" className="h-12 bg-black/20" />
-          <Button className="h-12 px-7"><Search className="mr-2 h-4 w-4" />Search</Button>
+          <Input value={value} onChange={(event) => setValue(event.target.value)} placeholder={translate("In-game username")} className="h-12 bg-black/20" />
+          <Button className="h-12 px-7"><Search className="mr-2 h-4 w-4" />{translate("Search")}</Button>
         </form>
-        {error && <p className="relative mt-4 text-sm text-destructive">{error}</p>}
+        {error && <p className="relative mt-4 text-sm text-destructive">{translate(error)}</p>}
       </section>
     </div>
   );

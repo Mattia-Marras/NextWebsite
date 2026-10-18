@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "wouter";
 
@@ -186,6 +187,7 @@ function LoadingRows() {
 }
 
 export function Standings() {
+  useLanguage();
   const {
     server = "football",
     league = "main",
@@ -243,16 +245,13 @@ export function Standings() {
     <div className="container mx-auto px-4 py-12">
       <div className="mb-12">
         <h1 className="flex items-center gap-4 font-display text-4xl font-bold uppercase tracking-wider md:text-5xl">
-          <span className="block h-10 w-4 rounded-sm bg-primary" />
-
-          League Table — {serverName}{" "}
+          <span className="block h-10 w-4 rounded-sm bg-primary" />{translate("League Table — ")}{serverName}{" "}
           {displayedLeagueName}
         </h1>
 
         {leagueData && (
           <p className="mt-4 text-sm text-muted-foreground">
-            {leagueData.playerCount} registered players
-          </p>
+            {leagueData.playerCount}{translate(" registered players")}</p>
         )}
       </div>
 
@@ -261,45 +260,25 @@ export function Standings() {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-16 text-center font-display text-xs uppercase tracking-widest">
-                  Pos
-                </TableHead>
+                <TableHead className="w-16 text-center font-display text-xs uppercase tracking-widest">{translate("Pos")}</TableHead>
 
-                <TableHead className="font-display text-xs uppercase tracking-widest">
-                  Team
-                </TableHead>
+                <TableHead className="font-display text-xs uppercase tracking-widest">{translate("Team")}</TableHead>
 
-                <TableHead className="w-12 text-center font-display text-xs uppercase tracking-widest">
-                  P
-                </TableHead>
+                <TableHead className="w-12 text-center font-display text-xs uppercase tracking-widest">{translate("P")}</TableHead>
 
-                <TableHead className="hidden w-12 text-center font-display text-xs uppercase tracking-widest sm:table-cell">
-                  W
-                </TableHead>
+                <TableHead className="hidden w-12 text-center font-display text-xs uppercase tracking-widest sm:table-cell">{translate("W")}</TableHead>
 
-                <TableHead className="hidden w-12 text-center font-display text-xs uppercase tracking-widest sm:table-cell">
-                  D
-                </TableHead>
+                <TableHead className="hidden w-12 text-center font-display text-xs uppercase tracking-widest sm:table-cell">{translate("D")}</TableHead>
 
-                <TableHead className="hidden w-12 text-center font-display text-xs uppercase tracking-widest sm:table-cell">
-                  L
-                </TableHead>
+                <TableHead className="hidden w-12 text-center font-display text-xs uppercase tracking-widest sm:table-cell">{translate("L")}</TableHead>
 
-                <TableHead className="hidden w-16 text-center font-display text-xs uppercase tracking-widest md:table-cell">
-                  GF
-                </TableHead>
+                <TableHead className="hidden w-16 text-center font-display text-xs uppercase tracking-widest md:table-cell">{translate("GF")}</TableHead>
 
-                <TableHead className="hidden w-16 text-center font-display text-xs uppercase tracking-widest md:table-cell">
-                  GA
-                </TableHead>
+                <TableHead className="hidden w-16 text-center font-display text-xs uppercase tracking-widest md:table-cell">{translate("GA")}</TableHead>
 
-                <TableHead className="w-16 text-center font-display text-xs uppercase tracking-widest">
-                  GD
-                </TableHead>
+                <TableHead className="w-16 text-center font-display text-xs uppercase tracking-widest">{translate("GD")}</TableHead>
 
-                <TableHead className="w-16 text-center font-display text-xs font-bold uppercase tracking-widest text-primary">
-                  Pts
-                </TableHead>
+                <TableHead className="w-16 text-center font-display text-xs font-bold uppercase tracking-widest text-primary">{translate("Pts")}</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -313,14 +292,9 @@ export function Standings() {
                     className="h-40 text-center"
                   >
                     <div className="flex flex-col items-center gap-2">
-                      <span className="font-display text-lg uppercase tracking-widest text-foreground">
-                        Blockball not connected yet
-                      </span>
+                      <span className="font-display text-lg uppercase tracking-widest text-foreground">{translate("Blockball not connected yet")}</span>
 
-                      <span className="max-w-lg text-sm text-muted-foreground">
-                        This page currently reads only from
-                        the NextFootball database.
-                      </span>
+                      <span className="max-w-lg text-sm text-muted-foreground">{translate("This page currently reads only from the NextFootball database.")}</span>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -331,14 +305,10 @@ export function Standings() {
                     className="h-40 text-center"
                   >
                     <div className="flex flex-col items-center gap-2">
-                      <span className="font-display text-lg uppercase tracking-widest text-destructive">
-                        Unable to load standings
-                      </span>
+                      <span className="font-display text-lg uppercase tracking-widest text-destructive">{translate("Unable to load standings")}</span>
 
                       <span className="max-w-lg text-sm text-muted-foreground">
-                        {error instanceof Error
-                          ? error.message
-                          : "An unexpected error occurred."}
+                        {error instanceof Error ? translate(error.message) : translate("An unexpected error occurred.")}
                       </span>
                     </div>
                   </TableCell>
@@ -355,9 +325,7 @@ export function Standings() {
                   <TableCell
                     colSpan={10}
                     className="h-40 text-center font-display uppercase tracking-widest text-muted-foreground"
-                  >
-                    No standings available
-                  </TableCell>
+                  >{translate("No standings available")}</TableCell>
                 </TableRow>
               )}
             </TableBody>

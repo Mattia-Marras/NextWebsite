@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useState } from "react";
 import { useListMatches, useDeleteMatch, getListMatchesQueryKey, getListRecentMatchesQueryKey, getListUpcomingMatchesQueryKey } from "@workspace/api-client-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function MatchesAdmin() {
+  useLanguage();
   const [filterServer, setFilterServer] = useState<string>("all");
   const [filterLeague, setFilterLeague] = useState<string>("all");
 
@@ -31,18 +33,18 @@ export function MatchesAdmin() {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this match?")) {
+    if (confirm(translate("Are you sure you want to delete this match?"))) {
       deleteMatch.mutate(
         { id },
         {
           onSuccess: () => {
-            toast({ title: "Match deleted successfully" });
+            toast({ title: translate("Match deleted successfully") });
             queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
             queryClient.invalidateQueries({ queryKey: getListRecentMatchesQueryKey() });
             queryClient.invalidateQueries({ queryKey: getListUpcomingMatchesQueryKey() });
           },
           onError: () => {
-            toast({ title: "Failed to delete match", variant: "destructive" });
+            toast({ title: translate("Failed to delete match"), variant: "destructive" });
           }
         }
       );
@@ -67,41 +69,40 @@ export function MatchesAdmin() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="text-2xl font-display font-bold uppercase tracking-widest text-foreground">Match Schedule</h2>
+        <h2 className="text-2xl font-display font-bold uppercase tracking-widest text-foreground">{translate("Match Schedule")}</h2>
         
         <div className="flex items-center gap-4">
           <Select value={filterServer} onValueChange={setFilterServer}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All Servers" />
+              <SelectValue placeholder={translate("All Servers")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Servers</SelectItem>
-              <SelectItem value="football">Football</SelectItem>
-              <SelectItem value="blockball">Blockball</SelectItem>
+              <SelectItem value="all">{translate("All Servers")}</SelectItem>
+              <SelectItem value="football">{translate("Football")}</SelectItem>
+              <SelectItem value="blockball">{translate("Blockball")}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={filterLeague} onValueChange={setFilterLeague}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All Leagues" />
+              <SelectValue placeholder={translate("All Leagues")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Leagues</SelectItem>
-              <SelectItem value="main">Main League</SelectItem>
-              <SelectItem value="lower">Lower League</SelectItem>
+              <SelectItem value="all">{translate("All Leagues")}</SelectItem>
+              <SelectItem value="main">{translate("Main League")}</SelectItem>
+              <SelectItem value="lower">{translate("Lower League")}</SelectItem>
             </SelectContent>
           </Select>
 
           <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
               <Button onClick={handleCreate} className="font-display uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90">
-                <Plus className="w-4 h-4 mr-2" /> Schedule
-              </Button>
+                <Plus className="w-4 h-4 mr-2" />{translate(" Schedule")}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] bg-card border-border max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="font-display uppercase tracking-widest text-xl text-primary">
-                  {editingMatchId ? "Edit Match" : "Schedule New Match"}
+                  {editingMatchId ? translate("Edit Match") : translate("Schedule New Match")}
                 </DialogTitle>
               </DialogHeader>
               <MatchForm matchId={editingMatchId} onSuccess={closeForm} />
@@ -114,14 +115,14 @@ export function MatchesAdmin() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Date</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Server/League</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Round</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Home</TableHead>
-              <TableHead className="text-center font-display uppercase tracking-widest text-xs w-24">Score</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Away</TableHead>
-              <TableHead className="font-display uppercase tracking-widest text-xs">Status</TableHead>
-              <TableHead className="text-right font-display uppercase tracking-widest text-xs">Actions</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Date")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Server/League")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Round")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Home")}</TableHead>
+              <TableHead className="text-center font-display uppercase tracking-widest text-xs w-24">{translate("Score")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Away")}</TableHead>
+              <TableHead className="font-display uppercase tracking-widest text-xs">{translate("Status")}</TableHead>
+              <TableHead className="text-right font-display uppercase tracking-widest text-xs">{translate("Actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -156,7 +157,7 @@ export function MatchesAdmin() {
                     </div>
                   </TableCell>
                   <TableCell className="text-center font-display font-bold text-lg">
-                    {match.status === "scheduled" ? "vs" : `${match.homeScore ?? '-'} : ${match.awayScore ?? '-'}`}
+                    {match.status === "scheduled" ? translate("vs") : `${match.homeScore ?? '-'} : ${match.awayScore ?? '-'}`}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -166,11 +167,11 @@ export function MatchesAdmin() {
                   </TableCell>
                   <TableCell>
                     {match.status === "live" ? (
-                      <Badge variant="destructive" className="animate-pulse">LIVE</Badge>
+                      <Badge variant="destructive" className="animate-pulse">{translate("LIVE")}</Badge>
                     ) : match.status === "finished" ? (
-                      <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">FT</Badge>
+                      <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">{translate("FT")}</Badge>
                     ) : (
-                      <Badge variant="secondary">Scheduled</Badge>
+                      <Badge variant="secondary">{translate("Scheduled")}</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
@@ -185,9 +186,7 @@ export function MatchesAdmin() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground font-display uppercase tracking-widest">
-                  No matches found.
-                </TableCell>
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground font-display uppercase tracking-widest">{translate("No matches found.")}</TableCell>
               </TableRow>
             )}
           </TableBody>

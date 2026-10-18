@@ -279,3 +279,8 @@ html { scroll-behavior: smooth; scroll-padding-top: 110px; }
 .board-table tbody th { text-align:left; font-weight:600; }.board-table tbody th a:hover { color:var(--next-accent); text-decoration:underline; }
 .board-table tbody tr:hover { background:#ffffff03; }.board-position { color:var(--next-accent); font-family:var(--app-font-display); font-size:21px; font-weight:700; }.board-primary { color:var(--next-accent); font-weight:700; font-variant-numeric:tabular-nums; }
 @media(max-width:600px){ .board-filters label { flex:1 1 140px; }.board-filters select { min-width:0; width:100%; }.board-table th,.board-table td { padding:14px 12px; } }
+
+.next-language-selector { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; color:#d1d7df; border:1px solid #ffffff24; border-radius:8px; padding:0 8px; min-height:40px; }
+.next-language-selector select { max-width:145px; min-height:38px; background:#090d13; color:inherit; font:600 12px/1.2 var(--app-font-sans); padding:0 3px; cursor:pointer; }
+.next-language-selector:focus-within { outline:2px solid #39ff14; outline-offset:2px; }
+@media(max-width:400px){.next-language-selector select{max-width:118px;font-size:11px;}}

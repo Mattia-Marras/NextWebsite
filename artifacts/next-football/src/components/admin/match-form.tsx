@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -79,6 +80,7 @@ function localDateParts(value: Date) {
 }
 
 export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
+  useLanguage();
   const { data: match, isLoading: isLoadingMatch } = useGetMatch(matchId as number, {
     query: { enabled: !!matchId, queryKey: getGetMatchQueryKey(matchId as number) },
   });
@@ -184,12 +186,12 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
         { id: matchId, data: payload },
         {
           onSuccess: () => {
-            toast({ title: "Match updated" });
+            toast({ title: translate("Match updated") });
             invalidateMatchQueries();
             queryClient.invalidateQueries({ queryKey: getGetMatchQueryKey(matchId) });
             onSuccess();
           },
-          onError: () => toast({ title: "Could not update the match", variant: "destructive" }),
+          onError: () => toast({ title: translate("Could not update the match"), variant: "destructive" }),
         },
       );
       return;
@@ -199,11 +201,11 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
       { data: payload },
       {
         onSuccess: () => {
-          toast({ title: "Match scheduled" });
+          toast({ title: translate("Match scheduled") });
           invalidateMatchQueries();
           onSuccess();
         },
-        onError: () => toast({ title: "Could not schedule the match", variant: "destructive" }),
+        onError: () => toast({ title: translate("Could not schedule the match"), variant: "destructive" }),
       },
     );
   };
@@ -222,8 +224,8 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-          <p className="text-sm font-medium text-foreground">NEXT Football</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Choose the league, teams and match details.</p>
+          <p className="text-sm font-medium text-foreground">{translate("NEXT Football")}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{translate("Choose the league, teams and match details.")}</p>
         </div>
 
         <FormField
@@ -231,7 +233,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
           name="league"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-display tracking-widest uppercase">League</FormLabel>
+              <FormLabel className="font-display tracking-widest uppercase">{translate("League")}</FormLabel>
               <Select
                 onValueChange={(value) => {
                   field.onChange(value);
@@ -241,11 +243,11 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                 value={field.value}
               >
                 <FormControl>
-                  <SelectTrigger><SelectValue placeholder="Select league" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={translate("Select league")} /></SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="main">Main League</SelectItem>
-                  <SelectItem value="lower">Lower League</SelectItem>
+                  <SelectItem value="main">{translate("Main League")}</SelectItem>
+                  <SelectItem value="lower">{translate("Lower League")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -259,10 +261,10 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
             name="homeTeamId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Home team</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Home team")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined} disabled={isLoadingTeams}>
                   <FormControl>
-                    <SelectTrigger><SelectValue placeholder={isLoadingTeams ? "Loading teams..." : "Select team"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={isLoadingTeams ? translate("Loading teams...") : translate("Select team")} /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {teams.map((team) => <SelectItem key={team.id} value={String(team.id)}>{formatTeamName(team.name)}</SelectItem>)}
@@ -277,10 +279,10 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
             name="awayTeamId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Away team</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Away team")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined} disabled={isLoadingTeams}>
                   <FormControl>
-                    <SelectTrigger><SelectValue placeholder={isLoadingTeams ? "Loading teams..." : "Select team"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={isLoadingTeams ? translate("Loading teams...") : translate("Select team")} /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {teams.map((team) => <SelectItem key={team.id} value={String(team.id)}>{formatTeamName(team.name)}</SelectItem>)}
@@ -295,8 +297,8 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
         <div className="rounded-lg border border-border bg-muted/15 p-4 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium">Match date not announced</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Create the fixture now and add its date later.</p>
+              <p className="text-sm font-medium">{translate("Match date not announced")}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{translate("Create the fixture now and add its date later.")}</p>
             </div>
             <FormField
               control={form.control}
@@ -329,7 +331,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                   name="matchDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-display tracking-widest uppercase">Date</FormLabel>
+                      <FormLabel className="font-display tracking-widest uppercase">{translate("Date")}</FormLabel>
                       <FormControl><Input type="date" {...field} value={field.value || ""} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -340,7 +342,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                   name="matchTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-display tracking-widest uppercase">Kickoff time</FormLabel>
+                      <FormLabel className="font-display tracking-widest uppercase">{translate("Kickoff time")}</FormLabel>
                       <FormControl><Input type="time" {...field} disabled={timeTba} value={field.value || ""} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -354,8 +356,8 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                 render={({ field }) => (
                   <FormItem className="flex items-center justify-between rounded-lg border border-border bg-background/40 px-4 py-3">
                     <div>
-                      <FormLabel className="cursor-pointer text-sm font-medium">Kickoff time not announced</FormLabel>
-                      <p className="mt-0.5 text-xs text-muted-foreground">The fixture will show the date with “Time TBA”.</p>
+                      <FormLabel className="cursor-pointer text-sm font-medium">{translate("Kickoff time not announced")}</FormLabel>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{translate("The fixture will show the date with “Time TBA”.")}</p>
                     </div>
                     <FormControl>
                       <Switch
@@ -379,8 +381,8 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
             name="round"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Round</FormLabel>
-                <FormControl><Input {...field} placeholder="Example: Round 1" /></FormControl>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Round")}</FormLabel>
+                <FormControl><Input {...field} placeholder={translate("Example: Round 1")} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -390,13 +392,13 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Status</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Status")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
+                  <FormControl><SelectTrigger><SelectValue placeholder={translate("Select status")} /></SelectTrigger></FormControl>
                   <SelectContent>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="live">Live</SelectItem>
-                    <SelectItem value="finished">Finished</SelectItem>
+                    <SelectItem value="scheduled">{translate("Scheduled")}</SelectItem>
+                    <SelectItem value="live">{translate("Live")}</SelectItem>
+                    <SelectItem value="finished">{translate("Finished")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -408,7 +410,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
         {selectedStatus !== "scheduled" && (
           <div className="rounded-lg border border-border bg-muted/15 p-4">
             <p className="mb-3 text-xs font-display uppercase tracking-widest text-muted-foreground">
-              {selectedStatus === "live" ? "Current score" : "Final score"}
+              {selectedStatus === "live" ? translate("Current score") : translate("Final score")}
             </p>
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -416,7 +418,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                 name="homeScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Home</FormLabel>
+                    <FormLabel>{translate("Home")}</FormLabel>
                     <FormControl><Input type="number" min={0} {...field} value={field.value ?? ""} onChange={(event) => field.onChange(event.target.value === "" ? null : Number(event.target.value))} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -427,7 +429,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                 name="awayScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Away</FormLabel>
+                    <FormLabel>{translate("Away")}</FormLabel>
                     <FormControl><Input type="number" min={0} {...field} value={field.value ?? ""} onChange={(event) => field.onChange(event.target.value === "" ? null : Number(event.target.value))} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -443,7 +445,7 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
             onClick={() => setShowAdvanced((current) => !current)}
             className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors"
           >
-            <span className="flex items-center gap-2 text-sm font-medium"><MapPin className="h-4 w-4 text-muted-foreground" /> Optional details</span>
+            <span className="flex items-center gap-2 text-sm font-medium"><MapPin className="h-4 w-4 text-muted-foreground" />{translate(" Optional details")}</span>
             <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
           </button>
           {showAdvanced && (
@@ -453,8 +455,8 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
                 name="venue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Venue or arena</FormLabel>
-                    <FormControl><Input {...field} value={field.value || ""} placeholder="Leave empty when not needed" /></FormControl>
+                    <FormLabel>{translate("Venue or arena")}</FormLabel>
+                    <FormControl><Input {...field} value={field.value || ""} placeholder={translate("Leave empty when not needed")} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -464,9 +466,9 @@ export function MatchForm({ matchId, onSuccess }: MatchFormProps) {
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={onSuccess}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={onSuccess}>{translate("Cancel")}</Button>
           <Button type="submit" disabled={createMatch.isPending || updateMatch.isPending} className="bg-primary text-primary-foreground hover:bg-primary/90 font-display uppercase tracking-widest">
-            {createMatch.isPending || updateMatch.isPending ? "Saving..." : matchId ? "Save changes" : "Schedule match"}
+            {createMatch.isPending || updateMatch.isPending ? translate("Saving...") : matchId ? translate("Save changes") : translate("Schedule match")}
           </Button>
         </div>
       </form>

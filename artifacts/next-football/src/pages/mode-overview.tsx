@@ -1,3 +1,4 @@
+import { numberFormatter, translate, useLanguage } from "@/i18n";
 import { PitchArt } from "@/components/pitch-art";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -30,13 +31,14 @@ import {
   getBlockballRanked,
 } from "@/lib/blockball-api";
 
-const NUMBER = new Intl.NumberFormat("en-US");
+const NUMBER = numberFormatter("en-US");
 
 function n(value: number | null | undefined) {
   return NUMBER.format(value ?? 0);
 }
 
 function FootballOverview() {
+  useLanguage();
   const [league, setLeague] = useState<"ML" | "LL">("ML");
   const rankedQuery = useQuery({ queryKey: ["football-overview-ranked"], queryFn: () => getRankedLeaderboard({ limit: 5, offset: 0 }) });
   const leagueQuery = useQuery({ queryKey: ["football-overview-league", league], queryFn: () => getNextFootballLeague(league === "ML" ? 1 : 2) });
@@ -51,15 +53,15 @@ function FootballOverview() {
     <ModeOverviewShell
       mode="football"
       eyebrow="NEXT Football"
-      title="Football. The competition."
-      description="Climb the Football ladder, follow your club through official leagues and explore the players leading the competition."
+      title={translate("Football. The competition.")}
+      description={translate("Climb the Football ladder, follow your club through official leagues and explore the players leading the competition.")}
       loading={false}
       highlightStates={[rankedQuery, leagueQuery, coinsQuery]}
       error={rankedQuery.isError || leagueQuery.isError || coinsQuery.isError}
       highlights={[
         [Trophy, "Ranked leader", leader?.username?.trim() || "—", leader ? `${n(leader.mmr)} MMR · ${leader.rank.displayWithDivision}` : "No ranked data"],
-        [Crown, league === "ML" ? "Major League" : "Lower League", topTeam?.teamName || "—", topTeam ? `${n(topTeam.points)} pts · ${n(topTeam.won)} wins` : "No league data"],
-        [Coins, "Richest player", rich[0]?.username?.trim() || "—", rich[0] ? `${n(rich[0].coins)} coins` : "No economy data"],
+        [Crown, league === "ML" ? "Major League" : "Lower League", topTeam?.teamName || "—", topTeam ? translate("{0} pts · {1} wins", [n(topTeam.points), n(topTeam.won)]) : "No league data"],
+        [Coins, "Richest player", rich[0]?.username?.trim() || "—", rich[0] ? translate("{0} coins", [n(rich[0].coins)]) : "No economy data"],
       ]}
       panels={[
         {
@@ -75,7 +77,7 @@ function FootballOverview() {
             <MiniRanking
               rows={ranked.slice(0, 4).map((player, index) => ({
                 position: index + 1,
-                name: player.username?.trim() || "Unknown player",
+                name: player.username?.trim() || translate("Unknown player"),
                 href: `/football/profile/${encodeURIComponent(player.uuid)}`,
                 value: `${n(player.mmr)} MMR`,
               }))}
@@ -97,7 +99,7 @@ function FootballOverview() {
               rows={standings.slice(0, 4).map((team) => ({
                 position: team.position,
                 name: team.teamName,
-                value: `${n(team.points)} pts`,
+                value: translate("{0} pts", [n(team.points)]),
               }))}
             />
           ),
@@ -112,8 +114,8 @@ function FootballOverview() {
           href: "/football/leaderboards?tab=coins",
           cta: "Explore economy",
           content: (
-            <MiniRanking rows={rich.slice(0, 4).map((player, index) => ({ position: index + 1, name: player.username?.trim() || "Unknown player",
-                href: `/football/profile/${encodeURIComponent(player.uuid)}`, value: `${n(player.coins)} coins` }))} />
+            <MiniRanking rows={rich.slice(0, 4).map((player, index) => ({ position: index + 1, name: player.username?.trim() || translate("Unknown player"),
+                href: `/football/profile/${encodeURIComponent(player.uuid)}`, value: translate("{0} coins", [n(player.coins)]) }))} />
           ),
         },
       ]}
@@ -122,6 +124,7 @@ function FootballOverview() {
 }
 
 function BlockballOverview() {
+  useLanguage();
   const [league, setLeague] = useState<"ML" | "LL">("ML");
   const rankedQuery = useQuery({ queryKey: ["blockball-overview-ranked"], queryFn: getBlockballRanked });
   const leagueQuery = useQuery({ queryKey: ["blockball-overview-league", league], queryFn: () => getBlockballLeague(league) });
@@ -137,15 +140,15 @@ function BlockballOverview() {
     <ModeOverviewShell
       mode="blockball"
       eyebrow="NEXT BlockBall"
-      title="BlockBall. On the board."
-      description="Climb the BlockBall ladder, follow Major and Lower League, and discover the cards and cosmetics behind every player’s career."
+      title={translate("BlockBall. On the board.")}
+      description={translate("Climb the BlockBall ladder, follow Major and Lower League, and discover the cards and cosmetics behind every player’s career.")}
       loading={false}
       highlightStates={[rankedQuery, leagueQuery, economyQuery]}
       error={rankedQuery.isError || leagueQuery.isError || economyQuery.isError}
       highlights={[
         [Medal, "Ranked leader", leader?.name || "—", leader ? `${n(leader.mmr)} MMR · ${leader.rank.displayName}` : "No ranked data"],
-        [Trophy, league === "ML" ? "Major League" : "Lower League", topTeam?.teamName || "—", topTeam ? `${n(topTeam.points)} pts · ${n(topTeam.won)} wins` : "No league data"],
-        [Coins, "Top balance", richest[0]?.name || "—", richest[0] ? `${n(richest[0].coins)} coins` : "No economy data"],
+        [Trophy, league === "ML" ? "Major League" : "Lower League", topTeam?.teamName || "—", topTeam ? translate("{0} pts · {1} wins", [n(topTeam.points), n(topTeam.won)]) : "No league data"],
+        [Coins, "Top balance", richest[0]?.name || "—", richest[0] ? translate("{0} coins", [n(richest[0].coins)]) : "No economy data"],
       ]}
       panels={[
         {
@@ -183,7 +186,7 @@ function BlockballOverview() {
               rows={standings.slice(0, 4).map((team: any) => ({
                 position: team.position,
                 name: team.teamName,
-                value: `${n(team.points)} pts`,
+                value: translate("{0} pts", [n(team.points)]),
               }))}
             />
           ),
@@ -199,10 +202,10 @@ function BlockballOverview() {
           cta: "Find a player",
           content: (
             <div className="grid grid-cols-2 gap-3">
-              <MiniMetric label="Coins in circulation" value={n(economy?.totalCoins)} />
-              <MiniMetric label="Average balance" value={n(economy?.averageCoins)} />
-              <MiniMetric label="Largest balance" value={n(economy?.maxCoins)} />
-              <MiniMetric label="Tracked players" value={n(economy?.playerCount)} />
+              <MiniMetric label={translate("Coins in circulation")} value={n(economy?.totalCoins)} />
+              <MiniMetric label={translate("Average balance")} value={n(economy?.averageCoins)} />
+              <MiniMetric label={translate("Largest balance")} value={n(economy?.maxCoins)} />
+              <MiniMetric label={translate("Tracked players")} value={n(economy?.playerCount)} />
             </div>
           ),
         },
@@ -246,6 +249,7 @@ function ModeOverviewShell({
   highlightStates: { isLoading: boolean; isError: boolean }[];
   panels: Panel[];
 }) {
+  useLanguage();
   const accent = mode === "football" ? "#39ff14" : "#38bdf8";
   const accentRgb = mode === "football" ? "57,255,20" : "56,189,248";
 
@@ -260,11 +264,11 @@ function ModeOverviewShell({
                 <span className="h-px w-10" style={{ background: accent }} />
                 <p className="font-display text-xs font-semibold uppercase tracking-[0.34em]" style={{ color: accent }}>{eyebrow}</p>
               </div>
-              <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold uppercase leading-[.94] tracking-tight md:text-7xl">{title}</h1>
-              <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">{description}</p>
+              <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold uppercase leading-[.94] tracking-tight md:text-7xl">{translate(title)}</h1>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">{translate(description)}</p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <Link href={`/${mode}/players`}><Button size="lg" style={{ backgroundColor: accent, color: "#061008" }}>Find a player <Users className="ml-2 h-4 w-4" /></Button></Link>
-                <Link href={`/${mode}/ranked`}><Button size="lg" variant="outline">View Ranked <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+                <Link href={`/${mode}/players`}><Button size="lg" style={{ backgroundColor: accent, color: "#061008" }}>{translate("Find a player ")}<Users className="ml-2 h-4 w-4" /></Button></Link>
+                <Link href={`/${mode}/ranked`}><Button size="lg" variant="outline">{translate("View Ranked ")}<ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
               </div>
             </div>
 
@@ -274,7 +278,7 @@ function ModeOverviewShell({
                   <div className="absolute inset-y-0 left-0 w-px" style={{ background: `linear-gradient(transparent, ${accent}, transparent)` }} />
                   <div className="flex items-start gap-3">
                     <span className="mt-0.5 rounded-xl border p-2" style={{ color: accent, borderColor: `rgba(${accentRgb},.24)`, background: `rgba(${accentRgb},.07)` }}><Icon className="h-4 w-4" /></span>
-                    <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-1 truncate font-display text-xl font-bold uppercase">{highlightStates[index]?.isLoading ? "Loading…" : highlightStates[index]?.isError ? "Unavailable" : value}</p><p className="mt-0.5 truncate text-xs text-muted-foreground">{highlightStates[index]?.isLoading ? "Fetching latest results" : highlightStates[index]?.isError ? "Please try again shortly" : detail}</p></div>
+                    <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{translate(label)}</p><p className="mt-1 truncate font-display text-xl font-bold uppercase">{highlightStates[index]?.isLoading ? translate("Loading…") : highlightStates[index]?.isError ? translate("Unavailable") : value}</p><p className="mt-0.5 truncate text-xs text-muted-foreground">{highlightStates[index]?.isLoading ? translate("Fetching latest results") : highlightStates[index]?.isError ? translate("Please try again shortly") : translate(detail)}</p></div>
                   </div>
                 </div>
               ))}
@@ -284,15 +288,15 @@ function ModeOverviewShell({
       </section>
 
       <main className="container relative mx-auto space-y-9 px-4 pt-9">
-        {error ? <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">Some results are temporarily unavailable. You can still explore the other sections.</div> : null}
+        {error ? <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">{translate("Some results are temporarily unavailable. You can still explore the other sections.")}</div> : null}
 
         <section>
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="font-display text-xs uppercase tracking-[0.26em] text-muted-foreground">Ranked / League / Economy</p>
-              <h2 className="mt-1 font-display text-3xl font-bold uppercase md:text-4xl">The competition desk</h2>
+              <p className="font-display text-xs uppercase tracking-[0.26em] text-muted-foreground">{translate("Ranked / League / Economy")}</p>
+              <h2 className="mt-1 font-display text-3xl font-bold uppercase md:text-4xl">{translate("The competition desk")}</h2>
             </div>
-            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">Check the leaders, follow the league race and explore player progression.</p>
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{translate("Check the leaders, follow the league race and explore player progression.")}</p>
           </div>
 
           <div className="next-mode-panels">
@@ -305,12 +309,12 @@ function ModeOverviewShell({
                     <span className="flex h-11 w-11 items-center justify-center rounded-xl border" style={{ color: accent, borderColor: `rgba(${accentRgb},.24)`, background: `rgba(${accentRgb},.07)` }}><Icon className="h-5 w-5" /></span>
                     
                   </div>
-                  <p className="mt-5 font-display text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: accent }}>{panel.kicker}</p>
-                  <h3 className="mt-1 font-display text-2xl font-bold uppercase">{panel.title}</h3>
-                  <p className="mt-3 min-h-[66px] text-sm leading-relaxed text-muted-foreground">{panel.description}</p>
-                  {panel.controls}<div className="mt-5 min-h-[154px] rounded-2xl border border-white/8 bg-black/15 p-3">{panel.loading ? <Skeleton className="h-32 w-full rounded-xl" /> : panel.error ? <p role="status" className="p-3 text-sm text-muted-foreground">This section is temporarily unavailable. Try again shortly or open the full page below.</p> : panel.content}</div>
+                  <p className="mt-5 font-display text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: accent }}>{translate(panel.kicker)}</p>
+                  <h3 className="mt-1 font-display text-2xl font-bold uppercase">{translate(panel.title)}</h3>
+                  <p className="mt-3 min-h-[66px] text-sm leading-relaxed text-muted-foreground">{translate(panel.description)}</p>
+                  {panel.controls}<div className="mt-5 min-h-[154px] rounded-2xl border border-white/8 bg-black/15 p-3">{panel.loading ? <Skeleton className="h-32 w-full rounded-xl" /> : panel.error ? <p role="status" className="p-3 text-sm text-muted-foreground">{translate("This section is temporarily unavailable. Try again shortly or open the full page below.")}</p> : panel.content}</div>
                   <Link href={panel.href} className="mt-5 flex items-center justify-between rounded-xl border border-white/10 px-4 py-3 font-display text-sm font-bold uppercase tracking-[0.1em] transition hover:bg-white/[0.04]" style={{ color: accent }}>
-                    {panel.cta}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                    {translate(panel.cta)}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                   </Link>
                 </article>
               );
@@ -318,11 +322,11 @@ function ModeOverviewShell({
           </div>
         </section>
 
-        <nav className="next-overview-links" aria-label="More mode pages">
-          <Link href={`/${mode}/players`}>Find a player <ArrowRight size={16}/></Link>
-          <Link href={`/${mode}/ultimate-team`}>Ultimate Team <ArrowRight size={16}/></Link>
-          <Link href={`/${mode}/leaderboards`}>Leaderboards <ArrowRight size={16}/></Link>
-          {mode === "blockball" && <Link href="/blockball/main/archive">Season archive <ArrowRight size={16}/></Link>}
+        <nav className="next-overview-links" aria-label={translate("More mode pages")}>
+          <Link href={`/${mode}/players`}>{translate("Find a player ")}<ArrowRight size={16}/></Link>
+          <Link href={`/${mode}/ultimate-team`}>{translate("Ultimate Team ")}<ArrowRight size={16}/></Link>
+          <Link href={`/${mode}/leaderboards`}>{translate("Leaderboards ")}<ArrowRight size={16}/></Link>
+          {mode === "blockball" && <Link href="/blockball/main/archive">{translate("Season archive ")}<ArrowRight size={16}/></Link>}
         </nav>
       </main>
     </div>
@@ -330,16 +334,19 @@ function ModeOverviewShell({
 }
 
 function LeagueSelector({ league, onChange }: { league: "ML" | "LL"; onChange: (value: "ML" | "LL") => void }) {
-  return <div className="mt-4 flex gap-2" role="group" aria-label="League preview">{(["ML", "LL"] as const).map(code => <button type="button" key={code} aria-pressed={league === code} onClick={() => onChange(code)} className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${league === code ? "border-white/25 bg-white/10 text-white" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}>{code === "ML" ? "Major League" : "Lower League"}</button>)}</div>;
+  useLanguage();
+  return <div className="mt-4 flex gap-2" role="group" aria-label={translate("League preview")}>{(["ML", "LL"] as const).map(code => <button type="button" key={code} aria-pressed={league === code} onClick={() => onChange(code)} className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${league === code ? "border-white/25 bg-white/10 text-white" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}>{code === "ML" ? translate("Major League") : translate("Lower League")}</button>)}</div>;
 }
 
 function MiniRanking({ rows }: { rows: { position: number; name: string; value: string; href?: string }[] }) {
-  if (!rows.length) return <p className="p-3 text-sm text-muted-foreground">No live data available.</p>;
+  useLanguage();
+  if (!rows.length) return <p className="p-3 text-sm text-muted-foreground">{translate("No live data available.")}</p>;
   return <div>{rows.map((row) => <div key={`${row.position}-${row.name}`} className="grid grid-cols-[30px_1fr_auto] items-center gap-2 border-b border-white/6 px-2 py-2.5 last:border-0"><b className="font-display text-muted-foreground">{row.position}</b><span className="truncate text-sm font-semibold">{row.href ? <Link href={row.href} className="hover:underline underline-offset-4">{row.name}</Link> : row.name}</span><span className="text-xs text-muted-foreground">{row.value}</span></div>)}</div>;
 }
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-xl border border-white/7 bg-white/[0.02] p-3"><p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p><b className="mt-1 block text-lg">{value}</b></div>;
+  useLanguage();
+  return <div className="rounded-xl border border-white/7 bg-white/[0.02] p-3"><p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{translate(label)}</p><b className="mt-1 block text-lg">{value}</b></div>;
 }
 
 export { FootballOverview, BlockballOverview };

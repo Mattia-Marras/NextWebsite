@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 "use client"
 
 import { useMemo } from "react"
@@ -191,6 +192,7 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
+  useLanguage();
   const content = useMemo(() => {
     if (children) {
       return children
@@ -208,7 +210,7 @@ function FieldError({
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {errors.map(
           (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
+            error?.message && <li key={index}>{translate(error.message)}</li>
         )}
       </ul>
     )

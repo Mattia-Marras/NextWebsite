@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { Link } from "wouter";
 
 type CardStat = readonly [label: string, value: number | null | undefined];
@@ -64,6 +65,7 @@ export function RenderedUltimateTeamCard({
   accent,
   showOwnership = false,
 }: RenderedUltimateTeamCardProps) {
+  useLanguage();
   const appearance = getCardAppearance(card.cardType, card.overall);
   const cleanUuid = card.playerUuid.replace(/-/g, "");
   const username = card.username?.trim();
@@ -83,7 +85,7 @@ export function RenderedUltimateTeamCard({
     <Link
       href={href}
       className="group mx-auto block w-full max-w-[285px] rounded-2xl p-2 transition duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2"
-      aria-label={`${displayName}, ${card.overall} overall, ${displayPosition}, ${competition}, season ${card.seasonId}`}
+      aria-label={translate("{0}, {1} overall, {2}, {3}, season {4}", [displayName, card.overall, displayPosition, competition, card.seasonId])}
     >
       <div
         className="relative w-full transition-transform duration-300 group-hover:scale-[1.025]"
@@ -194,7 +196,7 @@ export function RenderedUltimateTeamCard({
                 className="font-black leading-none"
                 style={{ color: appearance.secondaryText, fontSize: "4cqw", minWidth: "2.4em" }}
               >
-                {label}
+                {translate(label)}
               </span>
             </div>
           ))}
@@ -207,8 +209,7 @@ export function RenderedUltimateTeamCard({
           <span className="max-w-full truncate font-bold" style={{ fontSize: "3cqw", letterSpacing: ".13em", opacity: .7 }}>
             {competition}
           </span>
-          <span className="mt-1 font-black" style={{ fontSize: "5cqw", color: appearance.primaryText, letterSpacing: ".08em" }}>
-            SEASON {card.seasonId}
+          <span className="mt-1 font-black" style={{ fontSize: "5cqw", color: appearance.primaryText, letterSpacing: ".08em" }}>{translate("SEASON ")}{card.seasonId}
           </span>
         </div>
       </div>
@@ -216,11 +217,11 @@ export function RenderedUltimateTeamCard({
       {showOwnership ? (
         <div className="mx-3 mt-2 flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.035] px-3 py-2 text-xs text-muted-foreground">
           {card.quantity !== undefined ? (
-            <span>Owned <b className="text-foreground">×{card.quantity}</b></span>
+            <span>{translate("Owned ")}<b className="text-foreground">×{card.quantity}</b></span>
           ) : (
             <>
-              <span>Owners <b className="text-foreground">{card.owners ?? 0}</b></span>
-              <span>Copies <b className="text-foreground">{card.totalCopies ?? 0}</b></span>
+              <span>{translate("Owners ")}<b className="text-foreground">{card.owners ?? 0}</b></span>
+              <span>{translate("Copies ")}<b className="text-foreground">{card.totalCopies ?? 0}</b></span>
             </>
           )}
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accent }} />

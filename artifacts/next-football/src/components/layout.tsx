@@ -1,3 +1,5 @@
+import { LanguageSelector } from "@/components/language-selector";
+import { translate, useLanguage } from "@/i18n";
 import { Link, useLocation } from "wouter";
 import logoPath from "@assets/NEXTLogo2_2_1782769726637.png";
 import { Menu, MessageCircle, X, Youtube } from "lucide-react";
@@ -26,6 +28,7 @@ function isSectionActive(location: string, href: string, label: string) {
 }
 
 export function Layout({ children }: LayoutProps) {
+  useLanguage();
   const [location] = useLocation();
   const { data: settings } = useGetSettings();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,34 +41,30 @@ export function Layout({ children }: LayoutProps) {
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#090d13]/92 backdrop-blur-2xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            <img src={logoPath} alt="NEXT" className="h-9 w-auto mix-blend-lighten" />
-            <span className="hidden font-display text-xl font-bold uppercase tracking-[0.08em] sm:block">
-              NEXT <span className="text-[#39ff14]">{location === "/" ? "Network" : activeMode.shortName}</span>
+            <img src={logoPath} alt={translate("NEXT")} className="h-9 w-auto mix-blend-lighten" />
+            <span className="hidden font-display text-xl font-bold uppercase tracking-[0.08em] sm:block">{translate("NEXT ")}<span className="text-[#39ff14]">{location === "/" ? translate("Network") : activeMode.shortName}</span>
             </span>
           </Link>
 
+          <div className="flex min-w-0 items-center gap-2">
           <div className="hidden items-center gap-2 md:flex">
             {location === "/" ? (
               <>
-                <span className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-2 font-display text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Choose a game below
-                </span>
+                <span className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-2 font-display text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{translate("Choose a game below")}</span>
                 <a
                   href="https://discord.gg/QEtx8dSBQr"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground transition hover:border-white/8 hover:bg-white/5 hover:text-white"
                 >
-                  <MessageCircle className="h-4 w-4" /> Discord
-                </a>
+                  <MessageCircle className="h-4 w-4" />{translate(" Discord")}</a>
                 <a
                   href={settings?.youtubeUrl || "https://www.youtube.com/@NEXTFootballOfficial"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground transition hover:border-white/8 hover:bg-white/5 hover:text-white"
                 >
-                  <Youtube className="h-4 w-4" /> YouTube
-                </a>
+                  <Youtube className="h-4 w-4" />{translate(" YouTube")}</a>
               </>
             ) : (
               GAME_MODES.map((mode) => (
@@ -85,9 +84,11 @@ export function Layout({ children }: LayoutProps) {
             )}
           </div>
 
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Toggle navigation">
+          <LanguageSelector />
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen((open) => !open)} aria-label={translate("Toggle navigation")}>
             {mobileMenuOpen ? <X /> : <Menu />}
           </Button>
+          </div>
         </div>
 
         {location !== "/" && (
@@ -103,7 +104,7 @@ export function Layout({ children }: LayoutProps) {
                     className={`flex h-full items-center gap-2 border-b-2 px-5 font-display text-sm font-semibold uppercase tracking-[0.08em] transition ${active ? "text-white" : "border-transparent text-muted-foreground hover:text-white"}`}
                     style={active ? { borderBottomColor: activeMode.accent, color: activeMode.accent } : undefined}
                   >
-                    <Icon className="h-4 w-4" /> {section.label}
+                    <Icon className="h-4 w-4" /> {translate(section.label)}
                   </Link>
                 ) : null;
               })}
@@ -113,7 +114,7 @@ export function Layout({ children }: LayoutProps) {
 
         {mobileMenuOpen && (
           <div className="border-t border-white/8 bg-[#0b1017] px-4 py-4 md:hidden">
-            <p className="mb-2 font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">Game mode</p>
+            <p className="mb-2 font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("Game mode")}</p>
             <div className="mb-4 grid grid-cols-2 gap-2">
               {GAME_MODES.map((mode) => (
                 <Link key={mode.id} href={mode.available ? mode.landingHref : "/"} onClick={() => setMobileMenuOpen(false)} className="rounded-xl border border-white/8 bg-white/4 px-3 py-3 font-display text-sm font-semibold uppercase">
@@ -122,11 +123,11 @@ export function Layout({ children }: LayoutProps) {
               ))}
             </div>
             {location !== "/" && <>
-              <p className="mb-2 font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">Sections</p>
+              <p className="mb-2 font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{translate("Sections")}</p>
               <div className="grid gap-1">
                 {activeMode.sections.filter((section) => section.available).map((section) => (
                   <Link key={section.label} href={section.href} onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/5 hover:text-white">
-                    {section.label}
+                    {translate(section.label)}
                   </Link>
                 ))}
               </div>
@@ -138,8 +139,8 @@ export function Layout({ children }: LayoutProps) {
       <main className="flex-1">{children}</main>
       <footer className="border-t border-white/8 bg-[#090d13]">
         <div className="container mx-auto flex flex-col gap-3 px-4 py-7 text-xs uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 NEXT Competitive Network</span>
-          <Link href="/admin" className="transition hover:text-white">Admin</Link>
+          <span>{translate("© 2026 NEXT Competitive Network")}</span>
+          <Link href="/admin" className="transition hover:text-white">{translate("Admin")}</Link>
         </div>
       </footer>
     </div>

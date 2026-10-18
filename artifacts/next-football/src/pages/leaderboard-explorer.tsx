@@ -1,3 +1,4 @@
+import { numberFormatter, translate, useLanguage } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useSearch } from "wouter";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -119,10 +120,11 @@ interface BoardResult {
 const number = (value: unknown, decimals = 0) =>
   value == null
     ? "—"
-    : new Intl.NumberFormat("en-US", {
+    : numberFormatter("en-US", {
         maximumFractionDigits: decimals,
       }).format(Number(value));
 export function LeaderboardExplorer({ mode }: { mode: Mode }) {
+  useLanguage();
   const search = useSearch();
   const [, navigate] = useLocation();
   const params = new URLSearchParams(search);
@@ -217,19 +219,15 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
     >
       <header className="border-b border-white/15 pb-7">
         <Link href={`/${mode}`} className="next-text-link">
-          <ArrowLeft size={14} /> Back to{" "}
-          {mode === "football" ? "Football" : "BlockBall"}
+          <ArrowLeft size={14} />{translate(" Back to")}{" "}
+          {mode === "football" ? translate("Football") : translate("BlockBall")}
         </Link>
-        <p className="next-kicker mt-7">NEXT / Player rankings</p>
+        <p className="next-kicker mt-7">{translate("NEXT / Player rankings")}</p>
         <h1 className="mt-3 font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">
-          {mode === "football" ? "Football" : "BlockBall"} leaderboards
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Choose a competition or collection. Compare the records that matter to
-          you.
-        </p>
+          {mode === "football" ? translate("Football") : translate("BlockBall")}{translate(" leaderboards")}</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{translate("Choose a competition or collection. Compare the records that matter to you.")}</p>
       </header>
-      <nav className="next-section-nav" aria-label="Leaderboard categories">
+      <nav className="next-section-nav" aria-label={translate("Leaderboard categories")}>
         {Object.entries(CATEGORIES)
           .filter(([key]) => mode === "football" || key !== "classic")
           .map(([key, label]) => (
@@ -238,14 +236,12 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
               href={`/${mode}/leaderboards?category=${key}`}
               aria-current={category === key ? "page" : undefined}
             >
-              {label}
+              {translate(label)}
             </Link>
           ))}
       </nav>
-      <section aria-label="Leaderboard filters" className="board-filters">
-        <label>
-          Statistic
-          <select
+      <section aria-label={translate("Leaderboard filters")} className="board-filters">
+        <label>{translate("Statistic")}<select
             value={metric}
             onChange={(event) =>
               update({ metric: event.target.value, minMatches: null })
@@ -253,29 +249,25 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
           >
             {Object.entries(metrics).map(([key, label]) => (
               <option key={key} value={key}>
-                {label}
+                {translate(label)}
               </option>
             ))}
           </select>
         </label>
         {category === "league" && (
-          <label>
-            Competition
-            <select
+          <label>{translate("Competition")}<select
               value={league}
               onChange={(event) =>
                 update({ league: event.target.value, season: null })
               }
             >
-              <option value="ML">Major League</option>
-              <option value="LL">Lower League</option>
+              <option value="ML">{translate("Major League")}</option>
+              <option value="LL">{translate("Lower League")}</option>
             </select>
           </label>
         )}
         {["league", "ut"].includes(category) && (
-          <label>
-            Season
-            <select
+          <label>{translate("Season")}<select
               value={
                 season ||
                 (category === "league" && mode === "football" ? "CURRENT" : "")
@@ -289,11 +281,7 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
                   category === "league" && mode === "football" ? "CURRENT" : ""
                 }
               >
-                {category === "ut"
-                  ? "All seasons"
-                  : mode === "football"
-                    ? "Current season"
-                    : "Latest recorded season"}
+                {category === "ut" ? translate("All seasons") : mode === "football" ? translate("Current season") : translate("Latest recorded season")}
               </option>
               {Array.from(
                 new Set([
@@ -309,9 +297,7 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
           </label>
         )}
         {sample && (
-          <label>
-            Minimum matches
-            <select
+          <label>{translate("Minimum matches")}<select
               value={String(minMatches)}
               onChange={(event) => update({ minMatches: event.target.value })}
             >
@@ -324,7 +310,7 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
                 .sort((a, b) => a - b)
                 .map((value) => (
                   <option key={value} value={value}>
-                    {value === 0 ? "No minimum" : `${value} matches`}
+                    {value === 0 ? translate("No minimum") : translate("{0} matches", [value])}
                   </option>
                 ))}
             </select>
@@ -333,72 +319,62 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
       </section>
       <div>
         <h2 className="font-display text-2xl font-bold uppercase">
-          {metrics[metric]}
+          {translate(metrics[metric])}
         </h2>
         <p className="mt-2 max-w-4xl text-sm leading-relaxed text-muted-foreground">
-          {DETAILS[category]}
+          {translate(DETAILS[category])}
         </p>
         {result && (
           <p className="mt-2 text-xs text-muted-foreground">
-            {number(result.total)} eligible players
-            {category === "league"
-              ? ` · ${league} · ${result.season === "CURRENT" ? "Current season" : result.season || "No recorded season"}`
+            {number(result.total)}{translate(" eligible players")}{category === "league"
+              ? ` · ${league} · ${result.season === "CURRENT" ? translate("Current season") : result.season || translate("No recorded season")}`
               : ""}
-            {sample ? ` · Minimum ${result.minMatches} matches` : ""}
+            {sample ? translate(" · Minimum {0} matches", [result.minMatches]) : ""}
           </p>
         )}
       </div>
       <section
         className="board-table-wrap"
-        aria-label={`${metrics[metric]} leaderboard`}
+        aria-label={translate("{0} leaderboard", [translate(metrics[metric])])}
         aria-busy={query.isFetching}
       >
         {query.isLoading ? (
-          <p role="status" className="p-8 text-sm text-muted-foreground">
-            Loading leaderboard…
-          </p>
+          <p role="status" className="p-8 text-sm text-muted-foreground">{translate("Loading leaderboard…")}</p>
         ) : query.isError ? (
           <div role="alert" className="p-8">
             <p className="text-sm text-muted-foreground">
-              {query.error.message}
+              {translate(query.error.message)}
             </p>
             <button
               className="next-text-link mt-4"
               onClick={() => query.refetch()}
-            >
-              Try again
-            </button>
+            >{translate("Try again")}</button>
           </div>
         ) : !result?.data.length ? (
           <div className="p-8">
-            <h3 className="font-semibold">No eligible players</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Try another season, statistic or minimum match count.
-            </p>
+            <h3 className="font-semibold">{translate("No eligible players")}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{translate("Try another season, statistic or minimum match count.")}</p>
             {result && page > 1 && (
               <button
                 className="next-text-link mt-4"
                 onClick={() => update({ page: "1" })}
-              >
-                Return to first page
-              </button>
+              >{translate("Return to first page")}</button>
             )}
           </div>
         ) : (
           <table className="board-table">
             <caption className="sr-only">
-              {CATEGORIES[category]} ranked by {metrics[metric]}, descending
-            </caption>
+              {translate(CATEGORIES[category])}{translate(" ranked by ")}{translate(metrics[metric])}{translate(", descending")}</caption>
             <thead>
               <tr>
-                <th scope="col">Pos.</th>
-                <th scope="col">Player</th>
+                <th scope="col">{translate("Pos.")}</th>
+                <th scope="col">{translate("Player")}</th>
                 {columns.map((key) => (
                   <th scope="col" key={key}>
-                    {LABELS[key]}
+                    {translate(LABELS[key])}
                   </th>
                 ))}
-                <th scope="col">{metrics[metric]}</th>
+                <th scope="col">{translate(metrics[metric])}</th>
               </tr>
             </thead>
             <tbody>
@@ -434,25 +410,17 @@ export function LeaderboardExplorer({ mode }: { mode: Mode }) {
           <button
             disabled={page <= 1 || query.isFetching}
             onClick={() => update({ page: String(page - 1) })}
-          >
-            Previous
-          </button>
-          <span>
-            Page {page} of {pages}
+          >{translate("Previous")}</button>
+          <span>{translate("Page ")}{page}{translate(" of ")}{pages}
           </span>
           <button
             disabled={page >= pages || query.isFetching}
             onClick={() => update({ page: String(page + 1) })}
-          >
-            Next
-          </button>
+          >{translate("Next")}</button>
         </div>
       )}
       {sample && (
-        <p className="pb-5 text-xs leading-relaxed text-muted-foreground">
-          Use the minimum match filter when comparing averages: a longer playing
-          record gives more context than a single match.
-        </p>
+        <p className="pb-5 text-xs leading-relaxed text-muted-foreground">{translate("Use the minimum match filter when comparing averages: a longer playing record gives more context than a single match.")}</p>
       )}
     </div>
   );

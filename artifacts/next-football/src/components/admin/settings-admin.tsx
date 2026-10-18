@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useState, useEffect, useCallback } from "react";
 import { useGetSettings, useUpdateSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ function useDbStatus() {
 }
 
 function DatabaseSection() {
+  useLanguage();
   const { status, loading: statusLoading, refetch } = useDbStatus();
   const { toast } = useToast();
 
@@ -52,7 +54,7 @@ function DatabaseSection() {
           if (r.ok) {
             setRestarting(false);
             refetch();
-            toast({ title: "Database connected", description: "Server restarted with the new database." });
+            toast({ title: translate("Database connected"), description: translate("Server restarted with the new database.") });
           } else {
             setTimeout(poll, 1500);
           }
@@ -93,14 +95,14 @@ function DatabaseSection() {
       });
       const data = await r.json() as { ok: boolean; error?: string };
       if (!data.ok) {
-        toast({ title: "Connection failed", description: data.error ?? "Unknown error.", variant: "destructive" });
+        toast({ title: translate("Connection failed"), description: data.error ?? "Unknown error.", variant: "destructive" });
         setConnecting(false);
         return;
       }
       setUrl("");
       waitForRestart();
     } catch {
-      toast({ title: "Error", description: "Could not reach the server.", variant: "destructive" });
+      toast({ title: translate("Error"), description: translate("Could not reach the server."), variant: "destructive" });
     } finally {
       setConnecting(false);
     }
@@ -112,7 +114,7 @@ function DatabaseSection() {
       await fetch(`${BASE}/api/database/custom`, { method: "DELETE" });
       waitForRestart();
     } catch {
-      toast({ title: "Error", description: "Could not reach the server.", variant: "destructive" });
+      toast({ title: translate("Error"), description: translate("Could not reach the server."), variant: "destructive" });
     } finally {
       setDisconnecting(false);
     }
@@ -122,33 +124,25 @@ function DatabaseSection() {
     <div className="bg-card border border-border rounded-xl p-6 flex flex-col gap-5">
       <div className="flex flex-col gap-1">
         <h3 className="font-display font-bold uppercase tracking-widest text-sm text-foreground flex items-center gap-2">
-          <Database className="w-4 h-4 text-primary" />
-          Database Connection
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Connect your own PostgreSQL database. The server will restart automatically when you switch.
-        </p>
+          <Database className="w-4 h-4 text-primary" />{translate("Database Connection")}</h3>
+        <p className="text-xs text-muted-foreground">{translate("Connect your own PostgreSQL database. The server will restart automatically when you switch.")}</p>
       </div>
 
       {/* Current status */}
       {restarting ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin text-primary" />
-          Restarting server…
-        </div>
+          <Loader2 className="w-4 h-4 animate-spin text-primary" />{translate("Restarting server…")}</div>
       ) : statusLoading ? (
-        <div className="text-xs text-muted-foreground animate-pulse">Loading…</div>
+        <div className="text-xs text-muted-foreground animate-pulse">{translate("Loading…")}</div>
       ) : status ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-xs">
             <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
             <span className="font-mono text-muted-foreground truncate max-w-xs">
-              {status.maskedUrl ?? "No URL configured"}
+              {status.maskedUrl ?? translate("No URL configured")}
             </span>
             {status.isCustomActive && (
-              <span className="ml-auto shrink-0 text-[10px] font-display uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                Custom
-              </span>
+              <span className="ml-auto shrink-0 text-[10px] font-display uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">{translate("Custom")}</span>
             )}
           </div>
           {status.hasCustom && (
@@ -160,7 +154,7 @@ function DatabaseSection() {
               disabled={disconnecting}
             >
               <Unplug className="w-3 h-3 mr-1" />
-              {disconnecting ? "Removing…" : "Remove Custom DB"}
+              {disconnecting ? translate("Removing…") : translate("Remove Custom DB")}
             </Button>
           )}
         </div>
@@ -168,9 +162,7 @@ function DatabaseSection() {
 
       {/* New connection form */}
       <div className="flex flex-col gap-3 pt-1 border-t border-border">
-        <p className="text-xs text-muted-foreground">
-          Paste a PostgreSQL connection string to switch databases:
-        </p>
+        <p className="text-xs text-muted-foreground">{translate("Paste a PostgreSQL connection string to switch databases:")}</p>
         <Input
           type="password"
           className="bg-background border-border font-mono text-sm"
@@ -182,8 +174,8 @@ function DatabaseSection() {
         {testResult && (
           <div className={`flex items-center gap-2 text-xs font-display ${testResult.ok ? "text-primary" : "text-destructive"}`}>
             {testResult.ok
-              ? <><CheckCircle2 className="w-3.5 h-3.5" /> Connection successful</>
-              : <><XCircle className="w-3.5 h-3.5" /> {testResult.error}</>
+              ? <><CheckCircle2 className="w-3.5 h-3.5" />{translate(" Connection successful")}</>
+              : <><XCircle className="w-3.5 h-3.5" /> {translate(testResult.error)}</>
             }
           </div>
         )}
@@ -197,7 +189,7 @@ function DatabaseSection() {
             disabled={!url.trim() || testing || connecting}
           >
             {testing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
-            {testing ? "Testing…" : "Test"}
+            {testing ? translate("Testing…") : translate("Test")}
           </Button>
           <Button
             size="sm"
@@ -206,7 +198,7 @@ function DatabaseSection() {
             disabled={!url.trim() || connecting || testing}
           >
             {connecting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
-            {connecting ? "Connecting…" : "Save & Connect"}
+            {connecting ? translate("Connecting…") : translate("Save & Connect")}
           </Button>
         </div>
       </div>
@@ -215,6 +207,7 @@ function DatabaseSection() {
 }
 
 export function SettingsAdmin() {
+  useLanguage();
   const { data: settings, isLoading } = useGetSettings();
   const { mutateAsync: updateSettings, isPending } = useUpdateSettings();
   const { toast } = useToast();
@@ -242,26 +235,24 @@ export function SettingsAdmin() {
         },
       });
       await qc.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
-      toast({ title: "Settings saved", description: "Homepage info updated." });
+      toast({ title: translate("Settings saved"), description: translate("Homepage info updated.") });
     } catch {
-      toast({ title: "Error", description: "Failed to save settings.", variant: "destructive" });
+      toast({ title: translate("Error"), description: translate("Failed to save settings."), variant: "destructive" });
     }
   };
 
-  if (isLoading) return <div className="text-muted-foreground text-sm animate-pulse">Loading settings…</div>;
+  if (isLoading) return <div className="text-muted-foreground text-sm animate-pulse">{translate("Loading settings…")}</div>;
 
   return (
     <div className="max-w-xl flex flex-col gap-6">
       <div className="bg-card border border-border rounded-xl p-6 flex flex-col gap-5">
         <div className="flex flex-col gap-1">
           <h3 className="font-display font-bold uppercase tracking-widest text-sm text-foreground flex items-center gap-2">
-            <Server className="w-4 h-4 text-primary" />
-            Minecraft Server IP
-          </h3>
-          <p className="text-xs text-muted-foreground">Shown on the homepage with a copy button. Leave blank to hide.</p>
+            <Server className="w-4 h-4 text-primary" />{translate("Minecraft Server IP")}</h3>
+          <p className="text-xs text-muted-foreground">{translate("Shown on the homepage with a copy button. Leave blank to hide.")}</p>
           <Input
             className="mt-2 bg-background border-border font-mono"
-            placeholder="e.g. play.nextfootball.net"
+            placeholder={translate("e.g. play.nextfootball.net")}
             value={minecraftIp}
             onChange={e => setMinecraftIp(e.target.value)}
           />
@@ -269,13 +260,11 @@ export function SettingsAdmin() {
 
         <div className="flex flex-col gap-1">
           <h3 className="font-display font-bold uppercase tracking-widest text-sm text-foreground flex items-center gap-2">
-            <Hash className="w-4 h-4 text-primary" />
-            Discord Invite URL
-          </h3>
-          <p className="text-xs text-muted-foreground">Full Discord invite link. Shown as a "Join Discord" button. Leave blank to hide.</p>
+            <Hash className="w-4 h-4 text-primary" />{translate("Discord Invite URL")}</h3>
+          <p className="text-xs text-muted-foreground">{translate("Full Discord invite link. Shown as a \"Join Discord\" button. Leave blank to hide.")}</p>
           <Input
             className="mt-2 bg-background border-border"
-            placeholder="e.g. https://discord.gg/abc123"
+            placeholder={translate("e.g. https://discord.gg/abc123")}
             value={discordUrl}
             onChange={e => setDiscordUrl(e.target.value)}
             type="url"
@@ -284,13 +273,11 @@ export function SettingsAdmin() {
 
         <div className="flex flex-col gap-1">
           <h3 className="font-display font-bold uppercase tracking-widest text-sm text-foreground flex items-center gap-2">
-            <Youtube className="w-4 h-4 text-primary" />
-            YouTube Channel URL
-          </h3>
-          <p className="text-xs text-muted-foreground">Full YouTube channel link. Shown on the homepage. Leave blank to hide.</p>
+            <Youtube className="w-4 h-4 text-primary" />{translate("YouTube Channel URL")}</h3>
+          <p className="text-xs text-muted-foreground">{translate("Full YouTube channel link. Shown on the homepage. Leave blank to hide.")}</p>
           <Input
             className="mt-2 bg-background border-border"
-            placeholder="e.g. https://www.youtube.com/@NEXTFootballOfficial"
+            placeholder={translate("e.g. https://www.youtube.com/@NEXTFootballOfficial")}
             value={youtubeUrl}
             onChange={e => setYoutubeUrl(e.target.value)}
             type="url"
@@ -302,7 +289,7 @@ export function SettingsAdmin() {
           disabled={isPending}
           className="self-start font-display uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          {isPending ? "Saving…" : "Save Settings"}
+          {isPending ? translate("Saving…") : translate("Save Settings")}
         </Button>
       </div>
     </div>

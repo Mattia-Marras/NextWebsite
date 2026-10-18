@@ -1,3 +1,4 @@
+import { dateFormatter, numberFormatter, translate, useLanguage } from "@/i18n";
 import { useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -36,7 +37,7 @@ import {
 } from "@/lib/nextfb-api";
 
 const ACCENT = "#39ff14";
-const NUMBER = new Intl.NumberFormat("en-US");
+const NUMBER = numberFormatter("en-US");
 
 type RankedMetric = "MMR" | "WIN_RATE" | RankedStat;
 
@@ -60,7 +61,7 @@ function label(value: string) {
 }
 
 function playerName(player: RankedEntryWithUsername) {
-  return player.username?.trim() || "Unknown player";
+  return player.username?.trim() || translate("Unknown player");
 }
 
 function games(player: RankedEntryWithUsername) {
@@ -91,7 +92,7 @@ function formatSeasonDate(value: string | null | undefined) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat("en-GB", {
+  return dateFormatter("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -99,6 +100,7 @@ function formatSeasonDate(value: string | null | undefined) {
 }
 
 export function FootballRanked() {
+  useLanguage();
   const [metric, setMetric] = useState<RankedMetric>("MMR");
   const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null);
 
@@ -179,11 +181,11 @@ export function FootballRanked() {
   const topWinRate = [...eligibleWinRate].sort((a, b) => winRate(b) - winRate(a))[0];
 
   if (query.isLoading) {
-    return <main className="container mx-auto px-4 py-12 text-muted-foreground">Loading Ranked...</main>;
+    return <main className="container mx-auto px-4 py-12 text-muted-foreground">{translate("Loading Ranked...")}</main>;
   }
 
   if (query.isError) {
-    return <main className="container mx-auto px-4 py-12 text-destructive">Ranked statistics are currently unavailable.</main>;
+    return <main className="container mx-auto px-4 py-12 text-destructive">{translate("Ranked statistics are currently unavailable.")}</main>;
   }
 
   const metrics: RankedMetric[] = ["MMR", "WIN_RATE", ...RANKED_STATS];
@@ -195,21 +197,19 @@ export function FootballRanked() {
           <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-[#39ff14]/10 blur-[130px]" />
         </div>
         <div className="container relative mx-auto px-4">
-          <p className="font-display text-xs font-semibold uppercase tracking-[0.32em] text-[#39ff14]">NextFootball Competitive</p>
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.32em] text-[#39ff14]">{translate("NextFootball Competitive")}</p>
           <div className="mt-4 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h1 className="font-display text-5xl font-bold uppercase tracking-tight md:text-7xl">Ranked</h1>
+              <h1 className="font-display text-5xl font-bold uppercase tracking-tight md:text-7xl">{translate("Ranked")}</h1>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-                {isArchivedSeason
-                  ? `Final standings and complete statistics preserved from Ranked Season ${selectedSeasonId}.`
-                  : "Competitive standings, rank distribution, performance leaders and detailed Ranked statistics in one place."}
+                {isArchivedSeason ? translate("Final standings and complete statistics preserved from Ranked Season {0}.", [selectedSeasonId]) : translate("Competitive standings, rank distribution, performance leaders and detailed Ranked statistics in one place.")}
               </p>
             </div>
             {top ? (
               <Link href={`/football/profile/${encodeURIComponent(top.uuid)}`} className="rounded-2xl border border-[#39ff14]/25 bg-[#39ff14]/[0.055] px-5 py-4 transition hover:bg-[#39ff14]/10">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{isArchivedSeason ? `Season ${selectedSeasonId} leader` : "Ranked leader"}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{isArchivedSeason ? translate("Season {0} leader", [selectedSeasonId]) : translate("Ranked leader")}</p>
                 <p className="mt-1 font-display text-2xl font-bold">{playerName(top)}</p>
-                <p className="mt-1 text-sm text-[#39ff14]">{top.rank.displayWithDivision} · {n(top.mmr)} MMR</p>
+                <p className="mt-1 text-sm text-[#39ff14]">{top.rank.displayWithDivision} · {n(top.mmr)}{translate(" MMR")}</p>
               </Link>
             ) : null}
           </div>
@@ -224,29 +224,22 @@ export function FootballRanked() {
                 <History className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-display text-xl font-bold uppercase">Ranked seasons</h2>
-                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                  Browse the live season or any completed Ranked season preserved in the permanent archive.
-                </p>
+                <h2 className="font-display text-xl font-bold uppercase">{translate("Ranked seasons")}</h2>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{translate("Browse the live season or any completed Ranked season preserved in the permanent archive.")}</p>
                 {isArchivedSeason && selectedSeasonSummary ? (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {formatSeasonDate(selectedSeasonSummary.startedAt) ?? "Unknown start"} – {formatSeasonDate(selectedSeasonSummary.endedAt) ?? "Unknown end"}
-                    {` · ${n(selectedSeasonSummary.playerCount)} players · ${n(selectedSeasonSummary.eligiblePlayerCount)} eligible for final placement`}
+                    {formatSeasonDate(selectedSeasonSummary.startedAt) ?? translate("Unknown start")} – {formatSeasonDate(selectedSeasonSummary.endedAt) ?? translate("Unknown end")}
+                    {translate(" · {0} players · {1} eligible for final placement", [n(selectedSeasonSummary.playerCount), n(selectedSeasonSummary.eligiblePlayerCount)])}
                   </p>
                 ) : !isArchivedSeason && seasonsQuery.data ? (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Season {currentSeasonNumber}
-                    {formatSeasonDate(seasonsQuery.data.currentSeasonStartedAt)
-                      ? ` · started ${formatSeasonDate(seasonsQuery.data.currentSeasonStartedAt)}`
-                      : ""}
+                  <p className="mt-2 text-xs text-muted-foreground">{translate("Season ")}{currentSeasonNumber}
+                    {formatSeasonDate(seasonsQuery.data.currentSeasonStartedAt) ? translate(" · started {0}", [formatSeasonDate(seasonsQuery.data.currentSeasonStartedAt)]) : ""}
                   </p>
                 ) : null}
               </div>
             </div>
 
-            <label className="flex min-w-[220px] flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              Season
-              <select
+            <label className="flex min-w-[220px] flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{translate("Season")}<select
                 value={selectedSeasonId == null ? "current" : String(selectedSeasonId)}
                 onChange={(event) => {
                   const value = event.target.value;
@@ -255,18 +248,16 @@ export function FootballRanked() {
                 className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-[#39ff14]"
               >
                 <option value="current">
-                  {currentSeasonNumber ? `Season ${currentSeasonNumber} · Current` : "Current season"}
+                  {currentSeasonNumber ? translate("Season {0} · Current", [currentSeasonNumber]) : translate("Current season")}
                 </option>
                 {(seasonsQuery.data?.archivedSeasons ?? []).map((season) => (
-                  <option key={season.seasonId} value={season.seasonId}>
-                    Season {season.seasonId} · Final
-                  </option>
+                  <option key={season.seasonId} value={season.seasonId}>{translate("Season ")}{season.seasonId}{translate(" · Final")}</option>
                 ))}
               </select>
             </label>
           </div>
           {seasonsQuery.isError ? (
-            <p className="mt-4 text-xs text-muted-foreground">Season archive metadata is unavailable; the current Ranked season remains accessible.</p>
+            <p className="mt-4 text-xs text-muted-foreground">{translate("Season archive metadata is unavailable; the current Ranked season remains accessible.")}</p>
           ) : null}
         </section>
 
@@ -279,28 +270,28 @@ export function FootballRanked() {
           ].map(([Icon, title, value]: any) => (
             <div key={title} className="surface-panel p-5">
               <Icon className="h-5 w-5 text-[#39ff14]" />
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{title}</p>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{translate(title)}</p>
               <p className="mt-1 font-display text-3xl font-bold">{typeof value === "number" ? n(value) : value}</p>
             </div>
           ))}
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <LeaderCard icon={<Trophy className="h-5 w-5" />} title="Highest MMR" player={topMmr} value={topMmr ? `${n(topMmr.mmr)} MMR` : "—"} />
-          <LeaderCard icon={<Goal className="h-5 w-5" />} title="Top scorer" player={topGoals} value={topGoals ? `${n(topGoals.stats.GOALS)} goals` : "—"} />
-          <LeaderCard icon={<Crosshair className="h-5 w-5" />} title="Top assister" player={topAssists} value={topAssists ? `${n(topAssists.stats.ASSISTS)} assists` : "—"} />
-          <LeaderCard icon={<Shield className="h-5 w-5" />} title="Top saver" player={topSaves} value={topSaves ? `${n(topSaves.stats.SAVES)} saves` : "—"} />
+          <LeaderCard icon={<Trophy className="h-5 w-5" />} title={translate("Highest MMR")} player={topMmr} value={topMmr ? `${n(topMmr.mmr)} MMR` : "—"} />
+          <LeaderCard icon={<Goal className="h-5 w-5" />} title={translate("Top scorer")} player={topGoals} value={topGoals ? `${n(topGoals.stats.GOALS)} goals` : "—"} />
+          <LeaderCard icon={<Crosshair className="h-5 w-5" />} title={translate("Top assister")} player={topAssists} value={topAssists ? `${n(topAssists.stats.ASSISTS)} assists` : "—"} />
+          <LeaderCard icon={<Shield className="h-5 w-5" />} title={translate("Top saver")} player={topSaves} value={topSaves ? `${n(topSaves.stats.SAVES)} saves` : "—"} />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
           <div className="surface-panel p-5 md:p-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><BarChart3 className="h-5 w-5 text-[#39ff14]" /> Top 10 comparison</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Switch metric to compare the strongest Ranked performances.</p>
+                <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><BarChart3 className="h-5 w-5 text-[#39ff14]" />{translate(" Top 10 comparison")}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{translate("Switch metric to compare the strongest Ranked performances.")}</p>
               </div>
               <select value={metric} onChange={(event) => setMetric(event.target.value as RankedMetric)} className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-[#39ff14]">
-                {metrics.map((item) => <option key={item} value={item}>{label(item)}</option>)}
+                {metrics.map((item) => <option key={item} value={item}>{translate(label(item))}</option>)}
               </select>
             </div>
             <div className="mt-6 h-[340px]">
@@ -317,8 +308,8 @@ export function FootballRanked() {
           </div>
 
           <div className="surface-panel p-5 md:p-7">
-            <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Medal className="h-5 w-5 text-[#39ff14]" /> Rank distribution</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{isArchivedSeason ? `Final rank distribution for Season ${selectedSeasonId}.` : "Current competitive population by rank."}</p>
+            <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Medal className="h-5 w-5 text-[#39ff14]" />{translate(" Rank distribution")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{isArchivedSeason ? translate("Final rank distribution for Season {0}.", [selectedSeasonId]) : translate("Current competitive population by rank.")}</p>
             <div className="mt-6 space-y-3">
               {rankDistribution.length ? rankDistribution.map((item) => {
                 const theme = getRankTheme(item.rank as RankedLeaderboardEntry["rank"]["name"]);
@@ -334,11 +325,11 @@ export function FootballRanked() {
                     </div>
                   </div>
                 );
-              }) : <p className="text-sm text-muted-foreground">No Ranked players recorded.</p>}
+              }) : <p className="text-sm text-muted-foreground">{translate("No Ranked players recorded.")}</p>}
             </div>
             {topWinRate ? (
               <Link href={`/football/profile/${encodeURIComponent(topWinRate.uuid)}`} className="mt-7 block rounded-2xl border border-white/8 bg-white/[0.025] p-4 hover:bg-white/[0.04]">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Best win rate · min. 5 matches</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{translate("Best win rate · min. 5 matches")}</p>
                 <div className="mt-2 flex items-end justify-between gap-4">
                   <b className="font-display text-xl">{playerName(topWinRate)}</b>
                   <b className="text-[#39ff14]">{percentage(winRate(topWinRate))}</b>
@@ -352,16 +343,16 @@ export function FootballRanked() {
           <div className="border-b border-border p-5 md:p-7">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Activity className="h-5 w-5 text-[#39ff14]" /> {isArchivedSeason ? `Season ${selectedSeasonId} standings` : "Competitive standings"}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{isArchivedSeason ? "Archived final player records" : "Full Ranked record"}, ordered by {label(metric)}.</p>
+                <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Activity className="h-5 w-5 text-[#39ff14]" /> {isArchivedSeason ? translate("Season {0} standings", [selectedSeasonId]) : translate("Competitive standings")}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{isArchivedSeason ? translate("Archived final player records") : translate("Full Ranked record")}{translate(", ordered by ")}{translate(label(metric))}.</p>
               </div>
-              <Badge variant="outline">{players.length} loaded players</Badge>
+              <Badge variant="outline">{players.length}{translate(" loaded players")}</Badge>
             </div>
           </div>
           <div className="overflow-x-auto">
             <div className="min-w-[1120px]">
               <div className="grid grid-cols-[64px_minmax(190px,1fr)_160px_95px_90px_90px_90px_90px_100px_110px] gap-3 border-b border-border bg-white/[0.02] px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                <span>#</span><span>Player</span><span>Rank</span><span>MMR</span><span>MP</span><span>W</span><span>L</span><span>G</span><span>A</span><span>{label(metric)}</span>
+                <span>#</span><span>{translate("Player")}</span><span>{translate("Rank")}</span><span>{translate("MMR")}</span><span>{translate("MP")}</span><span>{translate("W")}</span><span>{translate("L")}</span><span>{translate("G")}</span><span>{translate("A")}</span><span>{translate(label(metric))}</span>
               </div>
               {sorted.map((player, index) => {
                 const theme = getRankTheme(player.rank.name);
@@ -392,7 +383,7 @@ export function FootballRanked() {
             ["Saves", totals.saves],
           ].map(([title, value]) => (
             <div key={String(title)} className="rounded-2xl border border-border bg-card/45 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{translate(title)}</p>
               <p className="mt-2 font-display text-3xl font-bold">{n(Number(value))}</p>
             </div>
           ))}
@@ -413,12 +404,13 @@ function LeaderCard({
   player: RankedEntryWithUsername | undefined;
   value: string;
 }) {
+  useLanguage();
   if (!player) {
     return (
       <div className="surface-panel p-5">
         <div className="text-[#39ff14]">{icon}</div>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
-        <p className="mt-2 font-display text-xl font-bold">No data</p>
+        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{translate(title)}</p>
+        <p className="mt-2 font-display text-xl font-bold">{translate("No data")}</p>
       </div>
     );
   }
@@ -426,7 +418,7 @@ function LeaderCard({
   return (
     <Link href={`/football/profile/${encodeURIComponent(player.uuid)}`} className="surface-panel block p-5 transition hover:border-[#39ff14]/30 hover:bg-[#39ff14]/[0.035]">
       <div className="text-[#39ff14]">{icon}</div>
-      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{translate(title)}</p>
       <p className="mt-2 truncate font-display text-xl font-bold">{playerName(player)}</p>
       <p className="mt-1 text-sm text-[#39ff14]">{value}</p>
     </Link>

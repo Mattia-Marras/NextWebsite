@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +32,7 @@ interface TeamFormProps {
 }
 
 export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
+  useLanguage();
   const { data: team, isLoading } = useGetTeam(teamId as number, { query: { enabled: !!teamId, queryKey: getGetTeamQueryKey(teamId as number) } });
   const createTeam = useCreateTeam();
   const updateTeam = useUpdateTeam();
@@ -80,13 +82,13 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
         { id: teamId, data: payload },
         {
           onSuccess: () => {
-            toast({ title: "Team updated successfully" });
+            toast({ title: translate("Team updated successfully") });
             queryClient.invalidateQueries({ queryKey: getListTeamsQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetTeamQueryKey(teamId) });
             onSuccess();
           },
           onError: () => {
-            toast({ title: "Failed to update team", variant: "destructive" });
+            toast({ title: translate("Failed to update team"), variant: "destructive" });
           }
         }
       );
@@ -95,12 +97,12 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
         { data: payload },
         {
           onSuccess: () => {
-            toast({ title: "Team created successfully" });
+            toast({ title: translate("Team created successfully") });
             queryClient.invalidateQueries({ queryKey: getListTeamsQueryKey() });
             onSuccess();
           },
           onError: () => {
-            toast({ title: "Failed to create team", variant: "destructive" });
+            toast({ title: translate("Failed to create team"), variant: "destructive" });
           }
         }
       );
@@ -120,16 +122,16 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
             name="server"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Server</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Server")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Server" />
+                      <SelectValue placeholder={translate("Select Server")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="football">Football</SelectItem>
-                    <SelectItem value="blockball">Blockball</SelectItem>
+                    <SelectItem value="football">{translate("Football")}</SelectItem>
+                    <SelectItem value="blockball">{translate("Blockball")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -141,16 +143,16 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
             name="league"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">League</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("League")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select League" />
+                      <SelectValue placeholder={translate("Select League")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="main">Main League</SelectItem>
-                    <SelectItem value="lower">Lower League</SelectItem>
+                    <SelectItem value="main">{translate("Main League")}</SelectItem>
+                    <SelectItem value="lower">{translate("Lower League")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -164,7 +166,7 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-display tracking-widest uppercase">Team Name</FormLabel>
+              <FormLabel className="font-display tracking-widest uppercase">{translate("Team Name")}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -179,7 +181,7 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
             name="shortName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Short Name</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Short Name")}</FormLabel>
                 <FormControl>
                   <Input {...field} maxLength={4} />
                 </FormControl>
@@ -192,7 +194,7 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
             name="logoInitials"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Initials</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Initials")}</FormLabel>
                 <FormControl>
                   <Input {...field} maxLength={3} />
                 </FormControl>
@@ -207,13 +209,13 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
           name="logoUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-display tracking-widest uppercase">Logo URL (Optional)</FormLabel>
+              <FormLabel className="font-display tracking-widest uppercase">{translate("Logo URL (Optional)")}</FormLabel>
               <FormControl>
                 <div className="flex gap-2">
                   <Input {...field} value={field.value || ""} placeholder="https://..." />
                   {field.value && (
                     <div className="w-10 h-10 shrink-0 border border-border rounded overflow-hidden">
-                      <img src={field.value} alt="Preview" className="w-full h-full object-contain" onError={(e) => {
+                      <img src={field.value} alt={translate("Preview")} className="w-full h-full object-contain" onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }} />
                     </div>
@@ -231,7 +233,7 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
             name="primaryColor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Primary Color</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Primary Color")}</FormLabel>
                 <FormControl>
                   <div className="flex gap-2">
                     <Input type="color" {...field} className="w-12 p-1" />
@@ -247,7 +249,7 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
             name="secondaryColor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-display tracking-widest uppercase">Secondary Color</FormLabel>
+                <FormLabel className="font-display tracking-widest uppercase">{translate("Secondary Color")}</FormLabel>
                 <FormControl>
                   <div className="flex gap-2">
                     <Input type="color" {...field} className="w-12 p-1" />
@@ -261,9 +263,9 @@ export function TeamForm({ teamId, onSuccess }: TeamFormProps) {
         </div>
 
         <div className="pt-4 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onSuccess}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={onSuccess}>{translate("Cancel")}</Button>
           <Button type="submit" disabled={createTeam.isPending || updateTeam.isPending} className="bg-primary text-primary-foreground hover:bg-primary/90 font-display uppercase tracking-widest">
-            {createTeam.isPending || updateTeam.isPending ? "Saving..." : "Save Team"}
+            {createTeam.isPending || updateTeam.isPending ? translate("Saving...") : translate("Save Team")}
           </Button>
         </div>
       </form>

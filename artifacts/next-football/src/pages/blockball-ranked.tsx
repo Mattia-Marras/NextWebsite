@@ -1,3 +1,4 @@
+import { numberFormatter, translate, useLanguage } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -5,11 +6,12 @@ import { Activity, BarChart3, Medal, ShieldCheck, Swords, Trophy } from "lucide-
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { getBlockballRanked } from "@/lib/blockball-api";
 
-const N = (value: unknown) => new Intl.NumberFormat("en-US").format(Number(value) || 0);
+const N = (value: unknown) => numberFormatter("en-US").format(Number(value) || 0);
 const P = (value: unknown) => `${(Number(value) || 0).toFixed(1)}%`;
 const pretty = (value: string) => value.toLowerCase().replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 export function BlockballRanked() {
+  useLanguage();
   const query = useQuery({ queryKey: ["blockball-ranked"], queryFn: getBlockballRanked });
   const [stat, setStat] = useState("MMR");
   const data = query.data;
@@ -26,8 +28,8 @@ export function BlockballRanked() {
     value: stat === "MMR" ? player.mmr : stat === "WIN_RATE" ? player.winRate : player.stats?.[stat] || 0,
   }));
 
-  if (query.isLoading) return <div className="container mx-auto px-4 py-12">Loading ranked data...</div>;
-  if (query.isError) return <div className="container mx-auto px-4 py-12 text-destructive">Ranked data is currently unavailable.</div>;
+  if (query.isLoading) return <div className="container mx-auto px-4 py-12">{translate("Loading ranked data...")}</div>;
+  if (query.isError) return <div className="container mx-auto px-4 py-12 text-destructive">{translate("Ranked data is currently unavailable.")}</div>;
 
   const totalPlayers = data.leaderboard.length;
   const totalGames = data.leaderboard.reduce((sum: number, player: any) => sum + player.games, 0) / 2;
@@ -38,17 +40,17 @@ export function BlockballRanked() {
     <div className="container mx-auto space-y-8 px-4 py-10">
       <section className="relative overflow-hidden rounded-[28px] border border-sky-400/20 bg-gradient-to-br from-sky-400/12 via-white/[0.035] to-transparent p-7 md:p-10">
         <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-sky-400/10 blur-3xl" />
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.32em] text-sky-400">NEXT BlockBall Competitive</p>
+        <p className="font-display text-xs font-semibold uppercase tracking-[0.32em] text-sky-400">{translate("NEXT BlockBall Competitive")}</p>
         <div className="relative mt-4 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="font-display text-4xl font-bold uppercase md:text-6xl">Ranked Arena</h1>
-            <p className="mt-3 max-w-2xl text-muted-foreground">Live MMR standings, complete competitive statistics, win rates and rank progression across BlockBall Ranked.</p>
+            <h1 className="font-display text-4xl font-bold uppercase md:text-6xl">{translate("Ranked Arena")}</h1>
+            <p className="mt-3 max-w-2xl text-muted-foreground">{translate("Live MMR standings, complete competitive statistics, win rates and rank progression across BlockBall Ranked.")}</p>
           </div>
           {top && (
             <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Current leader</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{translate("Current leader")}</p>
               <Link href={`/blockball/profile/${top.uuid}`} className="mt-1 block text-xl font-bold hover:text-sky-400">{top.name}</Link>
-              <p className="text-sm text-sky-400">{top.rank.displayName} · {N(top.mmr)} MMR</p>
+              <p className="text-sm text-sky-400">{top.rank.displayName} · {N(top.mmr)}{translate(" MMR")}</p>
             </div>
           )}
         </div>
@@ -63,7 +65,7 @@ export function BlockballRanked() {
         ].map(([Icon, label, value]: any) => (
           <div key={label} className="surface-panel p-5">
             <Icon className="h-5 w-5 text-sky-400" />
-            <p className="mt-4 text-xs uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+            <p className="mt-4 text-xs uppercase tracking-[0.16em] text-muted-foreground">{translate(label)}</p>
             <p className="mt-1 text-3xl font-bold">{typeof value === "number" ? N(value) : value}</p>
           </div>
         ))}
@@ -72,11 +74,11 @@ export function BlockballRanked() {
       <section className="surface-panel p-5 md:p-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><BarChart3 className="text-sky-400" /> Top 10 overview</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Compare the leading players across every tracked competitive statistic.</p>
+            <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><BarChart3 className="text-sky-400" />{translate(" Top 10 overview")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{translate("Compare the leading players across every tracked competitive statistic.")}</p>
           </div>
           <select value={stat} onChange={(event) => setStat(event.target.value)} className="rounded-xl border border-white/10 bg-[#0b1017] px-4 py-2.5 text-sm outline-none focus:border-sky-400">
-            {filters.map((item: string) => <option key={item} value={item}>{pretty(item)}</option>)}
+            {filters.map((item: string) => <option key={item} value={item}>{translate(pretty(item))}</option>)}
           </select>
         </div>
         <div className="mt-6 h-[340px]">
@@ -94,13 +96,13 @@ export function BlockballRanked() {
 
       <section className="surface-panel overflow-hidden">
         <div className="border-b border-white/8 p-5 md:p-7">
-          <h2 className="font-display text-2xl font-bold uppercase">Ranked leaderboard</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Sorted by {pretty(stat)}.</p>
+          <h2 className="font-display text-2xl font-bold uppercase">{translate("Ranked leaderboard")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{translate("Sorted by ")}{translate(pretty(stat))}.</p>
         </div>
         <div className="overflow-x-auto">
           <div className="min-w-[900px]">
             <div className="grid grid-cols-[70px_1fr_150px_110px_100px_100px_110px] gap-3 border-b border-white/8 bg-white/[0.025] px-6 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              <span>#</span><span>Player</span><span>Rank</span><span>MMR</span><span>Wins</span><span>Losses</span><span>{pretty(stat)}</span>
+              <span>#</span><span>{translate("Player")}</span><span>{translate("Rank")}</span><span>{translate("MMR")}</span><span>{translate("Wins")}</span><span>{translate("Losses")}</span><span>{translate(pretty(stat))}</span>
             </div>
             {sorted.map((player: any, index: number) => {
               const value = stat === "MMR" ? player.mmr : stat === "WIN_RATE" ? P(player.winRate) : N(player.stats?.[stat] || 0);

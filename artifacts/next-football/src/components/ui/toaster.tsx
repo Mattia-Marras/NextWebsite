@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/toast"
 
 export function Toaster() {
+  useLanguage();
   const { toasts } = useToast()
 
   return (
@@ -17,9 +19,9 @@ export function Toaster() {
         return (
           <Toast key={id} {...props}>
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && <ToastTitle>{translate(title)}</ToastTitle>}
               {description && (
-                <ToastDescription>{description}</ToastDescription>
+                <ToastDescription>{translate(description)}</ToastDescription>
               )}
             </div>
             {action}

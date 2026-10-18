@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useListMatches } from "@workspace/api-client-react";
 import { MatchCard } from "@/components/match-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -5,6 +6,7 @@ import { format } from "date-fns";
 import { useParams } from "wouter";
 
 export function Results() {
+  useLanguage();
   const { server = "football", league = "main" } = useParams<{ server: string; league: string }>();
   const serverName = server === "blockball" ? "Blockball" : "NEXT Football";
   const leagueName = league === "lower" ? "Lower League" : "Main League";
@@ -29,12 +31,9 @@ export function Results() {
     <div className="container mx-auto px-4 py-12">
       <div className="mb-12">
         <h1 className="text-4xl md:text-5xl font-display font-bold uppercase tracking-wider flex items-center gap-4">
-          <span className="w-4 h-10 bg-primary block rounded-sm"></span>
-          Results - {serverName} {leagueName}
+          <span className="w-4 h-10 bg-primary block rounded-sm"></span>{translate("Results - ")}{serverName} {leagueName}
         </h1>
-        <p className="text-muted-foreground mt-4 max-w-2xl font-sans">
-          All completed matches from the current season.
-        </p>
+        <p className="text-muted-foreground mt-4 max-w-2xl font-sans">{translate("All completed matches from the current season.")}</p>
       </div>
 
       {isLoading ? (
@@ -67,7 +66,7 @@ export function Results() {
         </div>
       ) : (
         <div className="py-24 text-center border border-dashed border-border rounded-xl bg-card">
-          <p className="text-muted-foreground font-display text-lg uppercase tracking-wider">No results available yet.</p>
+          <p className="text-muted-foreground font-display text-lg uppercase tracking-wider">{translate("No results available yet.")}</p>
         </div>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { Match } from "@workspace/api-client-react";
 import { TeamBadge } from "./team-badge";
 import { formatDateTime } from "@/lib/format";
@@ -10,6 +11,7 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, variant = "default" }: MatchCardProps) {
+  useLanguage();
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
   
@@ -23,9 +25,9 @@ export function MatchCard({ match, variant = "default" }: MatchCardProps) {
       <div className="flex justify-between items-center mb-4 text-xs font-display tracking-widest text-muted-foreground relative z-10">
         <span className="uppercase">{match.round}</span>
         {isLive ? (
-          <Badge variant="destructive" className="animate-pulse shadow-[0_0_10px_rgba(255,0,0,0.5)]">LIVE</Badge>
+          <Badge variant="destructive" className="animate-pulse shadow-[0_0_10px_rgba(255,0,0,0.5)]">{translate("LIVE")}</Badge>
         ) : isFinished ? (
-          <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">FT</Badge>
+          <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">{translate("FT")}</Badge>
         ) : (
           <Badge variant="secondary" className="bg-secondary/50">{formatDateTime(match.matchDate)}</Badge>
         )}
@@ -45,7 +47,7 @@ export function MatchCard({ match, variant = "default" }: MatchCardProps) {
               <span className={match.awayScore! > match.homeScore! ? "text-foreground" : "text-muted-foreground"}>{match.awayScore}</span>
             </div>
           ) : (
-            <div className="text-xl md:text-2xl font-display font-bold text-muted-foreground/30">VS</div>
+            <div className="text-xl md:text-2xl font-display font-bold text-muted-foreground/30">{translate("VS")}</div>
           )}
         </div>
 

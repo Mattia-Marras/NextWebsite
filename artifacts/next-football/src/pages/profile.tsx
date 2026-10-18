@@ -1,3 +1,4 @@
+import { numberFormatter, translate, useLanguage } from "@/i18n";
 import { PitchArt } from "@/components/pitch-art";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -83,7 +84,7 @@ const EMPTY_PLAYER_STATS: PlayerStats = {
 };
 
 function formatNumber(value: number | null | undefined): string {
-  return new Intl.NumberFormat("en-US").format(value ?? 0);
+  return numberFormatter("en-US").format(value ?? 0);
 }
 
 function formatPercentage(
@@ -166,6 +167,7 @@ function ProfileContent({
 }: {
   player: NextFootballPlayerPage;
 }) {
+  useLanguage();
   const { profile } = player;
 
   const xpProgress = Math.max(0, profile.xp % 1000);
@@ -183,9 +185,7 @@ function ProfileContent({
                 size="sm"
                 className="gap-2 text-muted-foreground hover:text-[#39ff14]"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Search another NextFootball player
-              </Button>
+                <ArrowLeft className="h-4 w-4" />{translate("Search another NextFootball player")}</Button>
             </Link>
           </div>
 
@@ -214,44 +214,38 @@ function ProfileContent({
                       borderColor: `${PROFILE_ACCENT}55`,
                       backgroundColor: `${PROFILE_ACCENT}12`,
                     }}
-                  >
-                    NextFootball
-                  </Badge>
+                  >{translate("NextFootball")}</Badge>
 
                   <Badge
                     variant="secondary"
                     className="font-display uppercase tracking-[0.15em]"
-                  >
-                    Football Player
-                  </Badge>
+                  >{translate("Football Player")}</Badge>
                 </div>
 
                 <h1 className="font-display text-4xl font-bold uppercase tracking-tight md:text-6xl">
-                  {profile.username?.trim() || "NextFootball Player"}
+                  {profile.username?.trim() || translate("NextFootball Player")}
                 </h1>
 
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Football / Player record
-                </p>
+                <p className="mt-3 text-sm text-muted-foreground">{translate("Football / Player record")}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               <HeaderMetric
                 icon={<Crown className="h-5 w-5" />}
-                label="Level"
+                label={translate("Level")}
                 value={formatNumber(profile.level)}
               />
 
               <HeaderMetric
                 icon={<Activity className="h-5 w-5" />}
-                label="XP"
+                label={translate("XP")}
                 value={formatNumber(profile.xp)}
               />
 
               <HeaderMetric
                 icon={<Coins className="h-5 w-5" />}
-                label="Coins"
+                label={translate("Coins")}
                 value={formatNumber(profile.coins)}
               />
             </div>
@@ -259,8 +253,8 @@ function ProfileContent({
 
           <div className="mt-10 max-w-xl">
             <div className="mb-2 flex items-center justify-between text-xs font-display uppercase tracking-widest text-muted-foreground">
-              <span>Level progress</span>
-              <span>{formatNumber(xpProgress)} / 1,000 XP</span>
+              <span>{translate("Level progress")}</span>
+              <span>{formatNumber(xpProgress)}{translate(" / 1,000 XP")}</span>
             </div>
 
             <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -284,51 +278,37 @@ function ProfileContent({
               <TabsTrigger
                 value="overview"
                 className="font-display uppercase tracking-wider"
-              >
-                Overview
-              </TabsTrigger>
+              >{translate("Overview")}</TabsTrigger>
 
               <TabsTrigger
                 value="modes"
                 className="font-display uppercase tracking-wider"
-              >
-                Modes
-              </TabsTrigger>
+              >{translate("Modes")}</TabsTrigger>
 
               <TabsTrigger
                 value="ranked"
                 className="font-display uppercase tracking-wider"
-              >
-                Ranked
-              </TabsTrigger>
+              >{translate("Ranked")}</TabsTrigger>
 
               <TabsTrigger
                 value="leagues"
                 className="font-display uppercase tracking-wider"
-              >
-                Leagues
-              </TabsTrigger>
+              >{translate("Leagues")}</TabsTrigger>
 
               <TabsTrigger
                 value="casino"
                 className="font-display uppercase tracking-wider"
-              >
-                Casino
-              </TabsTrigger>
+              >{translate("Casino")}</TabsTrigger>
 
               <TabsTrigger
                 value="cosmetics"
                 className="font-display uppercase tracking-wider"
-              >
-                Cosmetics
-              </TabsTrigger>
+              >{translate("Cosmetics")}</TabsTrigger>
 
               <TabsTrigger
                 value="ultimate-team"
                 className="font-display uppercase tracking-wider"
-              >
-                Ultimate Team
-              </TabsTrigger>
+              >{translate("Ultimate Team")}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -366,6 +346,7 @@ function ProfileContent({
 }
 
 function OverviewSection({ player }: { player: NextFootballPlayerPage }) {
+  useLanguage();
   const { profile, ranked, leagues, casino, cosmetics, leagueHistory } = player;
   const stats = mergePlayerStats(profile.globalStats);
   const matches = stats.MATCHES_PLAYED;
@@ -381,65 +362,65 @@ function OverviewSection({ player }: { player: NextFootballPlayerPage }) {
   return (
     <div className="space-y-8 page-reveal">
       <SectionHeading
-        title="Player record"
-        description="Rank, league career, match performance and rewards at a glance."
+        title={translate("Player record")}
+        description={translate("Rank, league career, match performance and rewards at a glance.")}
         icon={<Activity className="h-6 w-6" />}
       />
 
       <div className="grid gap-4 xl:grid-cols-4">
         <div className="hover-lift relative overflow-hidden rounded-2xl border border-[#39ff14]/20 bg-[#39ff14]/[0.045] p-5">
           <div className="shine-line absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#39ff14] to-transparent" />
-          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-[#39ff14]/20 bg-[#39ff14]/10 p-2 text-[#39ff14]"><Crown className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Competitive status</span></div>
-          <p className="mt-5 font-display text-2xl font-bold uppercase">{ranked?.rank.displayWithDivision ?? "Unranked"}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{ranked ? `${formatNumber(ranked.mmr)} MMR · ${formatNumber(ranked.wins)}W / ${formatNumber(ranked.losses)}L` : "No Ranked profile yet"}</p>
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-[#39ff14]/20 bg-[#39ff14]/10 p-2 text-[#39ff14]"><Crown className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{translate("Competitive status")}</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{ranked?.rank.displayWithDivision ?? translate("Unranked")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{ranked ? translate("{0} MMR · {1}W / {2}L", [formatNumber(ranked.mmr), formatNumber(ranked.wins), formatNumber(ranked.losses)]) : translate("No Ranked profile yet")}</p>
         </div>
 
         <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Trophy className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">League career</span></div>
-          <p className="mt-5 font-display text-2xl font-bold uppercase">{activeLeagues.length ? activeLeagues.join(" + ") : leagues.length ? `${leagues.length} league${leagues.length === 1 ? "" : "s"}` : "No active league"}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{formatNumber(leagueHistory.careerWithCurrent.matches)} matches · {formatNumber(leagueHistory.careerWithCurrent.goals)} goals · {formatNumber(leagueHistory.awards.reduce((sum, award) => sum + award.amount, 0))} awards</p>
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Trophy className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{translate("League career")}</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{activeLeagues.length ? activeLeagues.join(" + ") : leagues.length ? translate("{0} league{1}", [leagues.length, leagues.length === 1 ? "" : "s"]) : translate("No active league")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{formatNumber(leagueHistory.careerWithCurrent.matches)}{translate(" matches · ")}{formatNumber(leagueHistory.careerWithCurrent.goals)}{translate(" goals · ")}{formatNumber(leagueHistory.awards.reduce((sum, award) => sum + award.amount, 0))}{translate(" awards")}</p>
         </div>
 
         <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Coins className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Economy</span></div>
-          <p className="mt-5 font-display text-2xl font-bold uppercase">{formatNumber(profile.coins)} coins</p>
-          <p className="mt-1 text-sm text-muted-foreground">{casinoNet == null ? "No GameBet activity recorded" : `${casinoNet >= 0 ? "+" : ""}${formatNumber(casinoNet)} lifetime GameBet net`}</p>
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Coins className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{translate("Economy")}</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{formatNumber(profile.coins)}{translate(" coins")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{casinoNet == null ? translate("No GameBet activity recorded") : translate("{0}{1} lifetime GameBet net", [casinoNet >= 0 ? "+" : "", formatNumber(casinoNet)])}</p>
         </div>
 
         <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Sparkles className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Account progression</span></div>
-          <p className="mt-5 font-display text-2xl font-bold uppercase">Level {formatNumber(profile.level)}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{formatNumber(profile.xp)} XP · {formatNumber(cosmetics.activeCount)} active / {formatNumber(cosmetics.availableCount)} cosmetics</p>
+          <div className="flex items-center justify-between gap-3"><span className="rounded-xl border border-white/10 bg-white/[0.03] p-2 text-[#39ff14]"><Sparkles className="h-5 w-5" /></span><span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{translate("Account progression")}</span></div>
+          <p className="mt-5 font-display text-2xl font-bold uppercase">{translate("Level ")}{formatNumber(profile.level)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{formatNumber(profile.xp)}{translate(" XP · ")}{formatNumber(cosmetics.activeCount)}{translate(" active / ")}{formatNumber(cosmetics.availableCount)}{translate(" cosmetics")}</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
         <div className="surface-panel p-5 md:p-6">
           <div className="mb-5">
-            <p className="font-display text-xs uppercase tracking-[0.22em] text-muted-foreground">Performance</p>
-            <h3 className="mt-1 font-display text-2xl font-bold uppercase">Match record</h3>
+            <p className="font-display text-xs uppercase tracking-[0.22em] text-muted-foreground">{translate("Performance")}</p>
+            <h3 className="mt-1 font-display text-2xl font-bold uppercase">{translate("Match record")}</h3>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Matches" value={stats.MATCHES_PLAYED} icon={<Gamepad2 className="h-5 w-5" />} />
-            <StatCard label="Win rate" value={formatPercentage(winRate)} icon={<Trophy className="h-5 w-5" />} />
-            <StatCard label="Goals" value={stats.GOALS} icon={<Goal className="h-5 w-5" />} />
-            <StatCard label="Assists" value={stats.ASSISTS} icon={<Activity className="h-5 w-5" />} />
-            <StatCard label="Goals / match" value={goalsPerMatch == null ? "—" : goalsPerMatch.toFixed(2)} icon={<Target className="h-5 w-5" />} />
-            <StatCard label="Assists / match" value={assistsPerMatch == null ? "—" : assistsPerMatch.toFixed(2)} icon={<ArrowLeft className="h-5 w-5 rotate-180" />} />
-            <StatCard label="Saves / match" value={savesPerMatch == null ? "—" : savesPerMatch.toFixed(2)} icon={<Shield className="h-5 w-5" />} />
-            <StatCard label="Shots on net" value={stats.SHOTS_ON_NET} icon={<Target className="h-5 w-5" />} />
+            <StatCard label={translate("Matches")} value={stats.MATCHES_PLAYED} icon={<Gamepad2 className="h-5 w-5" />} />
+            <StatCard label={translate("Win rate")} value={formatPercentage(winRate)} icon={<Trophy className="h-5 w-5" />} />
+            <StatCard label={translate("Goals")} value={stats.GOALS} icon={<Goal className="h-5 w-5" />} />
+            <StatCard label={translate("Assists")} value={stats.ASSISTS} icon={<Activity className="h-5 w-5" />} />
+            <StatCard label={translate("Goals / match")} value={goalsPerMatch == null ? "—" : goalsPerMatch.toFixed(2)} icon={<Target className="h-5 w-5" />} />
+            <StatCard label={translate("Assists / match")} value={assistsPerMatch == null ? "—" : assistsPerMatch.toFixed(2)} icon={<ArrowLeft className="h-5 w-5 rotate-180" />} />
+            <StatCard label={translate("Saves / match")} value={savesPerMatch == null ? "—" : savesPerMatch.toFixed(2)} icon={<Shield className="h-5 w-5" />} />
+            <StatCard label={translate("Shots on net")} value={stats.SHOTS_ON_NET} icon={<Target className="h-5 w-5" />} />
           </div>
         </div>
 
         <div className="surface-panel p-5 md:p-6">
-          <p className="font-display text-xs uppercase tracking-[0.22em] text-muted-foreground">Career highlights</p>
-          <h3 className="mt-1 font-display text-2xl font-bold uppercase">Competition record</h3>
+          <p className="font-display text-xs uppercase tracking-[0.22em] text-muted-foreground">{translate("Career highlights")}</p>
+          <h3 className="mt-1 font-display text-2xl font-bold uppercase">{translate("Competition record")}</h3>
           <div className="mt-5 space-y-3">
-            <OverviewLine label="Ranked" value={ranked ? `${ranked.rank.displayWithDivision} · ${formatNumber(ranked.mmr)} MMR` : "Not ranked"} />
-            <OverviewLine label="Main League" value={leagueHistory.current.ML ? `${formatNumber(leagueHistory.current.ML.matches)} MP · ${formatNumber(leagueHistory.current.ML.goals)} G · ${formatNumber(leagueHistory.current.ML.assists)} A` : "No current stats"} />
-            <OverviewLine label="Lower League" value={leagueHistory.current.LL ? `${formatNumber(leagueHistory.current.LL.matches)} MP · ${formatNumber(leagueHistory.current.LL.goals)} G · ${formatNumber(leagueHistory.current.LL.assists)} A` : "No current stats"} />
-            <OverviewLine label="League cards" value={formatNumber(leagueHistory.cards.length)} />
-            <OverviewLine label="Cosmetics" value={`${formatNumber(cosmetics.availableCount)} cosmetics owned`} />
+            <OverviewLine label={translate("Ranked")} value={ranked ? `${ranked.rank.displayWithDivision} · ${formatNumber(ranked.mmr)} MMR` : "Not ranked"} />
+            <OverviewLine label={translate("Main League")} value={leagueHistory.current.ML ? `${formatNumber(leagueHistory.current.ML.matches)} MP · ${formatNumber(leagueHistory.current.ML.goals)} G · ${formatNumber(leagueHistory.current.ML.assists)} A` : "No current stats"} />
+            <OverviewLine label={translate("Lower League")} value={leagueHistory.current.LL ? `${formatNumber(leagueHistory.current.LL.matches)} MP · ${formatNumber(leagueHistory.current.LL.goals)} G · ${formatNumber(leagueHistory.current.LL.assists)} A` : "No current stats"} />
+            <OverviewLine label={translate("League cards")} value={formatNumber(leagueHistory.cards.length)} />
+            <OverviewLine label={translate("Cosmetics")} value={`${formatNumber(cosmetics.availableCount)} cosmetics owned`} />
           </div>
         </div>
       </div>
@@ -448,7 +429,8 @@ function OverviewSection({ player }: { player: NextFootballPlayerPage }) {
 }
 
 function OverviewLine({ label, value }: { label: string; value: string }) {
-  return <div className="flex items-center justify-between gap-4 rounded-xl border border-white/7 bg-white/[0.02] px-4 py-3"><span className="text-sm text-muted-foreground">{label}</span><b className="text-right text-sm">{value}</b></div>;
+  useLanguage();
+  return <div className="flex items-center justify-between gap-4 rounded-xl border border-white/7 bg-white/[0.02] px-4 py-3"><span className="text-sm text-muted-foreground">{translate(label)}</span><b className="text-right text-sm">{value}</b></div>;
 }
 
 function ModesSection({
@@ -456,6 +438,7 @@ function ModesSection({
 }: {
   player: NextFootballPlayerPage;
 }) {
+  useLanguage();
   const availableModes = GAME_MODES.filter((mode) => {
     const stats = player.profile.modeStats[mode];
 
@@ -472,8 +455,8 @@ function ModesSection({
   return (
     <div className="space-y-8">
       <SectionHeading
-        title="Game modes"
-        description="Statistics separated by individual NextFootball mode."
+        title={translate("Game modes")}
+        description={translate("Statistics separated by individual NextFootball mode.")}
         icon={<Gamepad2 className="h-6 w-6" />}
       />
 
@@ -489,7 +472,7 @@ function ModesSection({
                 value={mode}
                 className="font-display uppercase tracking-wider"
               >
-                {MODE_LABELS[mode]}
+                {translate(MODE_LABELS[mode])}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -518,6 +501,7 @@ function ModeStatsGrid({
   mode: GameMode;
   stats: PlayerStats;
 }) {
+  useLanguage();
   const winRate = calculatePercentage(
     stats.WINS,
     stats.MATCHES_PLAYED,
@@ -527,32 +511,30 @@ function ModeStatsGrid({
     <Card className="border-border bg-card/70">
       <CardHeader>
         <CardTitle className="font-display text-2xl uppercase tracking-wider">
-          {MODE_LABELS[mode]}
+          {translate(MODE_LABELS[mode])}
         </CardTitle>
 
-        <CardDescription>
-          Complete statistics for this game mode.
-        </CardDescription>
+        <CardDescription>{translate("Complete statistics for this game mode.")}</CardDescription>
       </CardHeader>
 
       <CardContent>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-          <StatCard label="Matches" value={stats.MATCHES_PLAYED} />
-          <StatCard label="Wins" value={stats.WINS} />
-          <StatCard label="Draws" value={stats.DRAWS} />
-          <StatCard label="Losses" value={stats.LOSSES} />
+          <StatCard label={translate("Matches")} value={stats.MATCHES_PLAYED} />
+          <StatCard label={translate("Wins")} value={stats.WINS} />
+          <StatCard label={translate("Draws")} value={stats.DRAWS} />
+          <StatCard label={translate("Losses")} value={stats.LOSSES} />
           <StatCard
-            label="Win rate"
+            label={translate("Win rate")}
             value={formatPercentage(winRate)}
           />
-          <StatCard label="Goals" value={stats.GOALS} />
-          <StatCard label="Assists" value={stats.ASSISTS} />
-          <StatCard label="Passes" value={stats.PASSES} />
+          <StatCard label={translate("Goals")} value={stats.GOALS} />
+          <StatCard label={translate("Assists")} value={stats.ASSISTS} />
+          <StatCard label={translate("Passes")} value={stats.PASSES} />
           <StatCard
-            label="Shots on net"
+            label={translate("Shots on net")}
             value={stats.SHOTS_ON_NET}
           />
-          <StatCard label="Saves" value={stats.SAVES} />
+          <StatCard label={translate("Saves")} value={stats.SAVES} />
         </div>
       </CardContent>
     </Card>
@@ -564,6 +546,7 @@ function RankedSection({
 }: {
   player: NextFootballPlayerPage;
 }) {
+  useLanguage();
   const ranked = player.ranked;
   const historyQuery = useQuery({
     queryKey: ["nextfootball-mmr-history", player.profile.uuid],
@@ -579,8 +562,8 @@ function RankedSection({
   if (!ranked) {
     return (
       <EmptySection
-        title="No ranked profile"
-        description="This player has not played ranked matches yet."
+        title={translate("No ranked profile")}
+        description={translate("This player has not played ranked matches yet.")}
         icon={<Trophy className="h-8 w-8" />}
       />
     );
@@ -596,8 +579,8 @@ function RankedSection({
   return (
     <div className="space-y-8">
       <SectionHeading
-        title="Ranked profile"
-        description="Competitive rank, MMR and ranked performance."
+        title={translate("Ranked profile")}
+        description={translate("Competitive rank, MMR and ranked performance.")}
         icon={<Trophy className="h-6 w-6" />}
       />
 
@@ -616,9 +599,7 @@ function RankedSection({
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="font-display text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Current rank
-              </p>
+              <p className="font-display text-xs uppercase tracking-[0.3em] text-muted-foreground">{translate("Current rank")}</p>
 
               <div className="mt-3 flex items-center gap-4">
                 <span
@@ -641,23 +622,18 @@ function RankedSection({
                   </h3>
 
                   <p className="mt-1 text-muted-foreground">
-                    {formatNumber(ranked.mmr)} MMR
-                  </p>
+                    {formatNumber(ranked.mmr)}{translate(" MMR")}</p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
               {ranked.banned && (
-                <Badge variant="destructive">
-                  Ranked banned
-                </Badge>
+                <Badge variant="destructive">{translate("Ranked banned")}</Badge>
               )}
 
               {ranked.permanentBan && (
-                <Badge variant="destructive">
-                  Permanent ban
-                </Badge>
+                <Badge variant="destructive">{translate("Permanent ban")}</Badge>
               )}
 
               {!ranked.banned && !ranked.permanentBan && (
@@ -667,9 +643,7 @@ function RankedSection({
                     color: PROFILE_ACCENT,
                     borderColor: `${PROFILE_ACCENT}55`,
                   }}
-                >
-                  Active
-                </Badge>
+                >{translate("Active")}</Badge>
               )}
             </div>
           </div>
@@ -689,23 +663,23 @@ function RankedSection({
       />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-        <StatCard label="MMR" value={ranked.mmr} />
-        <StatCard label="Wins" value={ranked.wins} />
-        <StatCard label="Losses" value={ranked.losses} />
+        <StatCard label={translate("MMR")} value={ranked.mmr} />
+        <StatCard label={translate("Wins")} value={ranked.wins} />
+        <StatCard label={translate("Losses")} value={ranked.losses} />
         <StatCard
-          label="Win rate"
+          label={translate("Win rate")}
           value={formatPercentage(winRate)}
         />
         <StatCard
-          label="Matches"
+          label={translate("Matches")}
           value={stats.MATCHES_PLAYED}
         />
-        <StatCard label="Goals" value={stats.GOALS} />
-        <StatCard label="Assists" value={stats.ASSISTS} />
-        <StatCard label="Saves" value={stats.SAVES} />
-        <StatCard label="Passes" value={stats.PASSES} />
+        <StatCard label={translate("Goals")} value={stats.GOALS} />
+        <StatCard label={translate("Assists")} value={stats.ASSISTS} />
+        <StatCard label={translate("Saves")} value={stats.SAVES} />
+        <StatCard label={translate("Passes")} value={stats.PASSES} />
         <StatCard
-          label="Shots on net"
+          label={translate("Shots on net")}
           value={stats.SHOTS_ON_NET}
         />
       </div>
@@ -722,6 +696,7 @@ function RankedSeasonHistoryCard({
   loading: boolean;
   unavailable: boolean;
 }) {
+  useLanguage();
   return (
     <Card className="overflow-hidden border-border bg-card/70 transition hover:border-white/15">
       <CardHeader>
@@ -730,8 +705,8 @@ function RankedSeasonHistoryCard({
             <History className="h-5 w-5" />
           </div>
           <div>
-            <CardTitle className="font-display text-2xl uppercase tracking-wider">Ranked season history</CardTitle>
-            <CardDescription className="mt-1">Final results preserved from completed Ranked seasons.</CardDescription>
+            <CardTitle className="font-display text-2xl uppercase tracking-wider">{translate("Ranked season history")}</CardTitle>
+            <CardDescription className="mt-1">{translate("Final results preserved from completed Ranked seasons.")}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -739,20 +714,20 @@ function RankedSeasonHistoryCard({
         {loading ? (
           <Skeleton className="h-40 w-full rounded-xl" />
         ) : unavailable ? (
-          <p className="text-sm text-muted-foreground">Archived Ranked seasons are currently unavailable.</p>
+          <p className="text-sm text-muted-foreground">{translate("Archived Ranked seasons are currently unavailable.")}</p>
         ) : seasons.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No completed Ranked season has been archived for this player yet.</p>
+          <p className="text-sm text-muted-foreground">{translate("No completed Ranked season has been archived for this player yet.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-border">
             <div className="min-w-[940px]">
               <div className="grid grid-cols-[90px_150px_100px_100px_85px_85px_85px_85px_85px_85px] gap-3 border-b border-border bg-background/45 px-4 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                <span>Season</span><span>Final rank</span><span>Final MMR</span><span>Peak MMR</span><span>Place</span><span>MP</span><span>W-L-D</span><span>Goals</span><span>Assists</span><span>Saves</span>
+                <span>{translate("Season")}</span><span>{translate("Final rank")}</span><span>{translate("Final MMR")}</span><span>{translate("Peak MMR")}</span><span>{translate("Place")}</span><span>{translate("MP")}</span><span>{translate("W-L-D")}</span><span>{translate("Goals")}</span><span>{translate("Assists")}</span><span>{translate("Saves")}</span>
               </div>
               {seasons.map((season) => {
                 const theme = getRankTheme(season.rank.name);
                 return (
                   <div key={season.seasonId} className="grid grid-cols-[90px_150px_100px_100px_85px_85px_85px_85px_85px_85px] items-center gap-3 border-b border-border/60 px-4 py-3.5 text-sm last:border-b-0">
-                    <b>Season {season.seasonId}</b>
+                    <b>{translate("Season ")}{season.seasonId}</b>
                     <span className="w-fit rounded-full border px-2.5 py-1 text-xs font-semibold" style={{ color: theme.text, borderColor: theme.border, backgroundColor: theme.background }}>
                       {season.rank.displayWithDivision}
                     </span>
@@ -784,6 +759,7 @@ function MmrTrendCard({
   entries: Array<{ mmr: number; createdAt: string }>;
   loading: boolean;
 }) {
+  useLanguage();
   const ordered = [...entries].reverse();
   const values = ordered.length > 0 ? ordered.map((entry) => entry.mmr) : [currentMmr];
   const min = Math.min(...values);
@@ -807,8 +783,8 @@ function MmrTrendCard({
     <Card className="overflow-hidden border-border bg-card/70 transition hover:border-white/15">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div>
-          <CardTitle className="font-display text-2xl uppercase tracking-wider">MMR trend</CardTitle>
-          <CardDescription className="mt-1">Recent competitive rating progression.</CardDescription>
+          <CardTitle className="font-display text-2xl uppercase tracking-wider">{translate("MMR trend")}</CardTitle>
+          <CardDescription className="mt-1">{translate("Recent competitive rating progression.")}</CardDescription>
         </div>
         <Badge
           variant="outline"
@@ -818,8 +794,7 @@ function MmrTrendCard({
             backgroundColor: `${changeColor}14`,
           }}
         >
-          {change > 0 ? "+" : ""}{change} MMR
-        </Badge>
+          {change > 0 ? "+" : ""}{change}{translate(" MMR")}</Badge>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -827,18 +802,18 @@ function MmrTrendCard({
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <CompactStat label="Starting" value={first} />
-              <CompactStat label="Current" value={latest} emphasized />
-              <CompactStat label="Peak" value={max} />
+              <CompactStat label={translate("Starting")} value={first} />
+              <CompactStat label={translate("Current")} value={latest} emphasized />
+              <CompactStat label={translate("Peak")} value={max} />
               <CompactStat
-                label="Change"
+                label={translate("Change")}
                 value={`${change > 0 ? "+" : ""}${formatNumber(change)}`}
                 tone={change > 0 ? "positive" : change < 0 ? "negative" : "neutral"}
               />
             </div>
 
             <div className="rounded-xl border border-border bg-background/50 p-3 transition hover:border-white/15">
-              <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full overflow-visible" role="img" aria-label="MMR progression chart">
+              <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full overflow-visible" role="img" aria-label={translate("MMR progression chart")}>
                 <defs>
                   <linearGradient id="mmrArea" x1="0" x2="0" y1="0" y2="1">
                     <stop offset="0%" stopColor={PROFILE_ACCENT} stopOpacity="0.3" />
@@ -857,14 +832,14 @@ function MmrTrendCard({
                   <g key={`${value}-${index}`} className="group/point cursor-pointer">
                     <circle cx={x} cy={y} r="11" fill="transparent" />
                     <circle cx={x} cy={y} r="5" fill={PROFILE_ACCENT} className="transition-all group-hover/point:r-[8]" />
-                    <title>{`Entry ${index + 1}: ${formatNumber(value)} MMR`}</title>
+                    <title>{translate("Entry {0}: {1} MMR", [index + 1, formatNumber(value)])}</title>
                   </g>
                 ))}
               </svg>
               <div className="mt-2 flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">
-                <span>Earlier</span>
-                <span>{formatNumber(min)}–{formatNumber(max)} MMR</span>
-                <span>Latest</span>
+                <span>{translate("Earlier")}</span>
+                <span>{formatNumber(min)}–{formatNumber(max)}{translate(" MMR")}</span>
+                <span>{translate("Latest")}</span>
               </div>
             </div>
           </div>
@@ -884,18 +859,19 @@ function prettyLeagueValue(value: string): string {
 }
 
 function LeagueStatGrid({ stats }: { stats: HistoricalStatLine }) {
+  useLanguage();
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-      <CompactStat label="Matches" value={stats.matches} />
-      <CompactStat label="Wins" value={stats.wins} />
-      <CompactStat label="Draws" value={stats.draws} />
-      <CompactStat label="Losses" value={stats.losses} />
-      <CompactStat label="Goals" value={stats.goals} />
-      <CompactStat label="Assists" value={stats.assists} />
-      <CompactStat label="Passes" value={stats.passes} />
-      <CompactStat label="Shots" value={stats.shotsOnNet} />
-      <CompactStat label="Saves" value={stats.saves} />
-      <CompactStat label="Clean sheets" value={stats.cleanSheets} />
+      <CompactStat label={translate("Matches")} value={stats.matches} />
+      <CompactStat label={translate("Wins")} value={stats.wins} />
+      <CompactStat label={translate("Draws")} value={stats.draws} />
+      <CompactStat label={translate("Losses")} value={stats.losses} />
+      <CompactStat label={translate("Goals")} value={stats.goals} />
+      <CompactStat label={translate("Assists")} value={stats.assists} />
+      <CompactStat label={translate("Passes")} value={stats.passes} />
+      <CompactStat label={translate("Shots")} value={stats.shotsOnNet} />
+      <CompactStat label={translate("Saves")} value={stats.saves} />
+      <CompactStat label={translate("Clean sheets")} value={stats.cleanSheets} />
     </div>
   );
 }
@@ -908,6 +884,7 @@ function LeagueCardTile({
   card: NextFootballPlayerPage["leagueHistory"]["cards"][number];
   username?: string | null;
 }) {
+  useLanguage();
   const rawPosition = (card.position ?? "").trim().toUpperCase();
   const goalkeeper = rawPosition === "GK";
 
@@ -1205,7 +1182,7 @@ function LeagueCardTile({
                   letterSpacing: ".02em",
                 }}
               >
-                {label}
+                {translate(label)}
               </span>
             </div>
           ))}
@@ -1241,7 +1218,7 @@ function LeagueCardTile({
               marginBottom: "4px",
             }}
           >
-            {card.league === "GLOBAL" ? "NEXTFOOTBALL" : card.league}
+            {card.league === "GLOBAL" ? translate("NEXTFOOTBALL") : card.league}
           </span>
 
           <span
@@ -1255,8 +1232,7 @@ function LeagueCardTile({
                 ? "0 1px 2px rgba(0,0,0,.55)"
                 : "0 1px 1px rgba(255,255,255,.12)",
             }}
-          >
-            SEASON {card.season}
+          >{translate("SEASON ")}{card.season}
           </span>
         </div>
       </div>
@@ -1265,23 +1241,24 @@ function LeagueCardTile({
 }
 
 function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
+  useLanguage();
   const history = player.leagueHistory;
   const hasAnything = player.leagues.length > 0 || history.pastSeasons.length > 0 || history.cards.length > 0 || history.current.ML || history.current.LL;
 
   if (!hasAnything) {
-    return <EmptySection title="No league statistics" description="This player has no current or historical NextFootball league statistics." icon={<Crown className="h-8 w-8" />} />;
+    return <EmptySection title={translate("No league statistics")} description={translate("This player has no current or historical NextFootball league statistics.")} icon={<Crown className="h-8 w-8" />} />;
   }
 
   const labels: Record<LeagueCode, string> = { ML: "Main League", LL: "Lower League" };
 
   return (
     <div className="space-y-8">
-      <SectionHeading title="League career" description="Live current-season data plus finalized past seasons, awards, rewards and cards. Main League and Lower League are always kept separate." icon={<Crown className="h-6 w-6" />} />
+      <SectionHeading title={translate("League career")} description={translate("Live current-season data plus finalized past seasons, awards, rewards and cards. Main League and Lower League are always kept separate.")} icon={<Crown className="h-6 w-6" />} />
 
       <Card className="border-border bg-card/70">
         <CardHeader>
-          <CardTitle className="font-display text-2xl uppercase tracking-wider">Overall career</CardTitle>
-          <CardDescription>All finalized ML + LL seasons, with current live player_stats added on top.</CardDescription>
+          <CardTitle className="font-display text-2xl uppercase tracking-wider">{translate("Overall career")}</CardTitle>
+          <CardDescription>{translate("All finalized ML + LL seasons, with current live player_stats added on top.")}</CardDescription>
         </CardHeader>
         <CardContent><LeagueStatGrid stats={history.careerWithCurrent} /></CardContent>
       </Card>
@@ -1290,10 +1267,8 @@ function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="font-display text-2xl uppercase tracking-wider">League cards</CardTitle>
-              <CardDescription className="mt-2">
-                Official player cards earned across NextFootball league seasons. These are separate from Ultimate Team ownership.
-              </CardDescription>
+              <CardTitle className="font-display text-2xl uppercase tracking-wider">{translate("League cards")}</CardTitle>
+              <CardDescription className="mt-2">{translate("Official player cards earned across NextFootball league seasons. These are separate from Ultimate Team ownership.")}</CardDescription>
             </div>
             <Badge variant="outline">{history.cards.length}</Badge>
           </div>
@@ -1310,7 +1285,7 @@ function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No league cards recorded for this player.</p>
+            <p className="text-sm text-muted-foreground">{translate("No league cards recorded for this player.")}</p>
           )}
         </CardContent>
       </Card>
@@ -1327,38 +1302,38 @@ function LeaguesSection({ player }: { player: NextFootballPlayerPage }) {
             <Card key={code} className="border-border bg-card/70">
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
-                  <div><CardTitle className="font-display text-2xl uppercase tracking-wider">{labels[code]}</CardTitle><CardDescription className="mt-2">Current + all finalized past seasons.</CardDescription></div>
-                  <Badge variant="outline">{code}</Badge>
+                  <div><CardTitle className="font-display text-2xl uppercase tracking-wider">{translate(labels[code])}</CardTitle><CardDescription className="mt-2">{translate("Current + all finalized past seasons.")}</CardDescription></div>
+                  <Badge variant="outline">{translate(code)}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-7">
-                <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">League total</p><LeagueStatGrid stats={total} /></div>
+                <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{translate("League total")}</p><LeagueStatGrid stats={total} /></div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-                  <div className="mb-4 flex items-center justify-between"><div><p className="font-display text-lg font-bold uppercase">Current</p><p className="text-xs text-muted-foreground">Live from player_stats</p></div><Badge style={{ borderColor: `${PROFILE_ACCENT}55`, color: PROFILE_ACCENT }} variant="outline">Live</Badge></div>
-                  {current ? <LeagueStatGrid stats={current} /> : <p className="text-sm text-muted-foreground">No current {labels[code]} statistics.</p>}
+                  <div className="mb-4 flex items-center justify-between"><div><p className="font-display text-lg font-bold uppercase">{translate("Current")}</p><p className="text-xs text-muted-foreground">{translate("Live from player_stats")}</p></div><Badge style={{ borderColor: `${PROFILE_ACCENT}55`, color: PROFILE_ACCENT }} variant="outline">{translate("Live")}</Badge></div>
+                  {current ? <LeagueStatGrid stats={current} /> : <p className="text-sm text-muted-foreground">{translate("No current ")}{translate(labels[code])}{translate(" statistics.")}</p>}
                 </div>
 
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Past seasons</p>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{translate("Past seasons")}</p>
                   <div className="space-y-3">
                     {seasons.length ? seasons.map((season) => (
                       <div key={`${code}-${season.season}`} className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
-                        <div className="mb-4 flex items-center justify-between"><b className="font-display uppercase">Season {season.season}</b><Badge variant="secondary">Past season</Badge></div>
+                        <div className="mb-4 flex items-center justify-between"><b className="font-display uppercase">{translate("Season ")}{season.season}</b><Badge variant="secondary">{translate("Past season")}</Badge></div>
                         <LeagueStatGrid stats={season} />
                       </div>
-                    )) : <p className="text-sm text-muted-foreground">No finalized past seasons for this league.</p>}
+                    )) : <p className="text-sm text-muted-foreground">{translate("No finalized past seasons for this league.")}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Awards</p>
-                  <div className="flex flex-wrap gap-2">{awards.length ? awards.map((award) => <Badge key={award.id} variant="outline">{award.season} · {prettyLeagueValue(award.awardType)}{award.amount > 1 ? ` ×${award.amount}` : ""}</Badge>) : <span className="text-sm text-muted-foreground">No awards recorded.</span>}</div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{translate("Awards")}</p>
+                  <div className="flex flex-wrap gap-2">{awards.length ? awards.map((award) => <Badge key={award.id} variant="outline">{award.season} · {translate(prettyLeagueValue(award.awardType))}{award.amount > 1 ? ` ×${award.amount}` : ""}</Badge>) : <span className="text-sm text-muted-foreground">{translate("No awards recorded.")}</span>}</div>
                 </div>
 
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Rewards</p>
-                  <div className="space-y-2">{rewards.length ? rewards.map((reward) => <div key={reward.id} className="rounded-xl border border-white/8 px-3 py-2 text-sm"><b>{reward.season} · {prettyLeagueValue(reward.rewardType)} ×{reward.amount}</b>{reward.details ? <p className="mt-1 text-xs text-muted-foreground">{reward.details}</p> : null}</div>) : <span className="text-sm text-muted-foreground">No rewards recorded.</span>}</div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{translate("Rewards")}</p>
+                  <div className="space-y-2">{rewards.length ? rewards.map((reward) => <div key={reward.id} className="rounded-xl border border-white/8 px-3 py-2 text-sm"><b>{reward.season} · {translate(prettyLeagueValue(reward.rewardType))} ×{reward.amount}</b>{reward.details ? <p className="mt-1 text-xs text-muted-foreground">{reward.details}</p> : null}</div>) : <span className="text-sm text-muted-foreground">{translate("No rewards recorded.")}</span>}</div>
                 </div>
 
               </CardContent>
@@ -1375,13 +1350,14 @@ function CasinoSection({
 }: {
   player: NextFootballPlayerPage;
 }) {
+  useLanguage();
   const casino = player.casino;
 
   if (!casino) {
     return (
       <EmptySection
-        title="No casino statistics"
-        description="This player has no registered casino activity."
+        title={translate("No casino statistics")}
+        description={translate("This player has no registered casino activity.")}
         icon={<WalletCards className="h-8 w-8" />}
       />
     );
@@ -1390,14 +1366,14 @@ function CasinoSection({
   return (
     <div className="space-y-8">
       <SectionHeading
-        title="Casino activity"
-        description="Daily and lifetime betting statistics."
+        title={translate("Casino activity")}
+        description={translate("Daily and lifetime betting statistics.")}
         icon={<WalletCards className="h-6 w-6" />}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <CasinoStatsCard
-          title="Lifetime"
+          title={translate("Lifetime")}
           plays={casino.totalPlays}
           bet={casino.totalBet}
           won={casino.totalWon}
@@ -1407,7 +1383,7 @@ function CasinoSection({
         />
 
         <CasinoStatsCard
-          title="Today"
+          title={translate("Today")}
           plays={casino.dailyPlays}
           bet={casino.dailyBet}
           won={casino.dailyWon}
@@ -1437,22 +1413,23 @@ function CasinoStatsCard({
   net: number;
   returnRate: number | null;
 }) {
+  useLanguage();
   return (
     <Card className="border-border bg-card/70">
       <CardHeader>
         <CardTitle className="font-display text-2xl uppercase tracking-wider">
-          {title}
+          {translate(title)}
         </CardTitle>
       </CardHeader>
 
       <CardContent>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <CompactStat label="Plays" value={plays} />
-          <CompactStat label="Bet" value={bet} />
-          <CompactStat label="Won" value={won} />
-          <CompactStat label="Lost" value={lost} />
+          <CompactStat label={translate("Plays")} value={plays} />
+          <CompactStat label={translate("Bet")} value={bet} />
+          <CompactStat label={translate("Won")} value={won} />
+          <CompactStat label={translate("Lost")} value={lost} />
           <CompactStat
-            label="Net"
+            label={translate("Net")}
             value={
               net > 0
                 ? `+${formatNumber(net)}`
@@ -1462,7 +1439,7 @@ function CasinoStatsCard({
             tone={net > 0 ? "positive" : net < 0 ? "negative" : "neutral"}
           />
           <CompactStat
-            label="Return rate"
+            label={translate("Return rate")}
             value={formatPercentage(returnRate)}
           />
         </div>
@@ -1476,6 +1453,7 @@ function CosmeticsSection({
 }: {
   player: NextFootballPlayerPage;
 }) {
+  useLanguage();
   const cosmetics = player.cosmetics;
 
   const groupedCosmetics = cosmetics.available.reduce<
@@ -1494,32 +1472,32 @@ function CosmeticsSection({
   return (
     <div className="space-y-8">
       <SectionHeading
-        title="Cosmetics"
-        description="Unlocked and currently active cosmetic items."
+        title={translate("Cosmetics")}
+        description={translate("Unlocked and currently active cosmetic items.")}
         icon={<Sparkles className="h-6 w-6" />}
       />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatCard
-          label="Available"
+          label={translate("Available")}
           value={cosmetics.availableCount}
           icon={<Package className="h-5 w-5" />}
         />
 
         <StatCard
-          label="Active"
+          label={translate("Active")}
           value={cosmetics.activeCount}
           icon={<Sparkles className="h-5 w-5" />}
         />
 
         <StatCard
-          label="Categories"
+          label={translate("Categories")}
           value={Object.keys(groupedCosmetics).length}
           icon={<Gamepad2 className="h-5 w-5" />}
         />
 
         <StatCard
-          label="Activation rate"
+          label={translate("Activation rate")}
           value={formatPercentage(
             calculatePercentage(
               cosmetics.activeCount,
@@ -1532,8 +1510,8 @@ function CosmeticsSection({
 
       {cosmetics.available.length === 0 ? (
         <EmptySection
-          title="No cosmetics unlocked"
-          description="This player does not currently own any cosmetic items."
+          title={translate("No cosmetics unlocked")}
+          description={translate("This player does not currently own any cosmetic items.")}
           icon={<Package className="h-8 w-8" />}
         />
       ) : (
@@ -1547,7 +1525,7 @@ function CosmeticsSection({
                 <CardHeader>
                   <div className="flex items-center justify-between gap-4">
                     <CardTitle className="font-display text-lg uppercase tracking-wider">
-                      {formatCosmeticType(type)}
+                      {translate(formatCosmeticType(type))}
                     </CardTitle>
 
                     <Badge variant="secondary">
@@ -1574,9 +1552,7 @@ function CosmeticsSection({
                               color: PROFILE_ACCENT,
                               borderColor: `${PROFILE_ACCENT}55`,
                             }}
-                          >
-                            Active
-                          </Badge>
+                          >{translate("Active")}</Badge>
                         )}
                       </div>
                     ))}
@@ -1592,6 +1568,7 @@ function CosmeticsSection({
 }
 
 function UltimateTeamSection({ uuid }: { uuid: string }) {
+  useLanguage();
   const collectionQuery = useQuery({
     queryKey: ["nextfootball-player-ut", uuid],
     queryFn: () => getPlayerUltimateTeamCards(uuid),
@@ -1611,9 +1588,7 @@ function UltimateTeamSection({ uuid }: { uuid: string }) {
   if (collectionQuery.isError) {
     return (
       <Card className="border-destructive/30 bg-destructive/5">
-        <CardContent className="p-6 text-sm text-destructive">
-          Could not load this player's Ultimate Team collection.
-        </CardContent>
+        <CardContent className="p-6 text-sm text-destructive">{translate("Could not load this player's Ultimate Team collection.")}</CardContent>
       </Card>
     );
   }
@@ -1625,19 +1600,15 @@ function UltimateTeamSection({ uuid }: { uuid: string }) {
     <section>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-display text-xs uppercase tracking-[0.25em] text-[#39ff14]">
-            Ultimate Team
-          </p>
-          <h2 className="mt-1 font-display text-2xl font-bold uppercase">Owned cards</h2>
+          <p className="font-display text-xs uppercase tracking-[0.25em] text-[#39ff14]">{translate("Ultimate Team")}</p>
+          <h2 className="mt-1 font-display text-2xl font-bold uppercase">{translate("Owned cards")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {cards.length} unique cards · {totalCopies} total copies
-          </p>
+            {cards.length}{translate(" unique cards · ")}{totalCopies}{translate(" total copies")}</p>
         </div>
 
         <Link href="/football/ultimate-team">
           <Button variant="outline" className="gap-2">
-            <WalletCards className="h-4 w-4" /> Global collection
-          </Button>
+            <WalletCards className="h-4 w-4" />{translate(" Global collection")}</Button>
         </Link>
       </div>
 
@@ -1651,8 +1622,8 @@ function UltimateTeamSection({ uuid }: { uuid: string }) {
         <Card className="border-white/8 bg-white/[0.02]">
           <CardContent className="flex min-h-40 flex-col items-center justify-center p-8 text-center">
             <WalletCards className="mb-3 h-8 w-8 text-muted-foreground" />
-            <p className="font-display font-bold uppercase">No cards owned yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">This player has no cards in nf_ut_collection.</p>
+            <p className="font-display font-bold uppercase">{translate("No cards owned yet")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{translate("This player has no cards in nf_ut_collection.")}</p>
           </CardContent>
         </Card>
       )}
@@ -1697,6 +1668,7 @@ function ProfileError({
   error: unknown;
   onRetry: () => void;
 }) {
+  useLanguage();
   let title = "Unable to load profile";
   let description =
     error instanceof Error
@@ -1721,25 +1693,21 @@ function ProfileError({
           </div>
 
           <h1 className="font-display text-3xl font-bold uppercase">
-            {title}
+            {translate(title)}
           </h1>
 
           <p className="mt-4 max-w-md text-muted-foreground">
-            {description}
+            {translate(description)}
           </p>
 
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/football/players">
               <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to NextFootball players
-              </Button>
+                <ArrowLeft className="mr-2 h-4 w-4" />{translate("Back to NextFootball players")}</Button>
             </Link>
 
-            <Button onClick={onRetry}>
-              Retry request
-            </Button>
+            <Button onClick={onRetry}>{translate("Retry request")}</Button>
           </div>
         </CardContent>
       </Card>
@@ -1756,6 +1724,7 @@ function HeaderMetric({
   label: string;
   value: string;
 }) {
+  useLanguage();
   return (
     <div className="min-w-32 rounded-xl border border-border bg-card/70 p-4 backdrop-blur-sm">
       <div
@@ -1765,7 +1734,7 @@ function HeaderMetric({
         {icon}
 
         <span className="font-display text-xs uppercase tracking-widest">
-          {label}
+          {translate(label)}
         </span>
       </div>
 
@@ -1785,12 +1754,13 @@ function StatCard({
   value: number | string;
   icon?: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <Card className="border-border bg-card/70">
       <CardContent className="p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">
-            {label}
+            {translate(label)}
           </p>
 
           {icon && (
@@ -1821,6 +1791,7 @@ function CompactStat({
   emphasized?: boolean;
   tone?: "default" | "positive" | "negative" | "neutral";
 }) {
+  useLanguage();
   const toneStyle =
     tone === "positive"
       ? { color: "#4ade80", borderColor: "rgba(74, 222, 128, 0.38)", backgroundColor: "rgba(74, 222, 128, 0.08)" }
@@ -1836,7 +1807,7 @@ function CompactStat({
       style={toneStyle}
     >
       <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">
-        {label}
+        {translate(label)}
       </p>
 
       <p
@@ -1858,6 +1829,7 @@ function SectionHeading({
   description: string;
   icon: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="flex items-start gap-4">
       <div
@@ -1873,11 +1845,11 @@ function SectionHeading({
 
       <div>
         <h2 className="font-display text-3xl font-bold uppercase tracking-wider">
-          {title}
+          {translate(title)}
         </h2>
 
         <p className="mt-2 text-muted-foreground">
-          {description}
+          {translate(description)}
         </p>
       </div>
     </div>
@@ -1893,6 +1865,7 @@ function EmptySection({
   description: string;
   icon: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <Card className="border-dashed border-border bg-card/50">
       <CardContent className="flex flex-col items-center px-6 py-16 text-center">
@@ -1907,11 +1880,11 @@ function EmptySection({
         </div>
 
         <h2 className="font-display text-2xl font-bold uppercase">
-          {title}
+          {translate(title)}
         </h2>
 
         <p className="mt-3 max-w-md text-muted-foreground">
-          {description}
+          {translate(description)}
         </p>
       </CardContent>
     </Card>

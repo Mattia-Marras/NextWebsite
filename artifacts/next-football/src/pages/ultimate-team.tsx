@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Layers3, Search, Users, WalletCards } from "lucide-react";
@@ -7,6 +8,7 @@ import { UltimateTeamCard } from "@/components/ultimate-team-card";
 import { getGlobalUltimateTeamCards } from "@/lib/nextfb-api";
 
 export function UltimateTeam() {
+  useLanguage();
   const [search, setSearch] = useState("");
   const query = useQuery({
     queryKey: ["nextfootball-ut-global"],
@@ -32,18 +34,16 @@ export function UltimateTeam() {
         <div>
           <div className="mb-3 flex items-center gap-2 text-[#39ff14]">
             <WalletCards className="h-5 w-5" />
-            <span className="font-display text-xs font-bold uppercase tracking-[0.28em]">NextFootball Ultimate Team</span>
+            <span className="font-display text-xs font-bold uppercase tracking-[0.28em]">{translate("NextFootball Ultimate Team")}</span>
           </div>
-          <h1 className="font-display text-4xl font-black uppercase tracking-tight md:text-6xl">Global Cards</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Complete NextFootball UT catalogue. Ownership comes directly from the live NextFootball database.
-          </p>
+          <h1 className="font-display text-4xl font-black uppercase tracking-tight md:text-6xl">{translate("Global Cards")}</h1>
+          <p className="mt-3 max-w-2xl text-muted-foreground">{translate("Complete NextFootball UT catalogue. Ownership comes directly from the live NextFootball database.")}</p>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <Metric icon={<Layers3 className="h-4 w-4" />} label="Cards" value={query.data?.total ?? 0} />
-          <Metric icon={<WalletCards className="h-4 w-4" />} label="Copies" value={totalCopies} />
-          <Metric icon={<Users className="h-4 w-4" />} label="Owned cards" value={owners} />
+          <Metric icon={<Layers3 className="h-4 w-4" />} label={translate("Cards")} value={query.data?.total ?? 0} />
+          <Metric icon={<WalletCards className="h-4 w-4" />} label={translate("Copies")} value={totalCopies} />
+          <Metric icon={<Users className="h-4 w-4" />} label={translate("Owned cards")} value={owners} />
         </div>
       </div>
 
@@ -53,7 +53,7 @@ export function UltimateTeam() {
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search player, type, position, league or season..."
+            placeholder={translate("Search player, type, position, league or season...")}
             className="pl-10"
           />
         </div>
@@ -64,26 +64,23 @@ export function UltimateTeam() {
           {Array.from({ length: 8 }).map((_, index) => <Skeleton key={index} className="mx-auto h-[410px] w-full max-w-[285px] rounded-2xl" />)}
         </div>
       ) : query.isError ? (
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-          Could not load the NextFootball Ultimate Team catalogue.
-        </div>
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">{translate("Could not load the NextFootball Ultimate Team catalogue.")}</div>
       ) : cards.length ? (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {cards.map((card) => <UltimateTeamCard key={card.id} card={card} showOwnership />)}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-10 text-center text-muted-foreground">
-          No UT cards match this search.
-        </div>
+        <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-10 text-center text-muted-foreground">{translate("No UT cards match this search.")}</div>
       )}
     </div>
   );
 }
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  useLanguage();
   return (
     <div className="min-w-24 rounded-xl border border-white/8 bg-white/[0.035] px-4 py-3">
-      <div className="flex items-center gap-1.5 text-[#39ff14]">{icon}<span className="text-[10px] font-bold uppercase tracking-wider">{label}</span></div>
+      <div className="flex items-center gap-1.5 text-[#39ff14]">{icon}<span className="text-[10px] font-bold uppercase tracking-wider">{translate(label)}</span></div>
       <div className="mt-1 font-display text-2xl font-bold">{value}</div>
     </div>
   );

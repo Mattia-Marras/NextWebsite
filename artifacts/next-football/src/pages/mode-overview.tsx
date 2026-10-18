@@ -76,10 +76,7 @@ function FootballOverview() {
               rows={ranked.slice(0, 4).map((player, index) => ({
                 position: index + 1,
                 name: player.username?.trim() || "Unknown player",
-<<<<<<< HEAD
-=======
                 href: `/football/profile/${encodeURIComponent(player.uuid)}`,
->>>>>>> 5f078c1 (New website rewwork)
                 value: `${n(player.mmr)} MMR`,
               }))}
             />
@@ -115,12 +112,8 @@ function FootballOverview() {
           href: "/football/leaderboards?tab=coins",
           cta: "Explore economy",
           content: (
-<<<<<<< HEAD
-            <MiniRanking rows={rich.slice(0, 4).map((player, index) => ({ position: index + 1, name: player.username?.trim() || "Unknown player", value: `${n(player.coins)} coins` }))} />
-=======
             <MiniRanking rows={rich.slice(0, 4).map((player, index) => ({ position: index + 1, name: player.username?.trim() || "Unknown player",
                 href: `/football/profile/${encodeURIComponent(player.uuid)}`, value: `${n(player.coins)} coins` }))} />
->>>>>>> 5f078c1 (New website rewwork)
           ),
         },
       ]}
@@ -169,10 +162,7 @@ function BlockballOverview() {
               rows={ranked.slice(0, 4).map((player: any, index: number) => ({
                 position: index + 1,
                 name: player.name,
-<<<<<<< HEAD
-=======
                 href: player.uuid ? `/blockball/profile/${encodeURIComponent(player.uuid)}` : undefined,
->>>>>>> 5f078c1 (New website rewwork)
                 value: `${n(player.mmr)} MMR`,
               }))}
             />
@@ -263,11 +253,7 @@ function ModeOverviewShell({
     <div className={`next-editorial next-mode next-${mode} relative overflow-hidden pb-16 page-reveal`}>
       <section className="relative border-b border-white/8">
         <div className="next-mode-art"><PitchArt blockball={mode === "blockball"}/></div>
-<<<<<<< HEAD
-        <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20">
-=======
         <div className="container mx-auto px-4 py-10 md:py-12 lg:py-14">
->>>>>>> 5f078c1 (New website rewwork)
           <div className="grid gap-10 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
             <div>
               <div className="flex items-center gap-3">
@@ -332,27 +318,12 @@ function ModeOverviewShell({
           </div>
         </section>
 
-<<<<<<< HEAD
-        <section className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
-          <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.025] p-6 md:p-8">
-            <Sparkles className="h-6 w-6" style={{ color: accent }} />
-            <h2 className="mt-5 font-display text-3xl font-bold uppercase">Find a player.</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Search a player to see their rank, league record, awards and collection. Follow your own progress or discover the competition.</p>
-            <Link href={`/${mode}/players`} className="mt-6 inline-flex items-center gap-2 font-display text-sm font-bold uppercase tracking-[0.1em]" style={{ color: accent }}>Search player profiles <ArrowRight className="h-4 w-4" /></Link>
-          </div>
-          <div className="rounded-[26px] border border-white/10 bg-[#10161f]/80 p-6 md:p-8">
-            <p className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">{mode === "blockball" ? "Collect your favourites" : "Make your mark"}</p><h3 className="mt-3 font-display text-2xl font-bold uppercase">{mode === "blockball" ? "Discover Ultimate Team" : "Follow every season"}</h3><p className="mt-3 text-sm leading-relaxed text-muted-foreground">{mode === "blockball" ? "Explore player cards, compare their attributes and view the collections on player profiles." : "Follow league standings, match results and the players making a difference."}</p><Link className="mt-4 inline-flex items-center gap-2 text-sm font-semibold" style={{ color: accent }} href={mode === "blockball" ? "/blockball/ultimate-team" : "/football/main"}>{mode === "blockball" ? "Explore cards" : "Follow the league"}<ArrowRight className="h-4 w-4" /></Link>
-
-          </div>
-        </section>
-=======
         <nav className="next-overview-links" aria-label="More mode pages">
           <Link href={`/${mode}/players`}>Find a player <ArrowRight size={16}/></Link>
           <Link href={`/${mode}/ultimate-team`}>Ultimate Team <ArrowRight size={16}/></Link>
           <Link href={`/${mode}/leaderboards`}>Leaderboards <ArrowRight size={16}/></Link>
           {mode === "blockball" && <Link href="/blockball/main/archive">Season archive <ArrowRight size={16}/></Link>}
         </nav>
->>>>>>> 5f078c1 (New website rewwork)
       </main>
     </div>
   );
@@ -362,15 +333,9 @@ function LeagueSelector({ league, onChange }: { league: "ML" | "LL"; onChange: (
   return <div className="mt-4 flex gap-2" role="group" aria-label="League preview">{(["ML", "LL"] as const).map(code => <button type="button" key={code} aria-pressed={league === code} onClick={() => onChange(code)} className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${league === code ? "border-white/25 bg-white/10 text-white" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}>{code === "ML" ? "Major League" : "Lower League"}</button>)}</div>;
 }
 
-<<<<<<< HEAD
-function MiniRanking({ rows }: { rows: { position: number; name: string; value: string }[] }) {
-  if (!rows.length) return <p className="p-3 text-sm text-muted-foreground">No live data available.</p>;
-  return <div>{rows.map((row) => <div key={`${row.position}-${row.name}`} className="grid grid-cols-[30px_1fr_auto] items-center gap-2 border-b border-white/6 px-2 py-2.5 last:border-0"><b className="font-display text-muted-foreground">{row.position}</b><span className="truncate text-sm font-semibold">{row.name}</span><span className="text-xs text-muted-foreground">{row.value}</span></div>)}</div>;
-=======
 function MiniRanking({ rows }: { rows: { position: number; name: string; value: string; href?: string }[] }) {
   if (!rows.length) return <p className="p-3 text-sm text-muted-foreground">No live data available.</p>;
   return <div>{rows.map((row) => <div key={`${row.position}-${row.name}`} className="grid grid-cols-[30px_1fr_auto] items-center gap-2 border-b border-white/6 px-2 py-2.5 last:border-0"><b className="font-display text-muted-foreground">{row.position}</b><span className="truncate text-sm font-semibold">{row.href ? <Link href={row.href} className="hover:underline underline-offset-4">{row.name}</Link> : row.name}</span><span className="text-xs text-muted-foreground">{row.value}</span></div>)}</div>;
->>>>>>> 5f078c1 (New website rewwork)
 }
 
 function MiniMetric({ label, value }: { label: string; value: string }) {

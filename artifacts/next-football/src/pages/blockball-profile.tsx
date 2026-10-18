@@ -20,11 +20,7 @@ export function BlockballProfile() {
   const [cardSeason, setCardSeason] = useState("");
   const [cardPage, setCardPage] = useState(1);
   const query = useQuery({ queryKey: ["bb-player", uuid], queryFn: () => getBlockballPlayer(uuid) });
-<<<<<<< HEAD
-  const utQuery = useQuery({ queryKey: ["bb-player-ut", uuid], queryFn: () => getBlockballUltimateTeamCollection(uuid), enabled: Boolean(uuid) });
-=======
   const utQuery = useQuery({ queryKey: ["bb-player-ut", uuid], queryFn: () => getBlockballUltimateTeamCollection(uuid), enabled: Boolean(uuid) && section === "ultimate-team" });
->>>>>>> 5f078c1 (New website rewwork)
   if (query.isLoading) return <div className="container mx-auto space-y-5 px-4 py-10" role="status" aria-label="Loading player profile"><div className="h-52 animate-pulse rounded-[28px] bg-white/5"/><div className="grid grid-cols-2 gap-4 md:grid-cols-4">{Array.from({length:4},(_,index)=><div key={index} className="h-40 animate-pulse rounded-2xl bg-white/5"/>)}</div><p className="text-sm text-muted-foreground">Loading player profile…</p></div>;
   if (query.isError || !query.data) return <div className="container mx-auto space-y-4 p-10"><h1 className="font-display text-3xl font-bold uppercase">Profile unavailable</h1><p className="text-muted-foreground">We couldn’t load this player. Check the name or try again in a moment.</p><button onClick={() => query.refetch()} className="rounded-xl border border-sky-400/30 px-4 py-2 text-sky-400">Try again</button><Link href="/blockball/players" className="ml-4 text-sky-400">Find a player →</Link></div>;
 
@@ -68,18 +64,6 @@ export function BlockballProfile() {
         </div>
       </section>
 
-<<<<<<< HEAD
-      <nav aria-label="Player sections" className="profile-jump-nav flex gap-2 overflow-x-auto rounded-2xl border border-white/10 bg-[#10161f]/90 p-2 backdrop-blur-xl">
-        {[["overview","Overview"],["ranked","Ranked"],["league","League career"],["collection","Ultimate Team"],["rewards","Rewards & GameBet"]].map(([id,label]) => <a key={id} href={`#bb-${id}`} className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-sky-400/10 hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400">{label}</a>)}
-      </nav>
-      <section id="bb-overview">
-        <div className="mb-4"><p className="font-display text-xs uppercase tracking-[0.24em] text-muted-foreground">Player overview</p><h2 className="mt-1 font-display text-3xl font-bold uppercase">Player record</h2></div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="hover-lift relative overflow-hidden rounded-2xl border border-sky-400/20 bg-sky-400/[0.045] p-5"><div className="shine-line absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent"/><Swords className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">Competitive status</p><b className="mt-1 block font-display text-2xl uppercase">{ranked?.rank.displayName || "Unranked"}</b><p className="mt-1 text-sm text-muted-foreground">{ranked ? `${N(ranked.mmr)} MMR · ${N(ranked.wins)}W / ${N(ranked.losses)}L` : "No Ranked record yet"}</p></div>
-          <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5"><Trophy className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">League career</p><b className="mt-1 block font-display text-2xl uppercase">{player.leagueHistory?.career ? `${N(player.leagueHistory.career.matches)} matches` : "No history"}</b><p className="mt-1 text-sm text-muted-foreground">{player.leagueHistory?.career ? `${N(player.leagueHistory.career.goals)} goals · ${N(player.leagueHistory.career.assists)} assists · ${N(awards)} awards` : "No finalized league stats"}</p></div>
-          <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5"><Coins className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">Economy</p><b className="mt-1 block font-display text-2xl uppercase">{N(player.coins)} coins</b><p className="mt-1 text-sm text-muted-foreground">{player.casino ? `${N(player.casino.totalPlays)} GameBet plays · ${N(player.casino.totalBet)} wagered` : "No GameBet activity"}</p></div>
-          <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5"><Crown className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">Progression</p><b className="mt-1 block font-display text-2xl uppercase">Level {N(player.level)}</b><p className="mt-1 text-sm text-muted-foreground">{N(player.xp)} XP · {N(player.cosmetics.length)} cosmetics · {utQuery.isLoading ? "Loading cards…" : utQuery.isError ? "Collection unavailable" : `${N(utQuery.data?.total)} card types`}</p></div>
-=======
       <SectionNav base={base} active={section} items={sections} label="Player sections" />
       {section === "overview" && <>
       <section id="bb-overview">
@@ -89,23 +73,16 @@ export function BlockballProfile() {
           <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5"><Trophy className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">League career</p><b className="mt-1 block font-display text-2xl uppercase">{player.leagueHistory?.career ? `${N(player.leagueHistory.career.matches)} matches` : "No history"}</b><p className="mt-1 text-sm text-muted-foreground">{player.leagueHistory?.career ? `${N(player.leagueHistory.career.goals)} goals · ${N(player.leagueHistory.career.assists)} assists · ${N(awards)} awards` : "No finalized league stats"}</p></div>
           <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5"><Coins className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">Economy</p><b className="mt-1 block font-display text-2xl uppercase">{N(player.coins)} coins</b><p className="mt-1 text-sm text-muted-foreground">{player.casino ? `${N(player.casino.totalPlays)} GameBet plays · ${N(player.casino.totalBet)} wagered` : "No GameBet activity"}</p></div>
           <div className="hover-lift rounded-2xl border border-white/10 bg-white/[0.025] p-5"><Crown className="h-5 w-5 text-sky-400"/><p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">Progression</p><b className="mt-1 block font-display text-2xl uppercase">Level {N(player.level)}</b><p className="mt-1 text-sm text-muted-foreground">{N(player.xp)} XP · {N(player.cosmetics.length)} cosmetics · View Ultimate Team collection</p></div>
->>>>>>> 5f078c1 (New website rewwork)
         </div>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
         <div className="surface-panel p-5 md:p-7"><p className="font-display text-xs uppercase tracking-[.2em] text-sky-400">League performance</p><h2 className="mt-2 font-display text-2xl font-bold uppercase">League averages</h2><p className="mt-2 text-sm text-muted-foreground">Averages from recorded league career totals · {N(careerMatches)} matches.</p><div className="mt-5 grid grid-cols-3 gap-3">{[["Goals",perMatch(career?.goals)],["Assists",perMatch(career?.assists)],["Saves",perMatch(career?.saves)]].map(([label,value]) => <div key={label} className="rounded-xl border border-sky-400/15 bg-sky-400/5 p-3"><p className="text-xs text-muted-foreground">{label} / match</p><b className="mt-2 block text-2xl">{value}</b></div>)}</div></div>
-<<<<<<< HEAD
-        <div className="surface-panel p-5 md:p-7"><p className="font-display text-xs uppercase tracking-[.2em] text-sky-400">Career highlights</p><h2 className="mt-2 font-display text-2xl font-bold uppercase">Career honours</h2><div className="mt-5 space-y-3">{[["Peak Ranked MMR",ranked ? N(ranked.peakMmr) : "—"],["League awards",N(awards)],["Recorded seasons",N(player.leagueHistory?.seasons?.length)],["Active cosmetics",N(player.activeCosmetics?.length)]].map(([label,value]) => <div key={label} className="flex items-center justify-between gap-3 border-b border-white/8 pb-3"><span className="text-sm text-muted-foreground">{label}</span><b>{value}</b></div>)}</div><a href="#bb-league" className="mt-4 inline-block text-sm font-semibold text-sky-400">Explore the full career →</a></div>
-      </section>
-      <section id="bb-ranked" className="surface-panel overflow-hidden">
-=======
         <div className="surface-panel p-5 md:p-7"><p className="font-display text-xs uppercase tracking-[.2em] text-sky-400">Career highlights</p><h2 className="mt-2 font-display text-2xl font-bold uppercase">Career honours</h2><div className="mt-5 space-y-3">{[["Peak Ranked MMR",ranked ? N(ranked.peakMmr) : "—"],["League awards",N(awards)],["Recorded seasons",N(player.leagueHistory?.seasons?.length)],["Active cosmetics",N(player.activeCosmetics?.length)]].map(([label,value]) => <div key={label} className="flex items-center justify-between gap-3 border-b border-white/8 pb-3"><span className="text-sm text-muted-foreground">{label}</span><b>{value}</b></div>)}</div><Link href={`${base}/league`} className="mt-4 inline-block text-sm font-semibold text-sky-400">Explore the full career →</Link></div>
       </section>
         <div className="next-overview-links">{sections.slice(1).map(([key,label])=><Link key={key} href={`${base}/${key}`}>{label}<span aria-hidden="true">→</span></Link>)}</div>
       </>}
       {section === "ranked" && <section id="bb-ranked" className="surface-panel overflow-hidden">
->>>>>>> 5f078c1 (New website rewwork)
         <div className="border-b border-white/8 p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Swords className="text-sky-400"/> Ranked performance</h2><p className="mt-1 text-sm text-muted-foreground">Complete competitive record and progression.</p></div>
         {ranked ? <div className="p-5 md:p-7">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -124,21 +101,12 @@ export function BlockballProfile() {
         </div> : <p className="p-7 text-muted-foreground">This player has not entered ranked competition yet.</p>}
       </section>}
 
-<<<<<<< HEAD
-      <div id="bb-rewards" className="grid gap-6 lg:grid-cols-2">
-        <section className="surface-panel p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><WalletCards className="text-sky-400"/> GameBet activity</h2>{player.casino ? <div className="mt-5 grid grid-cols-2 gap-3">{Object.entries(player.casino).map(([key,value]) => <div key={key} className="rounded-xl border border-white/8 bg-white/[0.02] p-3"><p className="text-xs text-muted-foreground">{pretty(key)}</p><b className="mt-1 block text-lg">{N(value)}</b></div>)}</div> : <p className="mt-4 text-muted-foreground">No GameBet activity recorded.</p>}</section>
-        <section className="surface-panel p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Package className="text-sky-400"/> Cosmetics</h2><div className="mt-5 grid grid-cols-2 gap-3"><div className="rounded-xl border border-white/8 p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Owned</p><b className="mt-1 block text-2xl">{player.cosmetics.length}</b></div><div className="rounded-xl border border-white/8 p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Active</p><b className="mt-1 block text-2xl">{player.activeCosmetics.length}</b></div></div><div className="mt-4 flex flex-wrap gap-2">{player.cosmetics.map((item:string) => <span key={item} className="rounded-full border border-sky-400/25 bg-sky-400/5 px-3 py-1 text-xs">{pretty(item)}</span>)}</div></section>
-      </div>
-
-      <section id="bb-collection" className="surface-panel p-5 md:p-7">
-=======
       <>
         {section === "gamebet" && <section className="surface-panel p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><WalletCards className="text-sky-400"/> GameBet activity</h2>{player.casino ? <div className="mt-5 grid grid-cols-2 gap-3">{Object.entries(player.casino).map(([key,value]) => <div key={key} className="rounded-xl border border-white/8 bg-white/[0.02] p-3"><p className="text-xs text-muted-foreground">{pretty(key)}</p><b className="mt-1 block text-lg">{N(value)}</b></div>)}</div> : <p className="mt-4 text-muted-foreground">No GameBet activity recorded.</p>}</section>}
         {section === "cosmetics" && <section className="surface-panel p-5 md:p-7"><h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><Package className="text-sky-400"/> Cosmetics</h2><div className="mt-5 grid grid-cols-2 gap-3"><div className="rounded-xl border border-white/8 p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Owned</p><b className="mt-1 block text-2xl">{player.cosmetics.length}</b></div><div className="rounded-xl border border-white/8 p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Active</p><b className="mt-1 block text-2xl">{player.activeCosmetics.length}</b></div></div><div className="mt-4 flex flex-wrap gap-2">{player.cosmetics.map((item:string) => <span key={item} className="rounded-full border border-sky-400/25 bg-sky-400/5 px-3 py-1 text-xs">{pretty(item)}</span>)}</div></section>}
       </>
 
       {section === "ultimate-team" && <section id="bb-collection" className="surface-panel p-5 md:p-7">
->>>>>>> 5f078c1 (New website rewwork)
         <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><WalletCards className="text-sky-400"/> Ultimate Team collection</h2>
         <p className="mt-1 text-sm text-muted-foreground">Cards and duplicate quantities owned by this player across S1 and S2.</p>
         <div className="my-5 flex flex-wrap items-end gap-3"><label className="text-xs text-muted-foreground">Search cards<input value={cardSearch} onChange={event=>{setCardSearch(event.target.value);setCardPage(1);}} placeholder="Player, position or card type" className="mt-2 block min-h-11 w-64 max-w-full rounded-lg border border-white/15 bg-black/20 px-3 text-sm text-white"/></label><label className="text-xs text-muted-foreground">Season<select value={cardSeason} onChange={event=>{setCardSeason(event.target.value);setCardPage(1);}} className="mt-2 block min-h-11 rounded-lg border border-white/15 bg-[#101b20] px-3 text-sm text-white"><option value="">All seasons</option>{Array.from(new Set(cards.map(card=>card.seasonId))).map(season=><option key={season} value={season}>{season}</option>)}</select></label></div>
@@ -146,11 +114,7 @@ export function BlockballProfile() {
         {!utQuery.isLoading && !utQuery.isError && filteredCards.length > 0 && <div className="next-pagination"><button disabled={currentCardPage <= 1} onClick={()=>setCardPage(currentCardPage-1)}>Previous</button><span>Page {currentCardPage} of {cardPages} · {filteredCards.length} card types</span><button disabled={currentCardPage >= cardPages} onClick={()=>setCardPage(currentCardPage+1)}>Next</button></div>}
       </section>}
 
-<<<<<<< HEAD
-      <section id="bb-league" className="surface-panel p-5 md:p-7">
-=======
       {section === "league" && <section id="bb-league" className="surface-panel p-5 md:p-7">
->>>>>>> 5f078c1 (New website rewwork)
         <h2 className="flex items-center gap-2 font-display text-2xl font-bold uppercase"><History className="text-sky-400"/> League career</h2>
         <p className="mt-1 text-sm text-muted-foreground">Complete BlockBall league history across recorded seasons.</p>
         {player.leagueHistory?.career ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Matches",player.leagueHistory.career.matches],["Goals",player.leagueHistory.career.goals],["Assists",player.leagueHistory.career.assists],["Saves",player.leagueHistory.career.saves],["Wins",player.leagueHistory.career.wins],["Draws",player.leagueHistory.career.draws],["Losses",player.leagueHistory.career.losses],["Clean sheets",player.leagueHistory.career.cleanSheets]].map(([name,value])=><div key={name} className="rounded-2xl border border-white/8 bg-white/[0.02] p-4"><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{name}</p><b className="mt-1 block text-2xl">{N(value)}</b></div>)}</div> : <p className="mt-5 text-muted-foreground">No finalized career statistics recorded.</p>}

@@ -255,8 +255,6 @@ html { scroll-behavior: smooth; scroll-padding-top: 110px; }
 @media (max-width:767px) { .next-mode-panel-0,.next-blockball .next-mode-panel-1 { grid-column: auto; }.next-blockball .next-mode-panel-1 { grid-row: auto; } }
 
 .next-editorial { --font-display: var(--app-font-display); }
-<<<<<<< HEAD
-=======
 
 .next-section-nav { display: flex; gap: 4px; overflow-x: auto; border-top: 1px solid #ffffff24; border-bottom: 1px solid #ffffff24; padding: 6px 0; scrollbar-width: thin; }
 .next-section-nav a { flex-shrink: 0; padding: 13px 16px; color: #a6b0a8; font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }
@@ -269,4 +267,3 @@ html { scroll-behavior: smooth; scroll-padding-top: 110px; }
 .next-pagination button { min-height: 42px; padding: 8px 15px; border: 1px solid #ffffff20; color: white; }
 .next-pagination button:disabled { opacity: .35; cursor: not-allowed; }
 .next-mode-panel { min-width: 0; }
->>>>>>> 5f078c1 (New website rewwork)

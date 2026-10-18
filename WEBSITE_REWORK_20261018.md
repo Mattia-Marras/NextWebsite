@@ -74,8 +74,6 @@
 - Kept the original logo. The other site's reference screenshot is not used as NEXT content.
 
 Validation: frontend TypeScript check passed and production build passed (2,800 modules). Existing shared UI sourcemap warnings and large-bundle advisory remain. Browser visual verification was attempted but could not complete in this environment. Live database integration was not exercised.
-<<<<<<< HEAD
-=======
 
 
 ## Navigation and content organization revision
@@ -98,4 +96,7 @@ Additional refinements:
 - Wider tables remain within horizontal scrolling containers; match names can wrap on small screens.
 
 Validation: frontend TypeScript passed; production Vite build passed. Server-rendered fixture checks passed for all 12 profile/league sections, including overview isolation, three-result preview and 12-result pagination. Live database integration and browser/mobile visual checks remain unverified. Existing shared UI source-map warnings and bundle-size advisory remain.
->>>>>>> 5f078c1 (New website rewwork)
+
+
+## Merge recovery
+Resolved conflict markers in five files and restored the complete latest rework. No other source changes. Frontend TypeScript and production build were rechecked successfully. The delivery archive excludes Git metadata to preserve the existing local repository.

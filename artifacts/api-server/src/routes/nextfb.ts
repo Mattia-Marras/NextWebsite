@@ -1,3 +1,6 @@
+import type { RowDataPacket } from "mysql2/promise";
+import { queryFb } from "../lib/nextfb/db";
+import { exploreLeaderboard, BoardInputError } from "../lib/leaderboard-explorer";
 import {
   Router,
   type NextFunction,
@@ -68,6 +71,18 @@ import {
 } from "../lib/nextfb/types";
 
 export const nextFootballRouter = Router();
+
+nextFootballRouter.get("/leaderboards/explore", async (req, res, next) => {
+  try {
+    const result=await exploreLeaderboard("football",req.query,(sql,params)=>queryFb<(RowDataPacket & any)[]>(sql,params));
+    const names=await resolveMinecraftPlayersByUuids(result.data.map(row=>row.uuid));
+      return res.json({...result,data:result.data.map(row=>({...row,name:names.get(row.uuid)?.username ?? null}))});
+  } catch(error: any) {
+    if(error instanceof BoardInputError) return res.status(400).json({error:error.message});
+    if(["ER_NO_SUCH_TABLE","ER_BAD_FIELD_ERROR"].includes(String(error?.code))) return res.status(503).json({error:"This leaderboard is not available for the current server data."});
+    return next(error);
+  }
+});
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;

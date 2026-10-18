@@ -1,3 +1,4 @@
+import { exploreLeaderboard, BoardInputError } from "../lib/leaderboard-explorer";
 import { Router } from "express";
 import type { RowDataPacket } from "mysql2/promise";
 import { queryBlockball } from "../lib/blockball-db";
@@ -7,6 +8,20 @@ import {
 } from "../lib/nextbb/ultimate-team";
 
 const router = Router();
+
+router.get("/leaderboards/explore", async (req, res, next) => {
+  try {
+    const result=await exploreLeaderboard("blockball",req.query,(sql,params)=>queryBlockball<(RowDataPacket & any)[]>(sql,params));
+    const ids=result.data.map(row=>row.uuid);
+      const names = ids.length ? await queryBlockball<(RowDataPacket & any)[]>(`SELECT p.uuid,COALESCE(n.name,p.name,p.uuid) name FROM players p LEFT JOIN player_names n ON n.uuid=p.uuid WHERE p.uuid IN (${ids.map(()=>"?").join(",")})`,ids) : [];
+      const byId=new Map(names.map(row=>[String(row.uuid).toLowerCase(),String(row.name)]));
+      return res.json({...result,data:result.data.map(row=>({...row,name:byId.get(row.uuid) ?? null}))});
+  } catch(error: any) {
+    if(error instanceof BoardInputError) return res.status(400).json({error:error.message});
+    if(["ER_NO_SUCH_TABLE","ER_BAD_FIELD_ERROR"].includes(String(error?.code))) return res.status(503).json({error:"This leaderboard is not available for the current server data."});
+    return next(error);
+  }
+});
 const leagues = new Set(["ML", "LL"]);
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

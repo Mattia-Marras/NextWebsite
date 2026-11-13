@@ -26,7 +26,12 @@ interface RenderedUltimateTeamCardProps {
 
 function getCardAppearance(cardType: string, overall: number) {
   const normalized = cardType.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const isTots =
+    normalized === "TOTS" ||
+    normalized.includes("TEAM_OF_THE_SEASON") ||
+    normalized.includes("TEAM_OF_SEASON");
   const special =
+    isTots ||
     normalized.includes("TOTW") ||
     normalized.includes("TEAM_OF_THE_WEEK") ||
     normalized.includes("IN_FORM") ||
@@ -34,7 +39,9 @@ function getCardAppearance(cardType: string, overall: number) {
 
   let filename = "bronzecard.png";
 
-  if (special) {
+  if (isTots) {
+    filename = "tots_card.png";
+  } else if (special) {
     filename = "totw_card.png";
   } else if (normalized.includes("GOLD")) {
     filename = "goldcard.png";

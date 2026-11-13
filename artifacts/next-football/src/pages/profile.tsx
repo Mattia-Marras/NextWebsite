@@ -919,10 +919,17 @@ function LeagueCardTile({
   const isTotw =
     normalizedType === "TOTW" ||
     normalizedType === "TEAM_OF_THE_WEEK";
+  const isTots =
+    normalizedType === "TOTS" ||
+    normalizedType === "TEAM_OF_THE_SEASON" ||
+    normalizedType === "TEAM_OF_SEASON";
+  const isSpecial = isTotw || isTots;
 
   let template = "/cards/bronzecard.png";
 
-  if (isTotw) {
+  if (isTots) {
+    template = "/cards/tots_card.png";
+  } else if (isTotw) {
     template = "/cards/totw_card.png";
   } else if (card.overall >= 85) {
     template = "/cards/goldcard.png";
@@ -948,9 +955,9 @@ function LeagueCardTile({
   const fallbackBodyRenderUrl =
     `https://skins.manacube.com/renders/body/${cleanUuid}?scale=10&overlay`;
 
-  const primaryText = isTotw ? "#f4d06f" : "#161616";
-  const secondaryText = isTotw ? "#d8b855" : "#282828";
-  const dividerColor = isTotw
+  const primaryText = isSpecial ? "#f4d06f" : "#161616";
+  const secondaryText = isSpecial ? "#d8b855" : "#282828";
+  const dividerColor = isSpecial
     ? "rgba(231,196,87,.62)"
     : "rgba(20,20,20,.32)";
 
@@ -1016,7 +1023,7 @@ function LeagueCardTile({
                 imageRendering: "pixelated",
                 transform: "scale(1.025)",
                 transformOrigin: "center bottom",
-                filter: isTotw
+                filter: isSpecial
                   ? "drop-shadow(0 7px 8px rgba(0,0,0,.78))"
                   : "drop-shadow(0 7px 7px rgba(0,0,0,.42))",
               }}
@@ -1062,7 +1069,7 @@ function LeagueCardTile({
             width: "20%",
             fontSize: "clamp(30px, 4.2vw, 50px)",
             color: primaryText,
-            textShadow: isTotw
+            textShadow: isSpecial
               ? "0 2px 3px rgba(0,0,0,.7)"
               : "0 1px 1px rgba(255,255,255,.15)",
           }}
@@ -1119,7 +1126,7 @@ function LeagueCardTile({
             lineHeight: 1,
             color: primaryText,
             textOverflow: "ellipsis",
-            textShadow: isTotw
+            textShadow: isSpecial
               ? "0 2px 3px rgba(0,0,0,.72)"
               : "0 1px 1px rgba(255,255,255,.12)",
           }}
@@ -1164,7 +1171,7 @@ function LeagueCardTile({
                   color: primaryText,
                   minWidth: "1.62em",
                   textAlign: "right",
-                  textShadow: isTotw
+                  textShadow: isSpecial
                     ? "0 1px 2px rgba(0,0,0,.5)"
                     : "none",
                 }}
@@ -1214,7 +1221,7 @@ function LeagueCardTile({
             style={{
               fontSize: "clamp(6px, .66vw, 8px)",
               letterSpacing: ".18em",
-              opacity: isTotw ? 0.72 : 0.52,
+              opacity: isSpecial ? 0.72 : 0.52,
               marginBottom: "4px",
             }}
           >
@@ -1227,8 +1234,8 @@ function LeagueCardTile({
               fontSize: "clamp(11px, 1.18vw, 15px)",
               letterSpacing: ".11em",
               color: primaryText,
-              opacity: isTotw ? 0.98 : 0.92,
-              textShadow: isTotw
+              opacity: isSpecial ? 0.98 : 0.92,
+              textShadow: isSpecial
                 ? "0 1px 2px rgba(0,0,0,.55)"
                 : "0 1px 1px rgba(255,255,255,.12)",
             }}
